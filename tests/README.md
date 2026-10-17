@@ -36,6 +36,7 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R28 | Se a voz travar no meio (começa e nunca termina, sem som), o app destrava e fala de novo | "Não sai mais o som com o nome do animal" (botão 🔊 pulsando) |
 | R29 | Depois que a palavra termina normalmente, ela não é repetida sozinha | Proteção da correção do R28 |
 | R30 | Visual "Dia ensolarado": fundo claro, texto escuro, cantos bem arredondados e botões principais 3D | Nova paleta e design infantil |
+| R31 | A versão oficial não mostra o texto da versão no rodapé; a de teste mostra "versão … (teste)" | "Esconda o texto da versão do app" |
 
 (R14 ficou dentro do R02.)
 

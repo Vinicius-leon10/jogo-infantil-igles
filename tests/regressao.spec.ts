@@ -523,3 +523,15 @@ test("R30 visual 'Dia ensolarado': fundo claro, texto escuro e botões principai
   const shadow = await page.getByRole("button", { name: /Próxima|Fazer o quiz/ }).evaluate((b) => getComputedStyle(b).boxShadow);
   expect(shadow).toMatch(/0px 6px 0px/);
 });
+
+test("R31 versão oficial não mostra o texto da versão; a de teste mostra", async ({ page }) => {
+  await seed(page);
+  await expect(page.getByText(/novos níveis em breve/)).toBeVisible();
+  await expect(page.getByText(/versão /)).toHaveCount(0);
+  await page.goto("http://localhost:4174/");
+  await page.getByPlaceholder("Ex.: Lia").fill("Teste");
+  await page.getByText("Menino", { exact: true }).click();
+  await page.getByText("Ainda não", { exact: true }).click();
+  await page.getByText("Começar a aventura").click();
+  await expect(page.getByText(/versão .* \(teste\)/)).toBeVisible();
+});
