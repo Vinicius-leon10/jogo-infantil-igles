@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { getLearnWords, getPoolWords, getQuizWords, phases } from "@/data/content";
+import { getLearnWords, getPoolWords, getQuizWords, isLastPhaseOfLevel, levels, phases } from "@/data/content";
 import type { Word } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import { useChildProfile } from "@/hooks/useChildProfile";
@@ -17,11 +17,14 @@ import { Sprout } from "@/components/Sprout";
 import { WelcomeSplash } from "@/components/WelcomeSplash";
 import { StoriesScreen } from "@/components/StoriesScreen";
 import { StoryReader } from "@/components/StoryReader";
+import { TreeComplete } from "@/components/TreeComplete";
 import type { Story } from "@/data/stories";
 import { setMusicWanted } from "@/lib/sound";
+import { stopAllSpeech } from "@/hooks/useTTS";
+import { xpFor } from "@/lib/scoring";
 
 
-type Screen = "levels" | "map" | "intro" | "learn" | "quiz" | "result" | "minigame" | "stories" | "story";
+type Screen = "levels" | "map" | "intro" | "learn" | "quiz" | "result" | "minigame" | "tree" | "stories" | "story";
 
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
@@ -31,17 +34,19 @@ function shuffle<T>(arr: T[]): T[] {
 function TestBadge() {
   return (
     <div
-      className="fixed left-3 z-[80] pointer-events-none rounded-full px-3 py-1 text-[11px] font-extrabold tracking-wider shadow-lg"
-      style={{ bottom: "calc(var(--safe-bottom) + 8px)", background: "var(--amber)", color: "#1a1a2e" }}
+      className="fixed left-1/2 -translate-x-1/2 z-[80] pointer-events-none rounded-full px-2.5 py-0.5 text-[9px] font-extrabold tracking-wider opacity-90"
+      style={{ bottom: "calc(var(--safe-bottom) + 4px)", background: "var(--amber)", color: "#1a1a2e" }}
     >
       VERSÃO DE TESTE
     </div>
   );
 }
 
+/** On every screen change: start at the top and silence anything the old screen scheduled. */
 function ScrollToTop({ screenKey }: { screenKey: string }) {
   useEffect(() => {
     window.scrollTo(0, 0);
+    stopAllSpeech();
   }, [screenKey]);
   return null;
 }
@@ -86,6 +91,8 @@ export function App() {
   const [resultPassed, setResultPassed] = useState(false);
   const [parentsOpen, setParentsOpen] = useState(false);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
+  // Level whose tree was just completed (its last phase passed for the first time).
+  const [treeLevel, setTreeLevel] = useState<number | null>(null);
   const phaseStartRef = useRef<number>(0);
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -95,17 +102,17 @@ export function App() {
     setMusicWanted(!!profile && musicScreen);
   }, [profile, musicScreen]);
 
+  // The opening screen shows every time the app is opened: its tap is what lets the
+  // music play. (The regression tests skip it with the sprout_skip_splash flag.)
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!sessionStorage.getItem("sprout_welcomed")) {
-      setShowWelcome(true);
-    }
+    let skip = false;
+    try {
+      skip = !!sessionStorage.getItem("sprout_skip_splash");
+    } catch {}
+    if (!skip) setShowWelcome(true);
   }, []);
 
-  const dismissWelcome = () => {
-    sessionStorage.setItem("sprout_welcomed", "1");
-    setShowWelcome(false);
-  };
+  const dismissWelcome = () => setShowWelcome(false);
 
   const welcomeOverlay = (
     <AnimatePresence>
@@ -152,6 +159,7 @@ export function App() {
     if (!phase) return;
     const durationMs = phaseStartRef.current ? Date.now() - phaseStartRef.current : 0;
     phaseStartRef.current = 0;
+    const wasCompleted = !!progress.phases[phase.id]?.completed;
     const { stars, completed } = recordPhase(
       phase.id,
       score,
@@ -163,10 +171,16 @@ export function App() {
     setResultScore(score);
     setResultStars(stars);
     setResultPassed(completed);
+    setTreeLevel(completed && !wasCompleted && isLastPhaseOfLevel(phase.id) ? phase.level : null);
     setScreen("result");
   };
 
   const goHome = () => {
+    if (treeLevel) {
+      setScreen("tree");
+      setPhaseId(null);
+      return;
+    }
     if (resultPassed && phase && phase.id % 3 === 0 && questions.length >= 4) {
       setScreen("minigame");
       return;
@@ -213,11 +227,29 @@ export function App() {
       />
     );
   } else if (screen === "levels") {
+    // Stories are hidden for now: every story needs colour words, which left the game.
     screenNode = (
       <LevelsScreen
         onSelectLevel={selectLevel}
         onOpenParents={() => setParentsOpen(true)}
-        onOpenStories={() => setScreen("stories")}
+      />
+    );
+  } else if (screen === "tree" && treeLevel) {
+    const done = levels.find((l) => l.id === treeLevel)!;
+    const next = levels.find((l) => l.id === treeLevel + 1);
+    screenNode = (
+      <TreeComplete
+        level={done}
+        nextLevel={next}
+        onNextLevel={() => {
+          setTreeLevel(null);
+          if (next) selectLevel(next.id);
+        }}
+        onMap={() => {
+          setTreeLevel(null);
+          setLevelId(done.id);
+          setScreen("map");
+        }}
       />
     );
   } else if (screen === "map" || !phase) {
@@ -226,7 +258,7 @@ export function App() {
         levelId={levelId}
         onSelectPhase={startPhase}
         onBackToLevels={goBackToLevels}
-        onOpenStories={() => setScreen("stories")}
+        onSelectLevel={selectLevel}
       />
     );
   } else if (screen === "intro") {
@@ -265,7 +297,7 @@ export function App() {
         score={resultScore}
         stars={resultStars}
         passed={resultPassed}
-        xpGained={Math.round(resultScore / 5) + (resultPassed ? 10 : 0)}
+        xpGained={xpFor(resultScore, resultPassed)}
         onRetry={() => startPhase(phase.id)}
         onHome={goHome}
       />

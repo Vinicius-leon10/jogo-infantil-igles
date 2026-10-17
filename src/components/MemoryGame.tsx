@@ -1,5 +1,5 @@
 import { ArrowLeft, Volume2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Word } from "@/data/content";
 import { useTTS } from "@/hooks/useTTS";
 import { Sprout } from "./Sprout";
@@ -23,7 +23,7 @@ function shuffle<T>(a: T[]): T[] {
 }
 
 export function MemoryGame({ words, onDone, onBack }: Props) {
-  const { speak } = useTTS();
+  const { speak, speakLater } = useTTS();
   const pairs = useMemo(() => words.slice(0, 6), [words]);
 
   const initialCards: Card[] = useMemo(
@@ -40,6 +40,8 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
   const [cards, setCards] = useState(initialCards);
   const [flipped, setFlipped] = useState<string[]>([]);
   const [matched, setMatched] = useState<Set<string>>(new Set());
+  const cancelPairWord = useRef<(() => void) | null>(null);
+  useEffect(() => () => cancelPairWord.current?.(), []);
   const [moves, setMoves] = useState(0);
   const allMatched = matched.size === pairs.length;
 
@@ -51,7 +53,7 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
         setMatched((m) => new Set(m).add(a.word.id));
         setFlipped([]);
         playCorrect();
-        setTimeout(() => speak(a.word.en), 300);
+        cancelPairWord.current = speakLater(a.word.en, 300);
       }, 350);
     } else {
       setTimeout(() => setFlipped([]), 800);
@@ -61,6 +63,9 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
   }, [flipped]);
 
   const handleFlip = (k: string) => {
+    // A newly flipped card speaks its own word; drop any pending "pair found" word.
+    cancelPairWord.current?.();
+    cancelPairWord.current = null;
     if (flipped.length >= 2) return;
     if (flipped.includes(k)) return;
     const card = cards.find((c) => c.key === k)!;
@@ -100,6 +105,7 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
             return (
               <button
                 key={c.key}
+                data-word={c.word.id}
                 onClick={() => handleFlip(c.key)}
                 className="aspect-square rounded-2xl flex items-center justify-center text-center font-bold active:scale-95 transition-all"
                 style={{

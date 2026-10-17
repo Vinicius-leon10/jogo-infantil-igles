@@ -9,6 +9,7 @@ import {
 } from "react";
 import { isLevelUnlocked, phases as allPhases, previousPhaseId } from "@/data/content";
 import { readJSON, writeJSON } from "@/lib/storage";
+import { starsFor, xpFor } from "@/lib/scoring";
 
 const KEY = "sprout-progress-v2";
 
@@ -81,8 +82,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const recordPhase = useCallback<ProgressState["recordPhase"]>(
     (phaseId, score, required, wrongIds = [], correctIds = [], durationMs = 0) => {
       const progress = progressRef.current;
-      const stars: 0 | 1 | 2 | 3 =
-        score >= 95 ? 3 : score >= 80 ? 2 : score >= 60 ? 1 : 0;
+      const stars = starsFor(score);
       const completed = score >= required;
       const prev = progress.phases[phaseId];
       const bestScore = Math.max(prev?.bestScore ?? 0, score);
@@ -132,7 +132,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
             attempts: (prev?.attempts ?? 0) + 1,
           },
         },
-        xp: (progress.xp || 0) + Math.round(score / 5) + (completed ? 10 : 0),
+        xp: (progress.xp || 0) + xpFor(score, completed),
         streak,
         lastPlayed: today,
         wrongWords,

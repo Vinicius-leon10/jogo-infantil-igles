@@ -1,7 +1,9 @@
 # Sprout 🌱 — Aprenda inglês, broto a broto
 
 App infantil (interface em português) para aprender vocabulário em inglês com um brotinho como companheiro:
-2 níveis, 84 fases, 79 palavras, quiz adaptado para quem lê / ainda não lê, jogo da memória e 6 histórias bilíngues.
+nível 1 com 14 animais (10 fases) e nível 2 com os números de 0 a 10 (7 fases), quiz adaptado para quem lê /
+ainda não lê e jogo da memória. Cores, roupas, cômodos, objetos da casa e as 6 histórias estão guardados no código
+para voltar depois (as histórias dependem das cores).
 
 Recriado a partir do *Sprout — Guia completo de recriação*: mesmo conteúdo, regras de pontuação e identidade visual.
 
@@ -11,6 +13,7 @@ Recriado a partir do *Sprout — Guia completo de recriação*: mesmo conteúdo,
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # gera dist/ (site estático)
+npm test         # testes de regressão (ver tests/README.md)
 ```
 
 ## Sem login
@@ -60,6 +63,10 @@ referência de estilo; os demais são vetores gerados por `python3 scripts/make-
 uma imagem nova, salve `src/assets/animals/<id>.png` (fundo transparente, quadrado) e apague o `.svg` de mesmo nome.
 Palavras sem ilustração continuam mostrando o emoji (componente `src/components/Emoji.tsx`).
 
+Os números (`src/assets/numbers/`) seguem o "1" de referência (`one.png`, recortado com
+`python3 scripts/cutout.py <imagem> src/assets/numbers/one.png --shadow`); o 0 e do 2 ao 10 são desenhados por
+`node scripts/make-numbers.mjs` com a fonte Fredoka.
+
 ## Música e efeitos sonoros
 
 Tudo é sintetizado no navegador (`src/lib/sound.ts`, Web Audio API), sem arquivos de áudio nem direitos autorais:
@@ -70,14 +77,13 @@ e para ao começar o aprendizado/quiz e nas histórias (para não atrapalhar a v
 
 ## Versão de teste e versão real
 
-| | Endereço | Branch |
+| | Onde | Branch |
 |---|---|---|
-| **Teste** | https://vinicius-leon10.github.io/jogo-infantil-igles/teste/ | `claude/sprout-app` |
+| **Teste** | link de teste no Claude (página única gerada por `scripts/build-claude-test.py`) e também https://vinicius-leon10.github.io/jogo-infantil-igles/teste/ | `claude/sprout-app` |
 | **Real** | https://vinicius-leon10.github.io/jogo-infantil-igles/ | `main` |
 
-Fluxo: toda mudança vai primeiro para `claude/sprout-app` e aparece na versão de **teste** (com o selo
-"VERSÃO DE TESTE" e o nome "Sprout TESTE" na tela de início). Depois de aprovada, `claude/sprout-app` é
-mesclado em `main` e vai para a versão **real**.
+Fluxo: toda mudança vai primeiro para `claude/sprout-app` e para o link de teste no Claude (com o selo
+"VERSÃO DE TESTE"). Depois de aprovada, `claude/sprout-app` é mesclado em `main` e vai para a versão **real**.
 
 A versão de teste guarda perfil, progresso e preferências separados (prefixo `teste:` no `localStorage`), então
 testar nunca altera o progresso real da criança.

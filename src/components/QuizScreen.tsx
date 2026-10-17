@@ -5,6 +5,7 @@ import { useTTS } from "@/hooks/useTTS";
 import { Sprout } from "./Sprout";
 import { Emoji } from "./Emoji";
 import { playCorrect, playWrong } from "@/lib/sound";
+import { scoreFor } from "@/lib/scoring";
 
 type Props = {
   pool: Word[];
@@ -25,7 +26,19 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }: Props) {
-  const { speak } = useTTS();
+  const { speak, speakLater, stop } = useTTS();
+  // Delayed "say the word" after a right answer; must never leak into the next question.
+  const sayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const readyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // "Continuar" waits for the right word to be said, so tapping it never cuts the word off.
+  const [ready, setReady] = useState(false);
+  const cancelSay = () => {
+    if (sayTimer.current) clearTimeout(sayTimer.current);
+    if (readyTimer.current) clearTimeout(readyTimer.current);
+    sayTimer.current = readyTimer.current = null;
+    stop();
+  };
+  useEffect(() => cancelSay, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [correct, setCorrect] = useState(0);
@@ -50,14 +63,16 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const idxRef = useRef(idx);
+  idxRef.current = idx;
+
   const q = qs[idx];
   const isLast = idx === qs.length - 1;
   const progress = ((idx + (picked ? 1 : 0)) / qs.length) * 100;
 
   useEffect(() => {
     if (q?.mode === "audio") {
-      const t = setTimeout(() => speak(q.word.en), 400);
-      return () => clearTimeout(t);
+      return speakLater(q.word.en, 400);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx]);
@@ -71,9 +86,14 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
       correctIdsRef.current.push(q.word.id);
       setMood("excited");
       playCorrect();
-      setTimeout(() => speak(q.word.en), 550);
+      const word = q.word.en;
+      const question = idx;
+      const showContinue = () => question === idxRef.current && setReady(true);
+      sayTimer.current = setTimeout(() => speak(word, { onDone: showContinue }), 550);
+      readyTimer.current = setTimeout(showContinue, 2500); // in case the phone never reports the end
     } else {
       wrongIdsRef.current.push(q.word.id);
+      setReady(true);
       setMood("wink");
       playWrong();
       setShake(true);
@@ -82,10 +102,12 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
   };
 
   const handleNext = () => {
+    cancelSay();
+    setReady(false);
     setPicked(null);
     setMood("happy");
     if (isLast) {
-      const score = Math.round((correct / qs.length) * 100);
+      const score = scoreFor(correct, qs.length);
       onFinish(score, wrongIdsRef.current, correctIdsRef.current);
     } else {
       setIdx(idx + 1);
@@ -104,7 +126,12 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
   };
 
   return (
-    <div className={`min-h-screen bg-aurora flex flex-col ${shake ? "animate-shake" : ""}`}>
+    <div
+      className={`min-h-screen bg-aurora flex flex-col ${shake ? "animate-shake" : ""}`}
+      data-testid="quiz"
+      data-answer={q.word.id}
+      data-mode={q.mode}
+    >
       <header className="px-5 py-4 flex items-center gap-3">
         <button
           onClick={onBack}
@@ -192,6 +219,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
             return (
               <button
                 key={opt.id}
+                data-word={opt.id}
                 onClick={() => handlePick(opt.id)}
                 disabled={!!picked}
                 className={`relative rounded-2xl p-4 text-center transition-all active:scale-95 ${bg} ${ring}`}
@@ -236,7 +264,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
       </div>
 
       <div className="px-6 pb-10 pt-4 min-h-[100px]">
-        {picked && (
+        {picked && ready && (
           <button
             onClick={handleNext}
             className="w-full max-w-md mx-auto rounded-2xl py-4 font-bold text-lg active:scale-95 transition-transform glow-sprout animate-pop"

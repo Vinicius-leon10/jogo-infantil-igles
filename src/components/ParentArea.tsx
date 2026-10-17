@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { X, History, UserCog, ShieldCheck, Star } from "lucide-react";
-import { phases } from "@/data/content";
+import { phases, phaseNumber } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import type { ChildProfile, ChildProfileInput } from "@/hooks/useChildProfile";
 import { Emoji } from "./Emoji";
+import { ttsStatus, useTTS } from "@/hooks/useTTS";
 
 type Tab = "history" | "edit";
 
@@ -102,6 +103,8 @@ export function ParentArea({ profile, onSave, onClose }: Props) {
             </div>
 
             {tab === "history" ? <HistoryPanel /> : <EditPanel profile={profile} onSave={onSave} />}
+
+            <SoundCheck />
           </>
         )}
       </div>
@@ -184,7 +187,7 @@ function HistoryPanel() {
                 <li key={p.id} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
                   <div className="text-2xl"><Emoji char={p.emoji} /></div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs text-muted-foreground">Nível {p.level} · Fase {p.id}</div>
+                    <div className="text-xs text-muted-foreground">Nível {p.level} · Fase {phaseNumber(p.id)}</div>
                     <div className="font-bold text-sm truncate">{p.title}</div>
                     <div className="text-[10px] text-muted-foreground mt-0.5">
                       Último: {formatDuration(r.lastDurationMs)}
@@ -352,5 +355,37 @@ function PickerBtn({
       <div className="text-2xl mb-0.5">{emoji}</div>
       <div className="text-xs font-bold">{label}</div>
     </button>
+  );
+}
+
+/** "Testar voz": speaks a sentence and shows what the phone reported, to diagnose silent audio. */
+function SoundCheck() {
+  const { speak } = useTTS();
+  const [status, setStatus] = useState(ttsStatus);
+  useEffect(() => {
+    const t = setInterval(() => setStatus(ttsStatus()), 500);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="mt-6 rounded-3xl bg-card p-4" data-testid="sound-check">
+      <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-3">Teste de som</h3>
+      <button
+        onClick={() => speak("Hello! Dog, cat, one, two, three.")}
+        className="w-full rounded-2xl py-3 font-bold active:scale-95"
+        style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+      >
+        🔊 Testar voz
+      </button>
+      <dl className="mt-3 text-xs grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+        <dt className="text-muted-foreground">Voz no aparelho</dt>
+        <dd>{status.supported ? "sim" : "não"}</dd>
+        <dt className="text-muted-foreground">Vozes em inglês</dt>
+        <dd>{status.englishVoices}</dd>
+        <dt className="text-muted-foreground">Voz escolhida</dt>
+        <dd className="truncate">{status.voice}</dd>
+        <dt className="text-muted-foreground">Última fala</dt>
+        <dd className="break-words">{status.lastEvent}</dd>
+      </dl>
+    </div>
   );
 }

@@ -1,9 +1,9 @@
-import { ArrowLeft, Lock, Star, Flame, BookOpen } from "lucide-react";
+import { ArrowLeft, Lock, Star, Flame, BookOpen, ChevronRight } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { phases as allPhases, levels } from "@/data/content";
+import { phases as allPhases, levels, phaseNumber } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import { Sprout } from "./Sprout";
-import { Emoji } from "./Emoji";
+import { Plant } from "./Plant";
 import { MusicToggle } from "./MusicToggle";
 
 type Props = {
@@ -11,68 +11,94 @@ type Props = {
   onSelectPhase: (id: number) => void;
   onBackToLevels: () => void;
   onOpenStories?: () => void;
+  onSelectLevel?: (id: number) => void;
 };
 
-export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories }: Props) {
+// Night sky at the top fading into a meadow and soil at the bottom, where phase 1 starts.
+const TERRAIN = `
+  radial-gradient(2px 2px at 12% 4%, #fff9 50%, transparent 51%),
+  radial-gradient(1.5px 1.5px at 30% 9%, #fff8 50%, transparent 51%),
+  radial-gradient(2px 2px at 72% 3%, #fffa 50%, transparent 51%),
+  radial-gradient(1.5px 1.5px at 88% 11%, #fff7 50%, transparent 51%),
+  radial-gradient(1.5px 1.5px at 55% 14%, #fff6 50%, transparent 51%),
+  linear-gradient(180deg, #151a3d 0%, #1b2950 18%, #1d3b45 40%, #1f4a35 62%, #26582e 82%, #3a2a1e 100%)`;
+
+export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories, onSelectLevel }: Props) {
   const { progress, isUnlocked } = useProgress();
   const level = levels.find((l) => l.id === levelId) ?? levels[0];
   const phases = allPhases.filter((p) => p.level === level.id);
+  const stages = phases.length;
+  const lastPhase = phases[phases.length - 1];
+  const treeDone = !!progress.phases[lastPhase.id]?.completed;
+  const nextLevel = levels.find((l) => l.id === level.id + 1);
 
   const currentPhase = (() => {
     for (const p of phases) {
       if (isUnlocked(p.id) && !progress.phases[p.id]?.completed) return p.id;
     }
-    return phases[phases.length - 1].id;
+    return lastPhase.id;
   })();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const phaseRefs = useRef<Record<number, HTMLLIElement | null>>({});
-  const [sprout, setSprout] = useState<{ top: number; left: number; side: "left" | "right" } | null>(null);
+  const plotRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [trail, setTrail] = useState<{ d: string; w: number; h: number } | null>(null);
+  const [sprout, setSprout] = useState<{ top: number; left: number } | null>(null);
   const [walking, setWalking] = useState(false);
   const prevPhase = useRef<number>(currentPhase);
   const didInitialScroll = useRef(false);
 
+  // Dirt trail winding through the plants (bottom to top) and the mascot next to the current one.
   useLayoutEffect(() => {
-    const el = phaseRefs.current[currentPhase];
     const container = containerRef.current;
-    if (!el || !container) return;
-    const cRect = container.getBoundingClientRect();
-    const eRect = el.getBoundingClientRect();
-    const idx = phases.findIndex((p) => p.id === currentPhase);
-    const side: "left" | "right" = idx % 2 === 0 ? "right" : "left";
-    const SIZE = 56;
-    const PAD = 4;
-    const top = eRect.top - cRect.top + eRect.height / 2 - SIZE / 2;
-    const rawLeft =
-      side === "right"
-        ? eRect.right - cRect.left + 6
-        : eRect.left - cRect.left - SIZE - 6;
-    const maxLeft = cRect.width - SIZE - PAD;
-    const left = Math.max(PAD, Math.min(rawLeft, maxLeft));
-    setSprout({ top, left, side });
+    if (!container) return;
+    const measure = () => {
+      const c = container.getBoundingClientRect();
+      const pts = phases
+        .map((p) => plotRefs.current[p.id]?.getBoundingClientRect())
+        .filter((r): r is DOMRect => !!r)
+        .map((r) => [r.left - c.left + r.width / 2, r.top - c.top + r.height * 0.62] as const);
+      if (pts.length) {
+        let d = `M${pts[0][0]} ${c.height}L${pts[0][0]} ${pts[0][1]}`;
+        for (let i = 1; i < pts.length; i++) {
+          const [x0, y0] = pts[i - 1];
+          const [x1, y1] = pts[i];
+          const dy = (y0 - y1) / 2;
+          d += `C${x0} ${y0 - dy} ${x1} ${y1 + dy} ${x1} ${y1}`;
+        }
+        setTrail({ d, w: c.width, h: c.height });
+      }
+      const plot = plotRefs.current[currentPhase]?.getBoundingClientRect();
+      if (plot) setSprout({ top: plot.top - c.top - 34, left: Math.min(c.width - 56, plot.right - c.left - 22) });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(container);
     if (prevPhase.current !== currentPhase) {
       setWalking(true);
-      const t = setTimeout(() => setWalking(false), 1200);
       prevPhase.current = currentPhase;
-      return () => clearTimeout(t);
+      const t = setTimeout(() => setWalking(false), 1200);
+      return () => {
+        clearTimeout(t);
+        ro.disconnect();
+      };
     }
-  }, [currentPhase, progress.phases]);
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPhase, progress.phases, level.id]);
 
-  // Auto-center on the current phase on mount so the child continues
-  // from where they stopped.
+  // Start centred on the current phase (phase 1 is at the bottom).
   useEffect(() => {
     if (didInitialScroll.current) return;
     let cancelled = false;
-    // Wait for the screen transition (AnimatePresence x:24 -> 0, ~280ms)
-    // to finish so the element's final position is correct.
+    // Wait for the screen transition (~280 ms) so the final position is measured.
     const t = setTimeout(() => {
       if (cancelled) return;
       const el = phaseRefs.current[currentPhase];
       if (!el) return;
       didInitialScroll.current = true;
       const rect = el.getBoundingClientRect();
-      const absoluteTop = rect.top + window.scrollY;
-      const target = absoluteTop - window.innerHeight / 2 + rect.height / 2;
+      const target = rect.top + window.scrollY - window.innerHeight / 2 + rect.height / 2;
       window.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
     }, 400);
     return () => {
@@ -82,8 +108,8 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
   }, [currentPhase]);
 
   return (
-    <div className="min-h-screen bg-aurora pb-32">
-      <header className="sticky top-0 z-10 backdrop-blur-xl bg-background/60 border-b border-border">
+    <div className="min-h-screen pb-10" style={{ background: TERRAIN, backgroundColor: "#151a3d" }}>
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/60 border-b border-border">
         <div className="mx-auto max-w-md px-5 py-4 flex items-center gap-3">
           <button
             onClick={onBackToLevels}
@@ -120,19 +146,39 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
       </header>
 
       <div className="mx-auto max-w-md px-5 pt-6">
-        <div className="mb-6 rounded-3xl p-5 bg-card glow-sprout">
-          <p className="text-sm text-muted-foreground">Continue de onde parou,</p>
-          <h2 className="text-2xl font-bold">Vamos brotar? 🌱</h2>
-        </div>
-
-        <MusicToggle />
-
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
-          Suas fases
-        </h3>
+        {/* The level's tree, waiting at the top of the trail. */}
+        <section className="text-center mb-4" data-testid="tree-goal">
+          <div className={treeDone ? "animate-float" : ""}>
+            <Plant stage={stages} stages={stages} kind={level.tree} size={190} dim={!treeDone} className="mx-auto" />
+          </div>
+          {treeDone ? (
+            <>
+              <h2 className="text-2xl font-bold">Sua {level.treeName} está completa! 🎉</h2>
+              {nextLevel && onSelectLevel && (
+                <button
+                  onClick={() => onSelectLevel(nextLevel.id)}
+                  className="mt-3 inline-flex items-center gap-1 rounded-full px-6 py-3 font-extrabold active:scale-95 glow-sprout"
+                  style={{ background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))", color: "var(--primary-foreground)" }}
+                >
+                  Ir para o {nextLevel.title} <ChevronRight className="size-5" />
+                </button>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground max-w-[16rem] mx-auto">
+              Complete as {stages} fases para a sua <strong className="text-foreground">{level.treeName}</strong> crescer 🌱
+            </p>
+          )}
+        </section>
 
         <div className="relative" ref={containerRef}>
-          <div className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 w-1 bg-gradient-to-b from-primary/40 via-accent/40 to-primary/20 rounded-full" />
+          {trail && (
+            <svg className="absolute inset-0 pointer-events-none" width={trail.w} height={trail.h} aria-hidden="true">
+              <path d={trail.d} stroke="#5e3f2a" strokeWidth="34" fill="none" strokeLinecap="round" opacity="0.9" />
+              <path d={trail.d} stroke="#8a5d3d" strokeWidth="24" fill="none" strokeLinecap="round" />
+              <path d={trail.d} stroke="#b8875c" strokeWidth="3" fill="none" strokeLinecap="round" strokeDasharray="2 12" />
+            </svg>
+          )}
 
           {sprout && (
             <div
@@ -143,7 +189,6 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
                 width: 56,
                 height: 56,
                 transition: "top 1.1s cubic-bezier(.6,.2,.2,1), left 1.1s cubic-bezier(.6,.2,.2,1)",
-                transform: sprout.side === "left" ? "scaleX(-1)" : undefined,
               }}
               aria-hidden="true"
             >
@@ -153,14 +198,15 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
             </div>
           )}
 
+          {/* Last phase on top, phase 1 at the bottom: the child climbs as the plant grows. */}
           <ul className="space-y-5 relative">
-            {phases.map((phase, idx) => {
+            {[...phases].reverse().map((phase) => {
+              const idx = phases.indexOf(phase);
               const result = progress.phases[phase.id];
               const unlocked = isUnlocked(phase.id);
               const stars = result?.stars ?? 0;
-              const isReview = phase.type !== "learn";
-              const side = idx % 2 === 0 ? "left" : "right";
-              const isCurrent = phase.id === currentPhase;
+              const isCurrent = phase.id === currentPhase && !treeDone; // nothing left to do once the tree is complete
+              const plantLeft = idx % 2 === 0;
 
               return (
                 <li
@@ -168,70 +214,63 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
                   ref={(el) => {
                     phaseRefs.current[phase.id] = el;
                   }}
-                  className={`flex ${side === "left" ? "justify-start" : "justify-end"}`}
                 >
                   <button
                     onClick={() => unlocked && onSelectPhase(phase.id)}
                     disabled={!unlocked}
-                    className={`group relative w-[78%] rounded-3xl p-4 text-left transition-all
-                      ${unlocked ? "bg-card hover:scale-[1.02] active:scale-95 cursor-pointer" : "bg-card/40 cursor-not-allowed"}
-                      ${isReview && unlocked ? "ring-2 ring-accent/50" : ""}
-                      ${isCurrent ? "ring-2 ring-primary glow-sprout" : ""}
-                    `}
-                    style={
-                      unlocked
-                        ? { boxShadow: `0 8px 30px -10px ${phase.color.startsWith("var") ? "rgb(0 0 0 / 0.4)" : phase.color}` }
-                        : undefined
-                    }
+                    data-phase={phase.id}
+                    className={`w-full flex items-center gap-3 text-left ${plantLeft ? "flex-row" : "flex-row-reverse"} ${
+                      unlocked ? "active:scale-[0.98] cursor-pointer" : "cursor-not-allowed"
+                    } transition-transform`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="size-14 shrink-0 rounded-2xl flex items-center justify-center text-3xl shadow-lg"
-                        style={{
-                          background: unlocked
-                            ? `linear-gradient(135deg, ${phase.color}, color-mix(in oklab, ${phase.color} 70%, white))`
-                            : "var(--muted)",
-                          opacity: unlocked ? 1 : 0.5,
-                        }}
-                      >
-                        {unlocked ? <Emoji char={phase.emoji} /> : <Lock className="size-5 text-muted-foreground" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-                            Fase {phase.id}
+                    <div
+                      ref={(el) => {
+                        plotRefs.current[phase.id] = el;
+                      }}
+                      className={`relative size-[104px] shrink-0 rounded-full flex items-end justify-center ${isCurrent ? "glow-sprout" : ""}`}
+                      style={{
+                        background: "radial-gradient(circle at 50% 70%, #2f6b34 0%, #1e4a27 65%, #173a20 100%)",
+                        boxShadow: isCurrent ? "0 0 0 3px var(--sprout), 0 0 30px -4px var(--sprout-glow)" : "0 6px 16px -8px #0009",
+                      }}
+                    >
+                      <Plant stage={idx + 1} stages={stages} kind={level.tree} size={100} dim={!unlocked} />
+                      {!unlocked && (
+                        <span className="absolute top-1 right-1 size-7 rounded-full bg-card/90 flex items-center justify-center">
+                          <Lock className="size-3.5 text-muted-foreground" />
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      className={`flex-1 min-w-0 rounded-2xl p-3 backdrop-blur-sm ${unlocked ? "bg-card/80" : "bg-card/40"} ${
+                        isCurrent ? "ring-2 ring-primary" : ""
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                          Fase {phaseNumber(phase.id)}
+                        </span>
+                        {isCurrent && (
+                          <span
+                            className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+                          >
+                            Você
                           </span>
-                          {isReview && (
-                            <span
-                              className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-full"
-                              style={{ background: "var(--accent)", color: "var(--accent-foreground)" }}
-                            >
-                              {phase.type === "grand" ? "Final" : "Revisão"}
-                            </span>
-                          )}
-                          {isCurrent && (
-                            <span
-                              className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-full"
-                              style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
-                            >
-                              Você
-                            </span>
-                          )}
-                        </div>
-                        <h4 className="font-bold text-base truncate">{phase.title}</h4>
-                        <p className="text-xs text-muted-foreground truncate">{phase.subtitle}</p>
-                        {result && (
-                          <div className="mt-1.5 flex gap-0.5">
-                            {[1, 2, 3].map((s) => (
-                              <Star
-                                key={s}
-                                className={`size-3.5 ${s <= stars ? "fill-current" : ""}`}
-                                style={{ color: s <= stars ? "var(--amber)" : "var(--muted)" }}
-                              />
-                            ))}
-                          </div>
                         )}
                       </div>
+                      <h4 className={`font-bold text-base truncate ${unlocked ? "" : "opacity-60"}`}>{phase.title}</h4>
+                      <p className="text-xs text-muted-foreground truncate">{phase.subtitle}</p>
+                      {result && (
+                        <div className="mt-1 flex gap-0.5">
+                          {[1, 2, 3].map((s) => (
+                            <Star
+                              key={s}
+                              className={`size-3.5 ${s <= stars ? "fill-current" : ""}`}
+                              style={{ color: s <= stars ? "var(--amber)" : "var(--muted)" }}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </button>
                 </li>
@@ -239,6 +278,13 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
             })}
           </ul>
         </div>
+
+        {/* Soil where the journey starts. */}
+        <div className="mt-6 mb-6 text-center text-xs font-bold uppercase tracking-[0.2em] text-[#d9b48f]">
+          🌱 Início
+        </div>
+
+        <MusicToggle />
       </div>
     </div>
   );

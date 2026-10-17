@@ -5,6 +5,7 @@ import type { Phase } from "@/data/content";
 import { Sprout } from "./Sprout";
 import { useTTS } from "@/hooks/useTTS";
 import { playComplete } from "@/lib/sound";
+import { phaseNumber } from "@/data/content";
 
 const PRAISE = ["Great job!", "Awesome!", "Well done!", "Fantastic!", "Amazing!", "You did it!"];
 
@@ -20,13 +21,13 @@ type Props = {
 
 export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, onHome }: Props) {
   const mood = stars >= 2 ? "love" : stars >= 1 ? "excited" : "happy";
-  const { speak } = useTTS();
+  const { speakLater } = useTTS();
 
   useEffect(() => {
     playComplete(passed);
     if (!passed) return;
     const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
-    const t = setTimeout(() => speak(praise, { rate: 0.8, pitch: 1.35 }), 350);
+    const cancelPraise = speakLater(praise, 350, { rate: 0.8, pitch: 1.35 });
 
     const fire = (particles: number, spread: number, originY: number) =>
       confetti({
@@ -40,7 +41,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
     if (stars >= 2) setTimeout(() => fire(60, 100, 0.7), 250);
     if (stars === 3) setTimeout(() => fire(120, 120, 0.5), 500);
 
-    return () => clearTimeout(t);
+    return cancelPraise;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const title = !passed
@@ -59,7 +60,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
     <div className="min-h-screen bg-aurora flex flex-col items-center justify-between px-6 py-10 text-center">
       <div className="pt-6">
         <span className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">
-          Fase {phase.id} · {phase.title}
+          Fase {phaseNumber(phase.id)} · {phase.title}
         </span>
       </div>
 

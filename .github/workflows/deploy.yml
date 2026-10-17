@@ -16,7 +16,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Regression suite: nothing is published (test or real) unless every test passes.
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+
   deploy:
+    needs: testes
     runs-on: ubuntu-latest
     env:
       TARGET: ${{ github.ref_name == 'main' && 'producao' || 'teste' }}
