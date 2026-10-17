@@ -439,3 +439,65 @@ test("R27 área dos pais tem 'Testar voz', que fala e mostra o que o aparelho re
   await expect.poll(async () => (await said(page)).map((s) => s.text)).toContain("Hello! Dog, cat, one, two, three.");
   await expect(page.getByTestId("sound-check")).toContainText("Última fala");
 });
+
+test("R28 se a voz travar no meio (começa e nunca termina), o app destrava e fala de novo", async ({ page }) => {
+  // Fake iOS engine: the first word starts and then hangs forever ("speaking" with no sound).
+  await page.addInitScript(() => {
+    const w = window as unknown as { __done: string[] };
+    w.__done = [];
+    let hung = false;
+    let talking: SpeechSynthesisUtterance | null = null;
+    Object.defineProperty(speechSynthesis, "speaking", { get: () => !!talking });
+    Object.defineProperty(speechSynthesis, "pending", { get: () => false });
+    speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
+      if (!u.text.trim()) return;
+      talking = u;
+      setTimeout(() => u.dispatchEvent(new Event("start")), 20);
+      if (!hung) {
+        hung = true; // never ends
+        return;
+      }
+      setTimeout(() => {
+        if (talking !== u) return;
+        talking = null;
+        w.__done.push(u.text);
+        u.dispatchEvent(new Event("end"));
+      }, 300);
+    };
+    speechSynthesis.cancel = () => {
+      talking = null;
+    };
+  });
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __done: string[] }).__done), { timeout: 8000 })
+    .toContain("Dog");
+});
+
+test("R29 depois que a palavra termina normalmente, ela não é repetida sozinha", async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __spoken: string[] };
+    w.__spoken = [];
+    let talking = false;
+    Object.defineProperty(speechSynthesis, "speaking", { get: () => talking });
+    Object.defineProperty(speechSynthesis, "pending", { get: () => false });
+    speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
+      if (!u.text.trim()) return;
+      w.__spoken.push(u.text);
+      talking = true;
+      setTimeout(() => u.dispatchEvent(new Event("start")), 20);
+      setTimeout(() => {
+        talking = false;
+        u.dispatchEvent(new Event("end"));
+      }, 400);
+    };
+    speechSynthesis.cancel = () => {
+      talking = false;
+    };
+  });
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await page.waitForTimeout(6000); // longer than the "stuck" timeout
+  expect(await page.evaluate(() => (window as unknown as { __spoken: string[] }).__spoken)).toEqual(["Dog"]);
+});

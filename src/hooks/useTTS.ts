@@ -47,8 +47,8 @@ if (supported) {
   // silent utterance on the first tap so later automatic speech is allowed.
   const gestures = ["pointerup", "touchend", "click", "keydown"];
   const unlock = () => {
+    // A blank utterance at normal volume: on iOS a volume-0 one can leave later speech muted.
     const u = new SpeechSynthesisUtterance(" ");
-    u.volume = 0;
     window.speechSynthesis.speak(u);
     gestures.forEach((e) => window.removeEventListener(e, unlock, true));
   };
@@ -99,19 +99,33 @@ function speakNow(text: string, rate: number, pitch: number, onDone?: () => void
   let started = false;
   const retry = () => {
     clearWatchdog();
-    if (retried || current !== u) return done();
+    if (retried || current !== u) {
+      if (current === u) setSpeaking(false);
+      return done();
+    }
     cancelIfTalking();
-    watchdog = setTimeout(() => (current === u ? speakNow(text, rate, pitch, onDone, true) : done()), 120);
+    // iOS needs a moment after cancel() before it will speak again.
+    watchdog = setTimeout(() => (current === u ? speakNow(text, rate, pitch, onDone, true) : done()), 300);
   };
   u.onstart = () => {
     lastEvent = `começou: "${text}"`;
     started = true;
     clearWatchdog();
     setSpeaking(true);
+    // iOS can hang mid-utterance: "speaking" forever with no sound and no end event.
+    // A short word takes well under this; past it, unstick the engine and say it again.
+    const maxMs = 2500 + (text.length * 160) / rate;
+    watchdog = setTimeout(() => {
+      lastEvent = `travou falando: "${text}"`;
+      retry();
+    }, maxMs);
   };
   u.onend = () => {
     lastEvent = `terminou: "${text}"`;
-    if (current === u) setSpeaking(false);
+    if (current === u) {
+      clearWatchdog();
+      setSpeaking(false);
+    }
     resumeAudio();
     done();
   };
@@ -171,7 +185,7 @@ export function useTTS() {
       pending = setTimeout(() => {
         pending = null;
         speakNow(text, rate, pitch, opts?.onDone);
-      }, 60);
+      }, 150);
     } else {
       speakNow(text, rate, pitch, opts?.onDone);
     }

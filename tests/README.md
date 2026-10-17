@@ -33,6 +33,8 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R25 | Ao completar a última fase aparece a árvore completa e o botão para o próximo nível | Novo design das fases |
 | R26 | Trocar de tela não manda "cancelar" para a voz quando ela está em silêncio (isso pode emudecer a voz do iPhone) | "O som não está saindo dos animais" |
 | R27 | Área dos pais tem "Testar voz", que fala uma frase e mostra o que o aparelho respondeu | Diagnóstico de som no aparelho real |
+| R28 | Se a voz travar no meio (começa e nunca termina, sem som), o app destrava e fala de novo | "Não sai mais o som com o nome do animal" (botão 🔊 pulsando) |
+| R29 | Depois que a palavra termina normalmente, ela não é repetida sozinha | Proteção da correção do R28 |
 
 (R14 ficou dentro do R02.)
 
