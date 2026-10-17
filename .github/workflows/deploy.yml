@@ -1,5 +1,7 @@
 name: Publicar no GitHub Pages
 
+# main              → versão real:  https://vinicius-leon10.github.io/jogo-infantil-igles/
+# claude/sprout-app → versão teste: https://vinicius-leon10.github.io/jogo-infantil-igles/teste/
 on:
   push:
     branches: [main, claude/sprout-app]
@@ -8,13 +10,16 @@ on:
 permissions:
   contents: write
 
+# One publish at a time, never cancelled, so the two sites never overwrite each other.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      TARGET: ${{ github.ref_name == 'main' && 'producao' || 'teste' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,13 +29,26 @@ jobs:
       - run: npm ci
       - run: npm run build
         env:
-          GITHUB_SHA: ${{ github.sha }}
-      - name: Enviar dist/ para o branch gh-pages
+          SPROUT_ENV: ${{ env.TARGET }}
+      - name: Atualizar o branch gh-pages
         run: |
-          cd dist
-          touch .nojekyll
-          git init -q -b gh-pages
+          REMOTE="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          if ! git clone -q --depth 1 --branch gh-pages "$REMOTE" site; then
+            mkdir site && git -C site init -q -b gh-pages && git -C site remote add origin "$REMOTE"
+          fi
+          if [ "$TARGET" = "producao" ]; then
+            # Replace everything except the test site.
+            find site -mindepth 1 -maxdepth 1 ! -name .git ! -name teste -exec rm -rf {} +
+            cp -r dist/. site/
+          else
+            rm -rf site/teste && mkdir site/teste && cp -r dist/. site/teste/
+            # Its own name on the home screen, so the two installed apps are easy to tell apart.
+            sed -i 's/"name": "Sprout · Aprenda inglês"/"name": "Sprout TESTE"/; s/"short_name": "Sprout"/"short_name": "Sprout TESTE"/' site/teste/manifest.webmanifest
+            sed -i 's/content="Sprout" \/>/content="Sprout TESTE" \/>/' site/teste/index.html
+          fi
+          touch site/.nojekyll
+          cd site
           git add -A
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -q -m "Publicar ${GITHUB_SHA::7}"
-          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" gh-pages
+            commit -q -m "Publicar $TARGET ${GITHUB_SHA::7}" || { echo "Nada mudou"; exit 0; }
+          git push -q origin gh-pages

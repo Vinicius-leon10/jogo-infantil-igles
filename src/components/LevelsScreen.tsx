@@ -146,7 +146,7 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
         </ul>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          {phases.length} fases no total · novos níveis em breve · versão {__APP_VERSION__}
+          {phases.length} fases no total · novos níveis em breve · versão {__APP_VERSION__}{__APP_ENV__ === "teste" ? " (teste)" : ""}
         </p>
       </div>
     </div>

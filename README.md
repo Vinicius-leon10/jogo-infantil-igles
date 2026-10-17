@@ -68,10 +68,21 @@ e para ao começar o aprendizado/quiz e nas histórias (para não atrapalhar a v
 (suave, sem punir), de par formado no jogo da memória e de fim de fase (fanfarra se passou, melodia de
 "tente de novo" se não). O botão "Música" nas telas de níveis e de fases liga/desliga a música (fica salvo no aparelho).
 
-## Site publicado (GitHub Pages)
+## Versão de teste e versão real
 
-Endereço: **https://vinicius-leon10.github.io/jogo-infantil-igles/**
+| | Endereço | Branch |
+|---|---|---|
+| **Teste** | https://vinicius-leon10.github.io/jogo-infantil-igles/teste/ | `claude/sprout-app` |
+| **Real** | https://vinicius-leon10.github.io/jogo-infantil-igles/ | `main` |
 
-O workflow `.github/workflows/deploy.yml` roda a cada push em `main` ou `claude/sprout-app`: gera o build e
-publica a pasta `dist/` no branch `gh-pages`. Configuração única no GitHub: *Settings → Pages → Build and
-deployment → Source: Deploy from a branch → Branch: `gh-pages` / `(root)`*. (Pages grátis exige repositório público.)
+Fluxo: toda mudança vai primeiro para `claude/sprout-app` e aparece na versão de **teste** (com o selo
+"VERSÃO DE TESTE" e o nome "Sprout TESTE" na tela de início). Depois de aprovada, `claude/sprout-app` é
+mesclado em `main` e vai para a versão **real**.
+
+A versão de teste guarda perfil, progresso e preferências separados (prefixo `teste:` no `localStorage`), então
+testar nunca altera o progresso real da criança.
+
+O workflow `.github/workflows/deploy.yml` faz a publicação: gera o build com `SPROUT_ENV=teste` ou `producao` e
+atualiza o branch `gh-pages` (a versão real na raiz, a de teste em `teste/`). O app confere se há versão nova ao
+abrir e recarrega sozinho. Configuração única no GitHub (já feita): *Settings → Pages → Deploy from a branch →
+`gh-pages` / `(root)`*.

@@ -27,6 +27,18 @@ function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
+/** Marks the test site so it is never mistaken for the real app. */
+function TestBadge() {
+  return (
+    <div
+      className="fixed left-3 z-[80] pointer-events-none rounded-full px-3 py-1 text-[11px] font-extrabold tracking-wider shadow-lg"
+      style={{ bottom: "calc(var(--safe-bottom) + 8px)", background: "var(--amber)", color: "#1a1a2e" }}
+    >
+      VERSÃO DE TESTE
+    </div>
+  );
+}
+
 function ScrollToTop({ screenKey }: { screenKey: string }) {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -274,6 +286,7 @@ export function App() {
   return (
     <>
       <ScrollToTop screenKey={screenKey} />
+      {__APP_ENV__ === "teste" && <TestBadge />}
       {welcomeOverlay}
       <AnimatePresence mode="wait">
         <motion.div
