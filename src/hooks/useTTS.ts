@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { resumeAudio } from "@/lib/sound";
 
 const PRIORITY = [
   "Samantha",
@@ -60,6 +61,7 @@ function speakNow(text: string, rate: number, pitch: number) {
   u.onstart = () => setSpeaking(true);
   u.onend = u.onerror = () => {
     if (current === u) setSpeaking(false);
+    resumeAudio();
   };
   current = u;
   window.speechSynthesis.resume(); // Chrome can get stuck in a paused state.

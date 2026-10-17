@@ -66,4 +66,4 @@ Tudo é sintetizado no navegador (`src/lib/sound.ts`, Web Audio API), sem arquiv
 uma música instrumental alegre em loop toca nas telas de níveis, mapa, introdução da fase e lista de histórias,
 e para ao começar o aprendizado/quiz e nas histórias (para não atrapalhar a voz). Há som de acerto, de erro
 (suave, sem punir), de par formado no jogo da memória e de fim de fase (fanfarra se passou, melodia de
-"tente de novo" se não). O botão 🎵 no topo dos níveis e do mapa liga/desliga a música (fica salvo no aparelho).
+"tente de novo" se não). O botão "Música" nas telas de níveis e de fases liga/desliga a música (fica salvo no aparelho).

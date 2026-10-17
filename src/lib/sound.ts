@@ -8,8 +8,9 @@ import { readJSON, writeJSON } from "./storage";
 const MUSIC_KEY = "sprout-music-enabled";
 const BPM = 112;
 const STEP = 60 / BPM / 2; // eighth note, in seconds
-const MUSIC_VOLUME = 0.55;
-const SFX_VOLUME = 1;
+const MUSIC_VOLUME = 0.5;
+// Effects stay below the voice so the spoken word is the loudest thing in the quiz.
+const SFX_VOLUME = 0.5;
 
 let ctx: AudioContext | null = null;
 let musicGain: GainNode | null = null;
@@ -74,6 +75,9 @@ if (typeof window !== "undefined") {
   const unlock = () => {
     const c = audio();
     if (!c) return;
+    c.onstatechange = () => {
+      if (c.state === "running" && musicWanted && musicEnabled) startLoop();
+    };
     // iOS mutes Web Audio with the silent switch unless the page is also
     // playing media; a looping silent <audio> moves it to the "playback" session.
     const nav = navigator as Navigator & { audioSession?: { type: string } };
@@ -90,12 +94,16 @@ if (typeof window !== "undefined") {
     src.connect(c.destination);
     src.start(0);
     c.resume().then(() => {
-      if (c.state !== "running") return;
-      GESTURES.forEach((e) => window.removeEventListener(e, unlock, true));
       if (musicWanted && musicEnabled) startLoop();
     });
   };
-  GESTURES.forEach((e) => window.addEventListener(e, unlock, true));
+  // Keep listening for the whole session: on iOS, speech synthesis and phone
+  // calls put the context in an "interrupted" state that only a new tap clears.
+  const wake = () => {
+    if (ctx?.state === "running" && keepAlive && !keepAlive.paused) return;
+    unlock();
+  };
+  GESTURES.forEach((e) => window.addEventListener(e, wake, true));
   // Coming back from the background (iOS "interrupted" state): resume.
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && ctx && ctx.state !== "running") {
@@ -226,8 +234,13 @@ function scheduleStep(i: number, t: number) {
 }
 
 function startLoop() {
-  const c = audio();
-  if (!c || c.state !== "running" || !musicGain) return;
+  const c = ctx;
+  if (!c || !musicGain) return;
+  if (c.state !== "running") {
+    // Resumes after an interruption ends; otherwise onstatechange/next tap retries.
+    c.resume().catch(() => {});
+    return;
+  }
   const now = c.currentTime;
   musicGain.gain.cancelScheduledValues(now);
   musicGain.gain.setValueAtTime(musicGain.gain.value, now);
@@ -258,6 +271,11 @@ function stopLoop() {
 // ---------------------------------------------------------------- public API
 
 /** Whether the current screen wants background music (levels, map, intro, story list). */
+/** Called after speech ends: iOS interrupts Web Audio while it speaks. */
+export function resumeAudio() {
+  if (ctx && ctx.state !== "running") ctx.resume().catch(() => {});
+}
+
 export function setMusicWanted(wanted: boolean) {
   musicWanted = wanted;
   if (wanted && musicEnabled) startLoop();

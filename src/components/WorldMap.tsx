@@ -98,7 +98,6 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
             <p className="text-[10px] text-muted-foreground truncate">{level.subtitle}</p>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
-            <MusicToggle />
             {onOpenStories && (
               <button
                 onClick={onOpenStories}
@@ -125,6 +124,8 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
           <p className="text-sm text-muted-foreground">Continue de onde parou,</p>
           <h2 className="text-2xl font-bold">Vamos brotar? 🌱</h2>
         </div>
+
+        <MusicToggle />
 
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
           Suas fases

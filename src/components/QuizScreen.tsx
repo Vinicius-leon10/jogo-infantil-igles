@@ -71,7 +71,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
       correctIdsRef.current.push(q.word.id);
       setMood("excited");
       playCorrect();
-      setTimeout(() => speak(q.word.en), 350);
+      setTimeout(() => speak(q.word.en), 550);
     } else {
       wrongIdsRef.current.push(q.word.id);
       setMood("wink");

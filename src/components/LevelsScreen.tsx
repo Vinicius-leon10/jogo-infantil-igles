@@ -34,7 +34,6 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
             <p className="text-[10px] text-muted-foreground truncate">Escolha um nível</p>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
-            <MusicToggle />
             {onOpenStories && (
               <button
                 onClick={onOpenStories}
@@ -61,6 +60,8 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
           <p className="text-sm text-muted-foreground">Pronto para brotar?</p>
           <h2 className="text-2xl font-bold">Escolha seu nível 🌱</h2>
         </div>
+
+        <MusicToggle />
 
         <ul className="space-y-4">
           {levels.map((level, idx) => {
