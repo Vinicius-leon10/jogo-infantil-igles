@@ -12,7 +12,7 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R03 | Nível 2 bloqueado com 29 fases do nível 1 e liberado com 30 | Regra dos 60% |
 | R04 | Fases do nível 2 liberam pela ordem (108 → 111), não por `id - 1` | Bug do guia original: blocos travados |
 | R05 | Estrelas nos limites 59/60/79/80/94/95, XP e arredondamento da nota | Regras de pontuação do guia |
-| R06 | Voz em inglês e devagar (0,6) | "Voz dos animais rápida para criança" |
+| R06 | Voz em inglês, velocidade 0,7 | "Voz rápida" (0,78) e depois "lenta" (0,6) |
 | R07 | No modo leitura, o nome do animal anterior não toca na pergunta seguinte | "Som errado do animal" no quiz |
 | R08 | Quem não lê só recebe perguntas de áudio com opções em imagem | Regra do guia |
 | R09 | Animais aparecem como ilustração, não emoji | Ilustrações no estilo do cachorro |
@@ -23,6 +23,7 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R15 | Versão de teste mostra o selo e guarda dados separados; a real não mostra o selo | Versão de teste × real |
 | R16 | App recarrega sozinho quando uma versão nova é publicada | iPhone abrindo versão antiga (cache) |
 | R17 | No jogo da memória, virar outra carta logo após um par não fala a palavra antiga | Mesmo problema do R07 |
+| R18 | Se a fala engasgar (o celular aceita e não toca, ou falha), o app tenta de novo uma vez | "Às vezes engasga e não sai o som" |
 
 (R14 ficou dentro do R02.)
 

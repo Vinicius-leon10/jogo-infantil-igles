@@ -63,13 +63,13 @@ test("R04 fases do nível 2 liberam pela ordem, mesmo com IDs pulando (108 → 1
   await expect(page.getByRole("button", { name: /Cômodo 2/ })).toBeDisabled();
 });
 
-test("R06 voz em inglês e devagar (0,6) para crianças", async ({ page }) => {
+test("R06 voz em inglês, numa velocidade boa para crianças (0,7)", async ({ page }) => {
   await createChild(page, { canRead: true });
   await openPhase(page);
   await expect.poll(async () => (await said(page)).map((s) => s.text)).toContain("Dog");
   for (const s of await said(page)) {
     expect(s.lang).toMatch(/^en/);
-    expect(s.rate).toBeCloseTo(0.6, 2);
+    expect(s.rate).toBeCloseTo(0.7, 2);
   }
 });
 
@@ -226,4 +226,28 @@ test("R17 jogo da memória: virar outra carta logo após um par não fala a pala
   const words = (await said(page)).map((s) => s.text.toLowerCase());
   expect(words).toContain(b);
   expect(words.slice(words.indexOf(b))).not.toContain(a);
+});
+
+test("R18 se a fala engasgar (não começar), o app tenta de novo", async ({ page }) => {
+  // Fake speech engine: swallows the first word (like iOS sometimes does), plays the rest.
+  await page.addInitScript(() => {
+    let calls = 0;
+    const w = window as unknown as { __played: string[] };
+    w.__played = [];
+    Object.defineProperty(speechSynthesis, "speaking", { get: () => false });
+    Object.defineProperty(speechSynthesis, "pending", { get: () => false });
+    speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
+      if (!u.text.trim()) return;
+      if (calls++ === 0) return; // swallowed: never starts, never ends
+      w.__played.push(u.text);
+      setTimeout(() => u.dispatchEvent(new Event("start")), 20);
+      setTimeout(() => u.dispatchEvent(new Event("end")), 300);
+    };
+    speechSynthesis.cancel = () => {};
+  });
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __played: string[] }).__played), { timeout: 4000 })
+    .toContain("Dog");
 });
