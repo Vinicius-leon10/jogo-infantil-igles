@@ -19,6 +19,7 @@ import { StoriesScreen } from "@/components/StoriesScreen";
 import { StoryReader } from "@/components/StoryReader";
 import type { Story } from "@/data/stories";
 import { setMusicWanted } from "@/lib/sound";
+import { xpFor } from "@/lib/scoring";
 
 
 type Screen = "levels" | "map" | "intro" | "learn" | "quiz" | "result" | "minigame" | "stories" | "story";
@@ -265,7 +266,7 @@ export function App() {
         score={resultScore}
         stars={resultStars}
         passed={resultPassed}
-        xpGained={Math.round(resultScore / 5) + (resultPassed ? 10 : 0)}
+        xpGained={xpFor(resultScore, resultPassed)}
         onRetry={() => startPhase(phase.id)}
         onHome={goHome}
       />

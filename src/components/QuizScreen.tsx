@@ -5,6 +5,7 @@ import { useTTS } from "@/hooks/useTTS";
 import { Sprout } from "./Sprout";
 import { Emoji } from "./Emoji";
 import { playCorrect, playWrong } from "@/lib/sound";
+import { scoreFor } from "@/lib/scoring";
 
 type Props = {
   pool: Word[];
@@ -95,7 +96,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
     setPicked(null);
     setMood("happy");
     if (isLast) {
-      const score = Math.round((correct / qs.length) * 100);
+      const score = scoreFor(correct, qs.length);
       onFinish(score, wrongIdsRef.current, correctIdsRef.current);
     } else {
       setIdx(idx + 1);
@@ -114,7 +115,12 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
   };
 
   return (
-    <div className={`min-h-screen bg-aurora flex flex-col ${shake ? "animate-shake" : ""}`}>
+    <div
+      className={`min-h-screen bg-aurora flex flex-col ${shake ? "animate-shake" : ""}`}
+      data-testid="quiz"
+      data-answer={q.word.id}
+      data-mode={q.mode}
+    >
       <header className="px-5 py-4 flex items-center gap-3">
         <button
           onClick={onBack}
@@ -202,6 +208,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
             return (
               <button
                 key={opt.id}
+                data-word={opt.id}
                 onClick={() => handlePick(opt.id)}
                 disabled={!!picked}
                 className={`relative rounded-2xl p-4 text-center transition-all active:scale-95 ${bg} ${ring}`}

@@ -105,6 +105,7 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
             return (
               <button
                 key={c.key}
+                data-word={c.word.id}
                 onClick={() => handleFlip(c.key)}
                 className="aspect-square rounded-2xl flex items-center justify-center text-center font-bold active:scale-95 transition-all"
                 style={{

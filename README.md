@@ -11,6 +11,7 @@ Recriado a partir do *Sprout — Guia completo de recriação*: mesmo conteúdo,
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # gera dist/ (site estático)
+npm test         # testes de regressão (ver tests/README.md)
 ```
 
 ## Sem login
