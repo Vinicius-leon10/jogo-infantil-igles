@@ -396,3 +396,46 @@ test("R25 ao completar a fase 10 aparece a árvore completa e dá para ir ao ní
   await expect(page.getByRole("heading", { name: "Nível 2" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Número 1\b/ })).toBeEnabled();
 });
+
+test("R26 trocar de tela não manda cancelar a voz quando ela está em silêncio (isso emudece o iPhone)", async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __idleCancels: number };
+    w.__idleCancels = 0;
+    let talking = false;
+    Object.defineProperty(speechSynthesis, "speaking", { get: () => talking });
+    Object.defineProperty(speechSynthesis, "pending", { get: () => false });
+    speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
+      if (!u.text.trim()) return;
+      talking = true;
+      setTimeout(() => u.dispatchEvent(new Event("start")), 10);
+      setTimeout(() => {
+        talking = false;
+        u.dispatchEvent(new Event("end"));
+      }, 200);
+    };
+    speechSynthesis.cancel = () => {
+      if (!talking) w.__idleCancels++;
+      talking = false;
+    };
+  });
+  await seed(page);
+  await page.getByRole("button", { name: /Nível 1/ }).first().click();
+  await page.waitForTimeout(600);
+  await page.getByRole("button", { name: "Voltar aos níveis" }).click();
+  await page.waitForTimeout(600);
+  await openPhase(page);
+  await page.waitForTimeout(1500);
+  expect(await page.evaluate(() => (window as unknown as { __idleCancels: number }).__idleCancels)).toBe(0);
+});
+
+test("R27 área dos pais tem 'Testar voz', que fala e mostra o que o aparelho respondeu", async ({ page }) => {
+  await seed(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  const [a, b] = (await page.getByText(/Quanto é/).textContent())!.match(/\d+/g)!.map(Number);
+  await page.getByPlaceholder("Resposta").fill(String(a + b));
+  await page.getByText("Entrar").click();
+  await clearSaid(page);
+  await page.getByRole("button", { name: /Testar voz/ }).click();
+  await expect.poll(async () => (await said(page)).map((s) => s.text)).toContain("Hello! Dog, cat, one, two, three.");
+  await expect(page.getByTestId("sound-check")).toContainText("Última fala");
+});

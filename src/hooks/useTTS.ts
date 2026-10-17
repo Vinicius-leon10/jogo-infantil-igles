@@ -60,6 +60,22 @@ if (supported) {
 const START_TIMEOUT_MS = 1500;
 let watchdog: ReturnType<typeof setTimeout> | null = null;
 
+// What the phone reported for the last utterance; shown by "Testar voz" in the parent area.
+let lastEvent = "nenhuma fala ainda";
+
+/** Diagnostics for the parent area: voices available and what happened to the last utterance. */
+export function ttsStatus() {
+  if (!supported) return { supported, englishVoices: 0, voice: "—", lastEvent };
+  const english = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("en"));
+  return { supported, englishVoices: english.length, voice: chosenVoice?.name ?? "padrão do aparelho", lastEvent };
+}
+
+/** iOS can go silent after cancel() is called with nothing playing: only cancel real speech. */
+function cancelIfTalking() {
+  const synth = window.speechSynthesis;
+  if (synth.speaking || synth.pending) synth.cancel();
+}
+
 function clearWatchdog() {
   if (watchdog) clearTimeout(watchdog);
   watchdog = null;
@@ -84,20 +100,23 @@ function speakNow(text: string, rate: number, pitch: number, onDone?: () => void
   const retry = () => {
     clearWatchdog();
     if (retried || current !== u) return done();
-    synth.cancel();
+    cancelIfTalking();
     watchdog = setTimeout(() => (current === u ? speakNow(text, rate, pitch, onDone, true) : done()), 120);
   };
   u.onstart = () => {
+    lastEvent = `começou: "${text}"`;
     started = true;
     clearWatchdog();
     setSpeaking(true);
   };
   u.onend = () => {
+    lastEvent = `terminou: "${text}"`;
     if (current === u) setSpeaking(false);
     resumeAudio();
     done();
   };
   u.onerror = (e) => {
+    lastEvent = `erro "${e.error}": "${text}"${retried ? " (2ª tentativa)" : ""}`;
     // "interrupted"/"canceled" come from our own cancel(): nothing to redo.
     if (e.error !== "interrupted" && e.error !== "canceled") retry();
     else {
@@ -109,8 +128,10 @@ function speakNow(text: string, rate: number, pitch: number, onDone?: () => void
   current = u;
   if (synth.paused) synth.resume(); // Chrome can get stuck paused; resuming otherwise upsets iOS.
   synth.speak(u);
+  lastEvent = `enviada, esperando começar: "${text}"`;
   clearWatchdog();
-  watchdog = setTimeout(() => !started && retry(), START_TIMEOUT_MS);
+  // No "start" event yet: retry only if the engine is not talking either (some voices skip the event).
+  watchdog = setTimeout(() => !started && !synth.speaking && retry(), START_TIMEOUT_MS);
 }
 
 /** Silences speech and drops anything scheduled (used on screen changes). */
@@ -121,7 +142,7 @@ export function stopAllSpeech() {
   pending = null;
   clearWatchdog();
   current = null;
-  window.speechSynthesis.cancel();
+  cancelIfTalking();
   setSpeaking(false);
 }
 

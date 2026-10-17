@@ -31,6 +31,8 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R23 | A abertura pede um toque ("Toque para começar 🎵") e a música começa logo em seguida | "A música do início não começa tocando" |
 | R24 | Mapa em terreno: fase 1 embaixo, a planta de cada fase cresce do broto até a árvore, árvore-meta no topo | Novo design das fases |
 | R25 | Ao completar a última fase aparece a árvore completa e o botão para o próximo nível | Novo design das fases |
+| R26 | Trocar de tela não manda "cancelar" para a voz quando ela está em silêncio (isso pode emudecer a voz do iPhone) | "O som não está saindo dos animais" |
+| R27 | Área dos pais tem "Testar voz", que fala uma frase e mostra o que o aparelho respondeu | Diagnóstico de som no aparelho real |
 
 (R14 ficou dentro do R02.)
 
