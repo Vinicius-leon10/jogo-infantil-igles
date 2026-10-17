@@ -9,8 +9,8 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 |---|---|---|
 | R01 | App abre sem login, direto no cadastro da criança | Login removido a pedido |
 | R02 | Fluxo completo (cadastro → aprender → quiz → resultado) salva progresso e libera a próxima fase; nenhum arquivo falta no subendereço do GitHub Pages | Publicação em `/jogo-infantil-igles/` |
-| R03 | Nível 2 bloqueado com 29 fases do nível 1 e liberado com 30 | Regra dos 60% |
-| R04 | Fases do nível 2 liberam pela ordem (108 → 111), não por `id - 1` | Bug do guia original: blocos travados |
+| R03 | Nível 2 bloqueado com 5 das 10 fases do nível 1 e liberado com 6 | Regra dos 60% |
+| R04 | Fases liberam pela ordem dentro do nível (IDs pulam de 10 para 201), não por `id - 1` | Bug do guia original: blocos travados |
 | R05 | Estrelas nos limites 59/60/79/80/94/95, XP e arredondamento da nota | Regras de pontuação do guia |
 | R06 | Voz em inglês, velocidade 0,7 | "Voz rápida" (0,78) e depois "lenta" (0,6) |
 | R07 | No modo leitura, o nome do animal anterior não toca na pergunta seguinte | "Som errado do animal" no quiz |
@@ -26,6 +26,7 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R18 | Se a fala engasgar (o celular aceita e não toca, ou falha), o app tenta de novo uma vez | "Às vezes engasga e não sai o som" |
 | R19 | "Continuar" só aparece depois que a palavra certa termina, então tocar nele não corta a fala | "Som rápido e cortado ao clicar Continuar" |
 | R20 | Ao trocar de tela, falas que a tela anterior tinha agendado são descartadas (ex.: última palavra do aprender no quiz) | Achado ao investigar o R19 |
+| R21 | Nível 1 só animais (10 fases), nível 2 só números de 0 a 10 (7 fases, com ilustrações), histórias ocultas, fase mostrada pela posição | Níveis separados: animais e números |
 
 (R14 ficou dentro do R02.)
 

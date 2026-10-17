@@ -1,6 +1,6 @@
 import { ArrowLeft, Lock, Star, Flame, BookOpen } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { phases as allPhases, levels } from "@/data/content";
+import { phases as allPhases, levels, phaseNumber } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import { Sprout } from "./Sprout";
 import { Emoji } from "./Emoji";
@@ -199,7 +199,7 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-                            Fase {phase.id}
+                            Fase {phaseNumber(phase.id)}
                           </span>
                           {isReview && (
                             <span

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { isLevelUnlocked as levelUnlocked, levels, phases } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import { Sprout } from "./Sprout";
+import { Emoji } from "./Emoji";
 import { MusicToggle } from "./MusicToggle";
 
 type Props = {
@@ -106,7 +107,7 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
                         opacity: unlocked ? 1 : 0.5,
                       }}
                     >
-                      {unlocked ? level.emoji : <Lock className="size-6 text-muted-foreground" />}
+                      {unlocked ? <Emoji char={level.emoji} /> : <Lock className="size-6 text-muted-foreground" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">

@@ -1,6 +1,7 @@
 import { ArrowLeft, Play } from "lucide-react";
 import type { Phase } from "@/data/content";
 import { Sprout } from "./Sprout";
+import { phaseNumber } from "@/data/content";
 
 type Props = {
   phase: Phase;
@@ -34,7 +35,7 @@ export function PhaseIntro({ phase, wordCount, onStart, onBack }: Props) {
         </div>
 
         <span className="mt-6 text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">
-          Fase {phase.id} {phase.type === "review" ? "· Revisão" : phase.type === "grand" ? "· Final" : ""}
+          Fase {phaseNumber(phase.id)} {phase.type === "review" ? "· Revisão" : phase.type === "grand" ? "· Final" : ""}
         </span>
         <h1 className="mt-2 text-4xl font-bold text-balance">{phase.title}</h1>
         <p className="mt-2 text-muted-foreground text-balance max-w-xs">{phase.subtitle}</p>

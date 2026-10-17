@@ -45,22 +45,22 @@ test("R02 fluxo completo salva o progresso e libera a próxima fase (sem arquivo
   expect(broken).toEqual([]);
 });
 
-test("R03 nível 2 bloqueado com 29 fases do nível 1", async ({ page }) => {
-  await seed(page, { completed: range(1, 29) });
+test("R03 nível 2 bloqueado com 5 das 10 fases do nível 1", async ({ page }) => {
+  await seed(page, { completed: range(1, 5) });
   await expect(page.getByRole("button", { name: /Nível 2/ })).toBeDisabled();
 });
 
-test("R03 nível 2 liberado com 30 fases do nível 1", async ({ page }) => {
-  await seed(page, { completed: range(1, 30) });
+test("R03 nível 2 liberado com 6 das 10 fases do nível 1 (60%)", async ({ page }) => {
+  await seed(page, { completed: range(1, 6) });
   await expect(page.getByRole("button", { name: /Nível 2/ })).toBeEnabled();
 });
 
-test("R04 fases do nível 2 liberam pela ordem, mesmo com IDs pulando (108 → 111)", async ({ page }) => {
-  await seed(page, { completed: [...range(1, 30), ...range(101, 108)] });
+test("R04 fases liberam pela ordem dentro do nível, mesmo com IDs pulando (10 → 201)", async ({ page }) => {
+  await seed(page, { completed: [...range(1, 6), 201] });
   await page.getByRole("button", { name: /Nível 2/ }).click();
-  await expect(page.getByRole("button", { name: /Roupa 1/ })).toBeEnabled();
-  await expect(page.getByRole("button", { name: /Cômodo 1/ })).toBeEnabled();
-  await expect(page.getByRole("button", { name: /Cômodo 2/ })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /Número 1\b/ })).toBeEnabled();
+  await expect(page.getByRole("button", { name: /Número 2\b/ })).toBeEnabled();
+  await expect(page.getByRole("button", { name: /Número 3\b/ })).toBeDisabled();
 });
 
 test("R06 voz em inglês, numa velocidade boa para crianças (0,7)", async ({ page }) => {
@@ -163,11 +163,11 @@ test("R12 iPhone: cabeçalho fica abaixo da barra do relógio / Dynamic Island",
 });
 
 test("R13 cada tela abre no topo (não herda a rolagem do mapa)", async ({ page }) => {
-  await seed(page, { completed: range(1, 12) });
+  await seed(page, { completed: range(1, 9) });
   await page.getByRole("button", { name: /Nível 1/ }).click();
   await page.waitForTimeout(1200); // map scrolls to the current phase
   expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
-  await page.getByRole("button", { name: /Cor 3/ }).click();
+  await page.getByRole("button", { name: /Animal 3\b/ }).click();
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => scrollY)).toBe(0);
 });
@@ -191,8 +191,9 @@ test("R15 versão real não mostra o selo de teste", async ({ page }) => {
 });
 
 test("R16 recarrega sozinho quando uma versão nova é publicada", async ({ page }) => {
+  const firstCheck = page.waitForResponse(/index\.html\?t=/);
   await seed(page);
-  await page.waitForTimeout(1000); // first check on open finds nothing new
+  await firstCheck; // the check made on open finds nothing new
   await page.route(
     /index\.html\?t=/,
     async (route) => {
@@ -314,4 +315,32 @@ test("R20 sair da tela de aprender logo depois de trocar a palavra não leva a p
   await page.waitForTimeout(1500);
   for (const s of (await said(page)).filter((x) => x.question))
     expect(s.text.toLowerCase(), `na pergunta ${s.question}`).toBe(s.question);
+});
+
+test("R21 nível 1 só tem animais, nível 2 só números de 0 a 10 (com ilustrações) e as histórias estão ocultas", async ({
+  page,
+}) => {
+  await seed(page, { completed: range(1, 6) });
+  await expect(page.getByRole("button", { name: "Histórias" })).toHaveCount(0);
+  await page.getByRole("button", { name: /Nível 1/ }).click();
+  await expect(page.getByRole("button", { name: /Animal \d+/ })).toHaveCount(10);
+  await expect(page.getByRole("button", { name: /Cor \d|Número \d|Associação/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Histórias" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Voltar" }).first().click();
+  await page.getByRole("button", { name: /Nível 2/ }).click();
+  await expect(page.getByRole("button", { name: /Número \d+/ })).toHaveCount(7);
+  await expect(page.getByText(/Fase 20\d/)).toHaveCount(0); // shows the position (Fase 1…7), not the ID
+  await page.getByRole("button", { name: /Número 1\b/ }).click();
+  await page.getByText("Começar a brotar").click();
+  const zero = page.getByRole("img", { name: "Zero" });
+  await expect(zero).toBeVisible();
+  expect(await zero.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  // Learning ends at Ten: no 11-14 anywhere in this level.
+  await finishLearning(page);
+  for (;;) {
+    const id = await page.getByTestId("quiz").getAttribute("data-answer");
+    expect(["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]).toContain(id);
+    await answer(page, true);
+    if (await next(page)) break;
+  }
 });

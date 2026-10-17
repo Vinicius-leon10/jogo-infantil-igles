@@ -5,6 +5,7 @@ import type { Phase } from "@/data/content";
 import { Sprout } from "./Sprout";
 import { useTTS } from "@/hooks/useTTS";
 import { playComplete } from "@/lib/sound";
+import { phaseNumber } from "@/data/content";
 
 const PRAISE = ["Great job!", "Awesome!", "Well done!", "Fantastic!", "Amazing!", "You did it!"];
 
@@ -59,7 +60,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
     <div className="min-h-screen bg-aurora flex flex-col items-center justify-between px-6 py-10 text-center">
       <div className="pt-6">
         <span className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">
-          Fase {phase.id} · {phase.title}
+          Fase {phaseNumber(phase.id)} · {phase.title}
         </span>
       </div>
 

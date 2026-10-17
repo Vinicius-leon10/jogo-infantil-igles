@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { X, History, UserCog, ShieldCheck, Star } from "lucide-react";
-import { phases } from "@/data/content";
+import { phases, phaseNumber } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import type { ChildProfile, ChildProfileInput } from "@/hooks/useChildProfile";
 import { Emoji } from "./Emoji";
@@ -184,7 +184,7 @@ function HistoryPanel() {
                 <li key={p.id} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
                   <div className="text-2xl"><Emoji char={p.emoji} /></div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs text-muted-foreground">Nível {p.level} · Fase {p.id}</div>
+                    <div className="text-xs text-muted-foreground">Nível {p.level} · Fase {phaseNumber(p.id)}</div>
                     <div className="font-bold text-sm truncate">{p.title}</div>
                     <div className="text-[10px] text-muted-foreground mt-0.5">
                       Último: {formatDuration(r.lastDurationMs)}

@@ -217,11 +217,11 @@ export function App() {
       />
     );
   } else if (screen === "levels") {
+    // Stories are hidden for now: every story needs colour words, which left the game.
     screenNode = (
       <LevelsScreen
         onSelectLevel={selectLevel}
         onOpenParents={() => setParentsOpen(true)}
-        onOpenStories={() => setScreen("stories")}
       />
     );
   } else if (screen === "map" || !phase) {
@@ -230,7 +230,6 @@ export function App() {
         levelId={levelId}
         onSelectPhase={startPhase}
         onBackToLevels={goBackToLevels}
-        onOpenStories={() => setScreen("stories")}
       />
     );
   } else if (screen === "intro") {

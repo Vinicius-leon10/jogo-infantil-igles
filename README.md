@@ -1,7 +1,9 @@
 # Sprout 🌱 — Aprenda inglês, broto a broto
 
 App infantil (interface em português) para aprender vocabulário em inglês com um brotinho como companheiro:
-2 níveis, 84 fases, 79 palavras, quiz adaptado para quem lê / ainda não lê, jogo da memória e 6 histórias bilíngues.
+nível 1 com 14 animais (10 fases) e nível 2 com os números de 0 a 10 (7 fases), quiz adaptado para quem lê /
+ainda não lê e jogo da memória. Cores, roupas, cômodos, objetos da casa e as 6 histórias estão guardados no código
+para voltar depois (as histórias dependem das cores).
 
 Recriado a partir do *Sprout — Guia completo de recriação*: mesmo conteúdo, regras de pontuação e identidade visual.
 
@@ -60,6 +62,10 @@ Os 14 animais usam ilustrações próprias em vez de emoji (`src/assets/animals/
 referência de estilo; os demais são vetores gerados por `python3 scripts/make-animals.py`. Para trocar um animal por
 uma imagem nova, salve `src/assets/animals/<id>.png` (fundo transparente, quadrado) e apague o `.svg` de mesmo nome.
 Palavras sem ilustração continuam mostrando o emoji (componente `src/components/Emoji.tsx`).
+
+Os números (`src/assets/numbers/`) seguem o "1" de referência (`one.png`, recortado com
+`python3 scripts/cutout.py <imagem> src/assets/numbers/one.png --shadow`); o 0 e do 2 ao 10 são desenhados por
+`node scripts/make-numbers.mjs` com a fonte Fredoka.
 
 ## Música e efeitos sonoros
 

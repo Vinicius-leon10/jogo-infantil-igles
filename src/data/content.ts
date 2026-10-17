@@ -144,10 +144,6 @@ export const categories: Category[] = [
       { id: "eight", emoji: "8️⃣", en: "Eight", pt: "Oito", phonetic: "eɪt" },
       { id: "nine", emoji: "9️⃣", en: "Nine", pt: "Nove", phonetic: "naɪn" },
       { id: "ten", emoji: "🔟", en: "Ten", pt: "Dez", phonetic: "tɛn" },
-      { id: "eleven", emoji: "🔢", en: "Eleven", pt: "Onze", phonetic: "ɪˈlɛv.ən" },
-      { id: "twelve", emoji: "🔢", en: "Twelve", pt: "Doze", phonetic: "twɛlv" },
-      { id: "thirteen", emoji: "🔢", en: "Thirteen", pt: "Treze", phonetic: "ˌθɜːrˈtiːn" },
-      { id: "fourteen", emoji: "🔢", en: "Fourteen", pt: "Quatorze", phonetic: "ˌfɔːrˈtiːn" },
     ],
   },
 ];
@@ -168,7 +164,7 @@ export function getCategory(id: string): Category | undefined {
 
 const animalOrder = ["dog","cat","fish","bird","horse","cow","pig","rabbit","sheep","duck","elephant","lion","monkey","frog"];
 const colorOrder = ["red","blue","green","yellow","purple","orange","pink","black","white","brown","gray","cyan","magenta","gold"];
-const numberOrder = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen"];
+const numberOrder = ["zero","one","two","three","four","five","six","seven","eight","nine","ten"];
 
 // Deterministic pseudo-random pick using a seed so phases stay stable
 function pickN<T>(arr: T[], n: number, seed: number): T[] {
@@ -262,49 +258,33 @@ function makeAssociationPhases(
 }
 
 // Level 1
-const animalPhases = makeLearnPhases(animalOrder, 1, "animals", "var(--amber)", "Animal");
-const colorPhases = makeLearnPhases(colorOrder, 11, "colors", "var(--pink)", "Cor");
-const numberPhases = makeLearnPhases(numberOrder, 21, "numbers", "var(--indigo)", "Número");
-const associationPhases = makeAssociationPhases(31, 20, ["animals", "colors", "numbers"], 1);
+// For now the game has two levels: animals, then the numbers 0–10. The other categories
+// (colours, clothes, rooms, household) stay in the catalogue for later.
+// Level 1 — 14 animals: 5 words in the first phase, one more in each of the 10 phases.
+const animalPhases = makeLearnPhases(animalOrder, 1, "animals", "var(--amber)", "Animal", 10, 1);
+// Level 2 — numbers 0 to 10 (11 words): 7 phases. New IDs (201+) so old saved results of
+// removed phases never count here.
+const numberPhases = makeLearnPhases(numberOrder, 201, "numbers", "var(--indigo)", "Número", 7, 2);
 
-// Level 2
-const clothesOrder = ["shirt","pants","dress","shoes","hat","socks","coat","scarf","gloves","skirt","boots","shorts"];
-const roomsOrder = ["bedroom","kitchen","bathroom","living-room","garage","garden","office","attic","balcony","hallway","stairs","basement"];
-const householdOrder = ["chair","table","bed","sofa","lamp","tv","fridge","stove","clock","mirror","door","window"];
+export const phases: Phase[] = [...animalPhases, ...numberPhases];
 
-const clothesPhases = makeLearnPhases(clothesOrder, 101, "clothes", "var(--pink)", "Roupa", 8, 2);
-const roomsPhases = makeLearnPhases(roomsOrder, 111, "rooms", "var(--indigo)", "Cômodo", 8, 2);
-const householdPhases = makeLearnPhases(householdOrder, 121, "household", "var(--amber)", "Casa", 8, 2);
-const level2AssocPhases = makeAssociationPhases(131, 10, ["clothes", "rooms", "household"], 2, "Mistura");
-
-export const phases: Phase[] = [
-  ...animalPhases,
-  ...colorPhases,
-  ...numberPhases,
-  ...associationPhases,
-  ...clothesPhases,
-  ...roomsPhases,
-  ...householdPhases,
-  ...level2AssocPhases,
-];
-
-const level1Ids = [...animalPhases, ...colorPhases, ...numberPhases, ...associationPhases].map((p) => p.id);
-const level2Ids = [...clothesPhases, ...roomsPhases, ...householdPhases, ...level2AssocPhases].map((p) => p.id);
+const level1Ids = animalPhases.map((p) => p.id);
+const level2Ids = numberPhases.map((p) => p.id);
 
 export const levels: Level[] = [
   {
     id: 1,
     title: "Nível 1",
-    subtitle: "Animais, Cores e Números",
-    emoji: "🌱",
+    subtitle: "Animais",
+    emoji: "🐶",
     color: "var(--sprout)",
     phaseIds: level1Ids,
   },
   {
     id: 2,
     title: "Nível 2",
-    subtitle: "Roupas, Cômodos e Coisas da Casa",
-    emoji: "🏠",
+    subtitle: "Números de 0 a 10",
+    emoji: "1️⃣",
     color: "var(--indigo)",
     phaseIds: level2Ids,
   },
@@ -347,4 +327,10 @@ export function isLevelUnlocked(levelId: number, completed: (phaseId: number) =>
   if (!prev) return true;
   const done = prev.phaseIds.filter(completed).length;
   return done / prev.phaseIds.length >= 0.6;
+}
+
+/** Position of a phase inside its level (1, 2, 3…), which is what the child sees. */
+export function phaseNumber(phaseId: number): number {
+  const level = levels.find((l) => l.phaseIds.includes(phaseId));
+  return level ? level.phaseIds.indexOf(phaseId) + 1 : phaseId;
 }

@@ -1,7 +1,7 @@
 import { categories } from "@/data/content";
 
-// Illustrations in src/assets/animals/, named by word id (dog.png, cat.svg, ...).
-const files = import.meta.glob("../assets/animals/*.{png,svg}", {
+// Illustrations in src/assets/<category>/, named by word id (dog.png, one.png, ...).
+const files = import.meta.glob("../assets/{animals,numbers}/*.{png,svg}", {
   eager: true,
   query: "?url",
   import: "default",
