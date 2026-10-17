@@ -67,3 +67,11 @@ uma música instrumental alegre em loop toca nas telas de níveis, mapa, introdu
 e para ao começar o aprendizado/quiz e nas histórias (para não atrapalhar a voz). Há som de acerto, de erro
 (suave, sem punir), de par formado no jogo da memória e de fim de fase (fanfarra se passou, melodia de
 "tente de novo" se não). O botão "Música" nas telas de níveis e de fases liga/desliga a música (fica salvo no aparelho).
+
+## Site publicado (GitHub Pages)
+
+Endereço: **https://vinicius-leon10.github.io/jogo-infantil-igles/**
+
+O workflow `.github/workflows/deploy.yml` roda a cada push em `main` ou `claude/sprout-app`: gera o build e
+publica a pasta `dist/` no branch `gh-pages`. Configuração única no GitHub: *Settings → Pages → Build and
+deployment → Source: Deploy from a branch → Branch: `gh-pages` / `(root)`*. (Pages grátis exige repositório público.)
