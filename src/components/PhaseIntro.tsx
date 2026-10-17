@@ -16,7 +16,7 @@ export function PhaseIntro({ phase, wordCount, onStart, onBack }: Props) {
       <header className="px-5 py-4">
         <button
           onClick={onBack}
-          className="size-10 rounded-full bg-card flex items-center justify-center hover:bg-muted transition-colors"
+          className="size-10 rounded-full bg-card flex items-center justify-center hover:bg-muted transition-colors btn-3d btn-3d-soft"
           aria-label="Voltar"
         >
           <ArrowLeft className="size-5" />
@@ -42,7 +42,7 @@ export function PhaseIntro({ phase, wordCount, onStart, onBack }: Props) {
 
         <div className="mt-8 grid grid-cols-2 gap-3 w-full max-w-xs">
           <div className="rounded-2xl bg-card p-4 text-center">
-            <p className="text-2xl font-bold" style={{ color: "var(--sprout)" }}>{wordCount}</p>
+            <p className="text-2xl font-bold" style={{ color: "var(--sprout-ink)" }}>{wordCount}</p>
             <p className="text-xs text-muted-foreground">palavras</p>
           </div>
           <div className="rounded-2xl bg-card p-4 text-center">
@@ -55,7 +55,7 @@ export function PhaseIntro({ phase, wordCount, onStart, onBack }: Props) {
       <div className="px-6 pb-10 pt-4">
         <button
           onClick={onStart}
-          className="w-full max-w-md mx-auto flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-lg glow-sprout transition-transform active:scale-95"
+          className="w-full max-w-md mx-auto flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-lg btn-3d transition-transform active:scale-95"
           style={{
             background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))",
             color: "var(--primary-foreground)",

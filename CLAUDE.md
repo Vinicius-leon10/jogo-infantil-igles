@@ -28,6 +28,12 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
 - Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
 
+## Visual
+- Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
+  (texto verde usa `--sprout-ink`), amarelo-sol, coral e azul. Tema único claro; mapa é um campo de dia.
+- Botões "fofinhos" 3D: classes `btn-3d` (verde) e `btn-3d-soft` / `btn-3d-blue` / `btn-3d-coral`; texto escuro
+  sobre o verde (branco não tem contraste). Fonte base 17px e `--radius` 1.6rem.
+
 ## Lições do iPhone (não repetir)
 - O silencioso corta a voz (speechSynthesis), não a música/efeitos: antes de caçar bug de "sem som", pedir para
   conferir o silencioso e o "🔊 Testar voz" da Área dos Pais.

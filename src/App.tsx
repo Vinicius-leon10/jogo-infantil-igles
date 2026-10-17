@@ -60,7 +60,7 @@ function LoadingSplash() {
       <div className="text-center">
         <h1
           className="text-4xl font-bold"
-          style={{ fontFamily: "Fredoka, sans-serif", color: "var(--sprout)" }}
+          style={{ fontFamily: "Fredoka, sans-serif", color: "var(--sprout-ink)" }}
         >
           Sprout
         </h1>

@@ -64,7 +64,7 @@ export function LearnScreen({ words, onDone, onBack }: Props) {
       <header className="px-5 py-4 flex items-center gap-3">
         <button
           onClick={onBack}
-          className="size-10 rounded-full bg-card flex items-center justify-center"
+          className="size-10 rounded-full bg-card flex items-center justify-center btn-3d btn-3d-soft"
           aria-label="Voltar"
         >
           <ArrowLeft className="size-5" />
@@ -95,17 +95,14 @@ export function LearnScreen({ words, onDone, onBack }: Props) {
 
           <h2 className="text-5xl font-bold mb-2">{word.en}</h2>
           <p className="text-sm font-mono text-muted-foreground mb-1">/{word.phonetic}/</p>
-          <p className="text-lg" style={{ color: "var(--sprout)" }}>{word.pt}</p>
+          <p className="text-lg" style={{ color: "var(--sprout-ink)" }}>{word.pt}</p>
         </div>
 
         <div className="mt-8 flex items-center gap-4">
           <button
             onClick={() => speak(word.en)}
-            className={`size-16 rounded-full flex items-center justify-center transition-all active:scale-90 ${speaking ? "animate-pulse" : ""}`}
-            style={{
-              background: "linear-gradient(135deg, var(--indigo), var(--accent))",
-              boxShadow: "0 10px 30px -10px var(--indigo)",
-            }}
+            className={`size-[4.5rem] rounded-full flex items-center justify-center text-white btn-3d btn-3d-blue ${speaking ? "animate-pulse" : ""}`}
+            style={{ background: "var(--indigo)" }}
             aria-label="Ouvir"
           >
             <Volume2 className="size-7" />
@@ -114,13 +111,8 @@ export function LearnScreen({ words, onDone, onBack }: Props) {
           {micSupported && (
             <button
               onClick={handleMic}
-              className={`size-16 rounded-full flex items-center justify-center transition-all active:scale-90 ${listening ? "animate-pulse" : ""}`}
-              style={{
-                background: listening
-                  ? "linear-gradient(135deg, var(--destructive), var(--accent))"
-                  : "linear-gradient(135deg, var(--sprout), var(--sprout-glow))",
-                boxShadow: "0 10px 30px -10px var(--sprout)",
-              }}
+              className={`size-[4.5rem] rounded-full flex items-center justify-center btn-3d ${listening ? "animate-pulse btn-3d-coral text-white" : "text-[color:var(--primary-foreground)]"}`}
+              style={{ background: listening ? "var(--destructive)" : "var(--sprout)" }}
               aria-label="Falar"
             >
               <Mic className="size-7" />
@@ -173,14 +165,14 @@ export function LearnScreen({ words, onDone, onBack }: Props) {
         {idx > 0 && (
           <button
             onClick={() => setIdx(idx - 1)}
-            className="rounded-2xl bg-card px-5 py-4 font-bold active:scale-95 transition-transform"
+            className="rounded-2xl bg-card px-5 py-4 font-bold btn-3d btn-3d-soft"
           >
             <ArrowLeft className="size-5" />
           </button>
         )}
         <button
           onClick={() => (isLast ? onDone() : setIdx(idx + 1))}
-          className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-lg active:scale-95 transition-transform glow-sprout"
+          className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-lg transition-transform btn-3d"
           style={{
             background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))",
             color: "var(--primary-foreground)",

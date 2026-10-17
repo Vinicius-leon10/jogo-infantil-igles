@@ -82,7 +82,7 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
       <header className="px-5 py-4 flex items-center gap-3">
         <button
           onClick={onBack}
-          className="size-10 rounded-full bg-card flex items-center justify-center"
+          className="size-10 rounded-full bg-card flex items-center justify-center btn-3d btn-3d-soft"
           aria-label="Voltar"
         >
           <ArrowLeft className="size-5" />
@@ -107,16 +107,15 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
                 key={c.key}
                 data-word={c.word.id}
                 onClick={() => handleFlip(c.key)}
-                className="aspect-square rounded-2xl flex items-center justify-center text-center font-bold active:scale-95 transition-all"
+                className={`aspect-square rounded-3xl flex items-center justify-center text-center font-bold btn-3d ${
+                  isFlipped ? (matched.has(c.word.id) ? "" : "btn-3d-soft") : "btn-3d-blue text-white"
+                }`}
                 style={{
                   background: isFlipped
                     ? matched.has(c.word.id)
                       ? "color-mix(in oklab, var(--sprout) 35%, var(--card))"
                       : "var(--card)"
-                    : "linear-gradient(135deg, var(--indigo), var(--accent))",
-                  boxShadow: matched.has(c.word.id)
-                    ? "0 0 0 2px var(--sprout)"
-                    : "0 6px 18px -10px rgba(0,0,0,0.4)",
+                    : "var(--indigo)",
                 }}
               >
                 {isFlipped ? (
@@ -137,7 +136,7 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
             <p className="text-xl font-bold">Mandou bem!</p>
             <button
               onClick={onDone}
-              className="w-full max-w-md rounded-2xl py-4 font-bold text-lg active:scale-95 transition-transform glow-sprout"
+              className="w-full max-w-md rounded-2xl py-4 font-bold text-lg transition-transform btn-3d"
               style={{
                 background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))",
                 color: "var(--primary-foreground)",
@@ -149,7 +148,7 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
         ) : (
           <button
             onClick={onDone}
-            className="w-full max-w-md mx-auto block rounded-2xl bg-card py-3 font-semibold text-sm text-muted-foreground active:scale-95 transition-transform"
+            className="w-full max-w-md mx-auto block rounded-2xl bg-card py-3 font-semibold text-sm text-muted-foreground btn-3d btn-3d-soft"
           >
             Pular mini-jogo
           </button>

@@ -501,3 +501,25 @@ test("R29 depois que a palavra termina normalmente, ela não é repetida sozinha
   await page.waitForTimeout(6000); // longer than the "stuck" timeout
   expect(await page.evaluate(() => (window as unknown as { __spoken: string[] }).__spoken)).toEqual(["Dog"]);
 });
+
+test("R30 visual 'Dia ensolarado': fundo claro, texto escuro e botões principais 3D", async ({ page }) => {
+  await seed(page);
+  const look = await page.evaluate(() => {
+    const lum = (c: string) => {
+      const [r, g, b] = c.match(/\d+(\.\d+)?/g)!.map(Number);
+      return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    };
+    const css = getComputedStyle(document.documentElement);
+    return {
+      background: lum(getComputedStyle(document.body).backgroundColor),
+      text: lum(getComputedStyle(document.body).color),
+      radius: parseFloat(css.getPropertyValue("--radius")),
+    };
+  });
+  expect(look.background).toBeGreaterThan(0.85);
+  expect(look.text).toBeLessThan(0.3);
+  expect(look.radius).toBeGreaterThanOrEqual(1.5);
+  await openPhase(page);
+  const shadow = await page.getByRole("button", { name: /Próxima|Fazer o quiz/ }).evaluate((b) => getComputedStyle(b).boxShadow);
+  expect(shadow).toMatch(/0px 6px 0px/);
+});

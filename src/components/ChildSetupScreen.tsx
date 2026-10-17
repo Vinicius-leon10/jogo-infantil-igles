@@ -67,7 +67,7 @@ export function ChildSetupScreen({ onSave, initial }: Props) {
         {/* Age */}
         <div>
           <label className="block text-xs uppercase tracking-wider font-bold text-muted-foreground mb-2">
-            Idade: <span style={{ color: "var(--sprout)" }}>{age} anos</span>
+            Idade: <span style={{ color: "var(--sprout-ink)" }}>{age} anos</span>
           </label>
           <input
             type="range"
@@ -113,7 +113,7 @@ export function ChildSetupScreen({ onSave, initial }: Props) {
       <button
         onClick={handleSubmit}
         disabled={!valid || saving}
-        className="mt-6 w-full rounded-2xl py-4 font-bold text-lg active:scale-95 transition-transform glow-sprout disabled:opacity-40 disabled:saturate-50"
+        className="mt-6 w-full rounded-2xl py-4 font-bold text-lg transition-transform btn-3d disabled:opacity-40 disabled:saturate-50"
         style={{
           background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))",
           color: "var(--primary-foreground)",
@@ -139,7 +139,7 @@ function Choice({
   return (
     <button
       onClick={onClick}
-      className="rounded-2xl p-4 text-center transition-all active:scale-95"
+      className="rounded-3xl p-4 text-center transition-all btn-3d btn-3d-soft"
       style={
         active
           ? {
