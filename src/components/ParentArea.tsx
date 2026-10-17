@@ -3,6 +3,7 @@ import { X, History, UserCog, ShieldCheck, Star } from "lucide-react";
 import { phases } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import type { ChildProfile, ChildProfileInput } from "@/hooks/useChildProfile";
+import { Emoji } from "./Emoji";
 
 type Tab = "history" | "edit";
 
@@ -178,7 +179,7 @@ function HistoryPanel() {
               const r = progress.phases[p.id]!;
               return (
                 <li key={p.id} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
-                  <div className="text-2xl">{p.emoji}</div>
+                  <div className="text-2xl"><Emoji char={p.emoji} /></div>
                   <div className="flex-1 min-w-0">
                     <div className="text-xs text-muted-foreground">Nível {p.level} · Fase {p.id}</div>
                     <div className="font-bold text-sm truncate">{p.title}</div>

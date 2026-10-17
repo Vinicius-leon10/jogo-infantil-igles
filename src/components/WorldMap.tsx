@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { phases as allPhases, levels } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import { Sprout } from "./Sprout";
+import { Emoji } from "./Emoji";
 
 type Props = {
   levelId: number;
@@ -190,7 +191,7 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
                           opacity: unlocked ? 1 : 0.5,
                         }}
                       >
-                        {unlocked ? phase.emoji : <Lock className="size-5 text-muted-foreground" />}
+                        {unlocked ? <Emoji char={phase.emoji} /> : <Lock className="size-5 text-muted-foreground" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">

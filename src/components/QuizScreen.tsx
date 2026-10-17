@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Word } from "@/data/content";
 import { useTTS } from "@/hooks/useTTS";
 import { Sprout } from "./Sprout";
+import { Emoji } from "./Emoji";
 
 type Props = {
   pool: Word[];
@@ -159,7 +160,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
 
         {q.mode === "emoji" && (
           <div className="size-36 rounded-[2rem] bg-card flex items-center justify-center text-7xl mb-6 glow-sprout animate-pop">
-            {q.word.emoji}
+            <Emoji char={q.word.emoji} />
           </div>
         )}
 
@@ -201,18 +202,18 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
               >
                 {q.mode === "translate" ? (
                   <>
-                    <div className="text-4xl mb-1">{opt.emoji}</div>
+                    <div className="text-4xl mb-1"><Emoji char={opt.emoji} /></div>
                     <div className="text-lg font-bold">{opt.en}</div>
                   </>
                 ) : q.mode === "emoji" ? (
                   <div className="text-xl font-bold py-3">{opt.en}</div>
                 ) : canRead ? (
                   <>
-                    <div className="text-4xl mb-1">{opt.emoji}</div>
+                    <div className="text-4xl mb-1"><Emoji char={opt.emoji} /></div>
                     <div className="text-sm font-bold">{opt.en}</div>
                   </>
                 ) : (
-                  <div className="text-6xl py-3">{opt.emoji}</div>
+                  <div className="text-6xl py-3"><Emoji char={opt.emoji} /></div>
                 )}
                 {showResult && isCorrect && (
                   <span className="absolute top-2 right-2 size-6 rounded-full flex items-center justify-center"

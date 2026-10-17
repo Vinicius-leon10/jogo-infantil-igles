@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect x="196" y="420" width="40" height="70" rx="20" fill="#5a4033"/>
+  <rect x="276" y="420" width="40" height="70" rx="20" fill="#5a4033"/>
+  <circle cx="150" cy="360" r="64" fill="#fffaf0"/><circle cx="210" cy="320" r="70" fill="#fffaf0"/><circle cx="290" cy="318" r="72" fill="#fffaf0"/><circle cx="360" cy="360" r="64" fill="#fffaf0"/><circle cx="160" cy="430" r="56" fill="#fffaf0"/><circle cx="256" cy="400" r="90" fill="#fffaf0"/><circle cx="352" cy="430" r="56" fill="#fffaf0"/><circle cx="256" cy="450" r="60" fill="#fffaf0"/>
+  <ellipse cx="340" cy="410" rx="50" ry="60" fill="#eadfcf" opacity="0.6"/>
+  <ellipse cx="108" cy="190" rx="50" ry="24" fill="#f0d0b0" transform="rotate(-25 108 190)"/>
+  <ellipse cx="404" cy="190" rx="50" ry="24" fill="#ddb994" transform="rotate(25 404 190)"/>
+  <ellipse cx="256" cy="200" rx="118" ry="112" fill="#f0d0b0"/>
+  <circle cx="186" cy="96" r="46" fill="#fffaf0"/><circle cx="236" cy="70" r="50" fill="#fffaf0"/><circle cx="290" cy="72" r="48" fill="#fffaf0"/><circle cx="334" cy="104" r="44" fill="#fffaf0"/><circle cx="150" cy="150" r="40" fill="#fffaf0"/><circle cx="366" cy="156" r="38" fill="#fffaf0"/>
+  
+  <circle cx="208" cy="196" r="30" fill="#fff"/>
+  <circle cx="212" cy="199" r="24.0" fill="#5a3420"/>
+  <circle cx="212" cy="199" r="16.5" fill="#1d100a"/>
+  <circle cx="203.6" cy="190.0" r="7.8" fill="#fff"/>
+  <circle cx="221.0" cy="208.6" r="3.0" fill="#fff"/>
+  <circle cx="304" cy="196" r="30" fill="#fff"/>
+  <circle cx="308" cy="199" r="24.0" fill="#5a3420"/>
+  <circle cx="308" cy="199" r="16.5" fill="#1d100a"/>
+  <circle cx="299.6" cy="190.0" r="7.8" fill="#fff"/>
+  <circle cx="317.0" cy="208.6" r="3.0" fill="#fff"/>
+  
+  <ellipse cx="178" cy="250" rx="20" ry="14.0" fill="#ff8f8f" opacity="0.45"/>
+  <ellipse cx="334" cy="250" rx="20" ry="14.0" fill="#ff8f8f" opacity="0.45"/>
+  <ellipse cx="256" cy="248" rx="22" ry="14" fill="#a8705a"/>
+  
+  <path d="M228 268 Q256 301.0 284 268 Q256 275.7 228 268 Z" fill="#3a2116"/>
+  <path d="M240.6 281.6 Q256 273.5 271.4 281.6 Q256 294.0 240.6 281.6 Z" fill="#f3727f"/>
+
+</svg>

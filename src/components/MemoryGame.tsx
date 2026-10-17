@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Word } from "@/data/content";
 import { useTTS } from "@/hooks/useTTS";
 import { Sprout } from "./Sprout";
+import { Emoji } from "./Emoji";
 
 type Props = {
   words: Word[]; // 4–6 words ideal
@@ -111,7 +112,7 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
                 }}
               >
                 {isFlipped ? (
-                  <span className="text-5xl">{c.word.emoji}</span>
+                  <span className="text-5xl"><Emoji char={c.word.emoji} label={c.word.en} /></span>
                 ) : (
                   <Volume2 className="size-7 opacity-70" />
                 )}

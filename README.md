@@ -52,3 +52,10 @@ instalação na tela inicial dependem disso.
 O desafio matemático da área dos pais é só uma barreira para crianças, não um controle de acesso.
 Nenhum dado é enviado a servidor do app, mas o reconhecimento de voz do navegador pode processar a fala
 em servidores do fornecedor do navegador.
+
+## Ilustrações dos animais
+
+Os 14 animais usam ilustrações próprias em vez de emoji (`src/assets/animals/`). O cachorro (`dog.png`) é a
+referência de estilo; os demais são vetores gerados por `python3 scripts/make-animals.py`. Para trocar um animal por
+uma imagem nova, salve `src/assets/animals/<id>.png` (fundo transparente, quadrado) e apague o `.svg` de mesmo nome.
+Palavras sem ilustração continuam mostrando o emoji (componente `src/components/Emoji.tsx`).

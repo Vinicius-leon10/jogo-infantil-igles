@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { Word } from "@/data/content";
 import { useTTS } from "@/hooks/useTTS";
 import { matchesWord, useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { Emoji } from "./Emoji";
 
 type Props = {
   words: Word[];
@@ -90,7 +91,7 @@ export function LearnScreen({ words, onDone, onBack }: Props) {
 
         <div key={word.id} className="animate-pop">
           <div className="size-44 mx-auto rounded-[2rem] bg-card flex items-center justify-center text-8xl mb-6 glow-sprout">
-            {word.emoji}
+            <Emoji char={word.emoji} label={word.en} />
           </div>
 
           <h2 className="text-5xl font-bold mb-2">{word.en}</h2>

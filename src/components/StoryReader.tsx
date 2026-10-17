@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { Story } from "@/data/stories";
 import { getWord } from "@/data/content";
 import { useTTS } from "@/hooks/useTTS";
+import { Emoji } from "./Emoji";
 
 type Props = {
   story: Story;
@@ -117,7 +118,7 @@ export function StoryReader({ story, onBack }: Props) {
                 }}
                 aria-hidden
               >
-                {it.emoji}
+                <Emoji char={it.emoji} />
               </motion.span>
             ))}
           </motion.div>
