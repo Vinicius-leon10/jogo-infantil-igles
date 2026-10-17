@@ -70,14 +70,13 @@ e para ao começar o aprendizado/quiz e nas histórias (para não atrapalhar a v
 
 ## Versão de teste e versão real
 
-| | Endereço | Branch |
+| | Onde | Branch |
 |---|---|---|
-| **Teste** | https://vinicius-leon10.github.io/jogo-infantil-igles/teste/ | `claude/sprout-app` |
+| **Teste** | link de teste no Claude (página única gerada por `scripts/build-claude-test.py`) e também https://vinicius-leon10.github.io/jogo-infantil-igles/teste/ | `claude/sprout-app` |
 | **Real** | https://vinicius-leon10.github.io/jogo-infantil-igles/ | `main` |
 
-Fluxo: toda mudança vai primeiro para `claude/sprout-app` e aparece na versão de **teste** (com o selo
-"VERSÃO DE TESTE" e o nome "Sprout TESTE" na tela de início). Depois de aprovada, `claude/sprout-app` é
-mesclado em `main` e vai para a versão **real**.
+Fluxo: toda mudança vai primeiro para `claude/sprout-app` e para o link de teste no Claude (com o selo
+"VERSÃO DE TESTE"). Depois de aprovada, `claude/sprout-app` é mesclado em `main` e vai para a versão **real**.
 
 A versão de teste guarda perfil, progresso e preferências separados (prefixo `teste:` no `localStorage`), então
 testar nunca altera o progresso real da criança.

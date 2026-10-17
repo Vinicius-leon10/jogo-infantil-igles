@@ -31,8 +31,8 @@ function shuffle<T>(arr: T[]): T[] {
 function TestBadge() {
   return (
     <div
-      className="fixed left-3 z-[80] pointer-events-none rounded-full px-3 py-1 text-[11px] font-extrabold tracking-wider shadow-lg"
-      style={{ bottom: "calc(var(--safe-bottom) + 8px)", background: "var(--amber)", color: "#1a1a2e" }}
+      className="fixed left-1/2 -translate-x-1/2 z-[80] pointer-events-none rounded-full px-2.5 py-0.5 text-[9px] font-extrabold tracking-wider opacity-90"
+      style={{ bottom: "calc(var(--safe-bottom) + 4px)", background: "var(--amber)", color: "#1a1a2e" }}
     >
       VERSÃO DE TESTE
     </div>
