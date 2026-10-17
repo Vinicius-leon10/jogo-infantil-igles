@@ -21,8 +21,9 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   depois dos testes; o rodapé da tela de níveis mostra a versão (commit) em uso.
 
 ## Estado atual (atualizar quando mudar)
-- `main` (oficial) está em `670f842`; tudo depois disso está só no teste, aguardando o dono pedir
-  "pode publicar na versão real" (fast-forward de `claude/sprout-app` para `main`).
+- Oficial atualizada pelo PR #1 (juntado em `main`) com tudo até o commit que contém esta linha. Mudanças
+  depois disso ficam só no teste até o dono pedir para publicar (novo PR de `claude/sprout-app` para `main`,
+  ou fast-forward).
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
   cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
 - Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
