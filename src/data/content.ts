@@ -38,6 +38,9 @@ export type Level = {
   emoji: string;
   color: string;
   phaseIds: number[];
+  /** The tree that grows one stage per phase on this level's map. */
+  tree: "apple" | "cherry";
+  treeName: string;
 };
 
 export const categories: Category[] = [
@@ -279,6 +282,8 @@ export const levels: Level[] = [
     emoji: "🐶",
     color: "var(--sprout)",
     phaseIds: level1Ids,
+    tree: "apple",
+    treeName: "Macieira",
   },
   {
     id: 2,
@@ -287,6 +292,8 @@ export const levels: Level[] = [
     emoji: "1️⃣",
     color: "var(--indigo)",
     phaseIds: level2Ids,
+    tree: "cherry",
+    treeName: "Cerejeira",
   },
 ];
 
@@ -321,12 +328,17 @@ export function previousPhaseId(phaseId: number): number | null {
   return idx > 0 ? level.phaseIds[idx - 1] : null;
 }
 
-/** Next level unlocks once 60% of the previous level's phases are completed. */
+/** Next level unlocks when the previous level's tree is complete (its last phase passed). */
 export function isLevelUnlocked(levelId: number, completed: (phaseId: number) => boolean): boolean {
   const prev = levels.find((l) => l.id === levelId - 1);
   if (!prev) return true;
-  const done = prev.phaseIds.filter(completed).length;
-  return done / prev.phaseIds.length >= 0.6;
+  return completed(prev.phaseIds[prev.phaseIds.length - 1]);
+}
+
+/** True when `phaseId` is the last phase of its level (the one that completes the tree). */
+export function isLastPhaseOfLevel(phaseId: number): boolean {
+  const level = levels.find((l) => l.phaseIds.includes(phaseId));
+  return !!level && level.phaseIds[level.phaseIds.length - 1] === phaseId;
 }
 
 /** Position of a phase inside its level (1, 2, 3…), which is what the child sees. */

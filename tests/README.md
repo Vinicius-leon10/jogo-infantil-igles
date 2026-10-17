@@ -9,7 +9,7 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 |---|---|---|
 | R01 | App abre sem login, direto no cadastro da criança | Login removido a pedido |
 | R02 | Fluxo completo (cadastro → aprender → quiz → resultado) salva progresso e libera a próxima fase; nenhum arquivo falta no subendereço do GitHub Pages | Publicação em `/jogo-infantil-igles/` |
-| R03 | Nível 2 bloqueado com 5 das 10 fases do nível 1 e liberado com 6 | Regra dos 60% |
+| R03 | Nível 2 bloqueado até completar a árvore do nível 1 (fase 10) e liberado depois | Árvore completa libera o próximo nível |
 | R04 | Fases liberam pela ordem dentro do nível (IDs pulam de 10 para 201), não por `id - 1` | Bug do guia original: blocos travados |
 | R05 | Estrelas nos limites 59/60/79/80/94/95, XP e arredondamento da nota | Regras de pontuação do guia |
 | R06 | Voz em inglês, velocidade 0,7 | "Voz rápida" (0,78) e depois "lenta" (0,6) |
@@ -29,6 +29,8 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R21 | Nível 1 só animais (10 fases), nível 2 só números de 0 a 10 (7 fases, com ilustrações), histórias ocultas, fase mostrada pela posição | Níveis separados: animais e números |
 | R22 | Ao achar versão nova, abre um endereço novo (`?v=`) que o iPhone não tem guardado, e tenta só uma vez (sem ciclo de recarregar) | "Versão de teste do GitHub não atualizou" |
 | R23 | A abertura pede um toque ("Toque para começar 🎵") e a música começa logo em seguida | "A música do início não começa tocando" |
+| R24 | Mapa em terreno: fase 1 embaixo, a planta de cada fase cresce do broto até a árvore, árvore-meta no topo | Novo design das fases |
+| R25 | Ao completar a última fase aparece a árvore completa e o botão para o próximo nível | Novo design das fases |
 
 (R14 ficou dentro do R02.)
 

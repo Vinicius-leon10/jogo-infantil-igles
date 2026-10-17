@@ -41,22 +41,22 @@ test("R02 fluxo completo salva o progresso e libera a próxima fase (sem arquivo
   expect(progress.phases[1]).toMatchObject({ completed: true, stars: 3, attempts: 1 });
   expect(progress.xp).toBe(30);
   await page.getByText("Mapa de fases").click();
-  await expect(page.getByRole("button", { name: /Animal 2/ })).toBeEnabled();
+  await expect(page.getByRole("button", { name: /Animal 2\b/ })).toBeEnabled();
   expect(broken).toEqual([]);
 });
 
-test("R03 nível 2 bloqueado com 5 das 10 fases do nível 1", async ({ page }) => {
-  await seed(page, { completed: range(1, 5) });
+test("R03 nível 2 bloqueado até completar a árvore (9 de 10 fases)", async ({ page }) => {
+  await seed(page, { completed: range(1, 9) });
   await expect(page.getByRole("button", { name: /Nível 2/ })).toBeDisabled();
 });
 
-test("R03 nível 2 liberado com 6 das 10 fases do nível 1 (60%)", async ({ page }) => {
-  await seed(page, { completed: range(1, 6) });
+test("R03 nível 2 liberado ao completar a árvore (fase 10)", async ({ page }) => {
+  await seed(page, { completed: range(1, 10) });
   await expect(page.getByRole("button", { name: /Nível 2/ })).toBeEnabled();
 });
 
 test("R04 fases liberam pela ordem dentro do nível, mesmo com IDs pulando (10 → 201)", async ({ page }) => {
-  await seed(page, { completed: [...range(1, 6), 201] });
+  await seed(page, { completed: [...range(1, 10), 201] });
   await page.getByRole("button", { name: /Nível 2/ }).click();
   await expect(page.getByRole("button", { name: /Número 1\b/ })).toBeEnabled();
   await expect(page.getByRole("button", { name: /Número 2\b/ })).toBeEnabled();
@@ -156,18 +156,18 @@ test("R12 iPhone: cabeçalho fica abaixo da barra do relógio / Dynamic Island",
   await page.addStyleTag({ content: ":root{--safe-top:59px!important;--safe-bottom:34px!important}" });
   const header = page.locator("header").first();
   expect((await header.boundingBox())!.y).toBeGreaterThanOrEqual(59);
-  await page.getByRole("button", { name: /Nível 1/ }).click();
+  await page.getByRole("button", { name: /Nível 1/ }).first().click();
   await page.mouse.wheel(0, 800);
   await page.waitForTimeout(600);
   expect((await page.locator("header").first().boundingBox())!.y).toBeGreaterThanOrEqual(59);
 });
 
 test("R13 cada tela abre no topo (não herda a rolagem do mapa)", async ({ page }) => {
-  await seed(page, { completed: range(1, 9) });
-  await page.getByRole("button", { name: /Nível 1/ }).click();
+  await seed(page); // phase 1 is at the bottom of the map, so the map scrolls down to it
+  await page.getByRole("button", { name: /Nível 1/ }).first().click();
   await page.waitForTimeout(1200); // map scrolls to the current phase
   expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
-  await page.getByRole("button", { name: /Animal 3\b/ }).click();
+  await page.getByRole("button", { name: /Animal 1\b/ }).click();
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => scrollY)).toBe(0);
 });
@@ -320,9 +320,9 @@ test("R20 sair da tela de aprender logo depois de trocar a palavra não leva a p
 test("R21 nível 1 só tem animais, nível 2 só números de 0 a 10 (com ilustrações) e as histórias estão ocultas", async ({
   page,
 }) => {
-  await seed(page, { completed: range(1, 6) });
+  await seed(page, { completed: range(1, 10) });
   await expect(page.getByRole("button", { name: "Histórias" })).toHaveCount(0);
-  await page.getByRole("button", { name: /Nível 1/ }).click();
+  await page.getByRole("button", { name: /Nível 1/ }).first().click();
   await expect(page.getByRole("button", { name: /Animal \d+/ })).toHaveCount(10);
   await expect(page.getByRole("button", { name: /Cor \d|Número \d|Associação/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Histórias" })).toHaveCount(0);
@@ -370,4 +370,29 @@ test("R23 a abertura pede um toque e a música começa logo em seguida", async (
   await page.getByRole("button", { name: /Toque para começar/ }).click();
   await expect(page.getByRole("button", { name: /Toque para começar/ })).toHaveCount(0);
   expect(await notesDuring(page, 1500)).toBeGreaterThan(5);
+});
+
+test("R24 mapa é um terreno: fase 1 embaixo, e a planta cresce a cada fase até a árvore", async ({ page }) => {
+  await seed(page, { completed: [1, 2] });
+  await page.getByRole("button", { name: /Nível 1/ }).first().click();
+  const phase = (n: number) => page.getByRole("button", { name: new RegExp(`Animal ${n}\\b`) });
+  const y = async (n: number) => (await phase(n).boundingBox())!.y;
+  expect(await y(1)).toBeGreaterThan(await y(2));
+  expect(await y(2)).toBeGreaterThan(await y(10));
+  for (const n of [1, 3, 10]) await expect(phase(n).locator(`svg[data-stage="${n}"]`)).toHaveCount(1);
+  await expect(phase(3)).toBeEnabled();
+  await expect(phase(4)).toBeDisabled();
+  await expect(page.getByTestId("tree-goal")).toContainText("Complete as 10 fases");
+});
+
+test("R25 ao completar a fase 10 aparece a árvore completa e dá para ir ao nível 2", async ({ page }) => {
+  await seed(page, { completed: range(1, 9) });
+  await openPhase(page, "Animal 10");
+  await finishLearning(page);
+  await playQuiz(page);
+  await page.getByText("Continuar a jornada").click();
+  await expect(page.getByTestId("tree-complete")).toContainText("Você completou a Macieira");
+  await page.getByRole("button", { name: /Ir para o Nível 2/ }).click();
+  await expect(page.getByRole("heading", { name: "Nível 2" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Número 1\b/ })).toBeEnabled();
 });

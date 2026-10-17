@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { isLevelUnlocked as levelUnlocked, levels, phases } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import { Sprout } from "./Sprout";
-import { Emoji } from "./Emoji";
+import { Plant } from "./Plant";
 import { MusicToggle } from "./MusicToggle";
 
 type Props = {
@@ -98,16 +98,17 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
                   }
                 >
                   <div className="flex items-center gap-4">
+                    {/* The level's tree, grown as far as the child has got. */}
                     <div
-                      className="size-16 shrink-0 rounded-2xl flex items-center justify-center text-3xl shadow-lg"
-                      style={{
-                        background: unlocked
-                          ? `linear-gradient(135deg, ${level.color}, color-mix(in oklab, ${level.color} 60%, white))`
-                          : "var(--muted)",
-                        opacity: unlocked ? 1 : 0.5,
-                      }}
+                      className="relative size-16 shrink-0 rounded-2xl flex items-end justify-center shadow-lg overflow-hidden"
+                      style={{ background: "radial-gradient(circle at 50% 75%, #2f6b34 0%, #1e4a27 70%, #173a20 100%)" }}
                     >
-                      {unlocked ? <Emoji char={level.emoji} /> : <Lock className="size-6 text-muted-foreground" />}
+                      <Plant stage={Math.max(1, done)} stages={totalPhases} kind={level.tree} size={64} dim={!unlocked} />
+                      {!unlocked && (
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <Lock className="size-6 text-muted-foreground" />
+                        </span>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
@@ -115,6 +116,11 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
                       </div>
                       <h3 className="font-bold text-lg leading-tight">{level.title}</h3>
                       <p className="text-xs text-muted-foreground truncate">{level.subtitle}</p>
+                      {!unlocked && idx > 0 && (
+                        <p className="text-[11px] mt-1 font-semibold" style={{ color: "var(--amber)" }}>
+                          Complete a {levels[idx - 1].treeName} do {levels[idx - 1].title} 🌳
+                        </p>
+                      )}
                       {unlocked && (
                         <div className="mt-2 flex items-center gap-2">
                           <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">

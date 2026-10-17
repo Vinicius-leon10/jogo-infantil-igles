@@ -90,8 +90,8 @@ export const range = (from: number, to: number) => Array.from({ length: to - fro
 
 /** Levels → level 1 map → phase → learn screen. */
 export async function openPhase(page: Page, title = "Animal 1", level = "Nível 1") {
-  await page.getByRole("button", { name: new RegExp(level) }).click();
-  await page.getByRole("button", { name: new RegExp(title) }).first().click();
+  await page.getByRole("button", { name: new RegExp(level) }).first().click();
+  await page.getByRole("button", { name: new RegExp(`${title}\\b`) }).click(); // "Animal 1" ≠ "Animal 10"
   await page.getByText("Começar a brotar").click();
 }
 

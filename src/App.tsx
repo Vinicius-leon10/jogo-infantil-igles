@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { getLearnWords, getPoolWords, getQuizWords, phases } from "@/data/content";
+import { getLearnWords, getPoolWords, getQuizWords, isLastPhaseOfLevel, levels, phases } from "@/data/content";
 import type { Word } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import { useChildProfile } from "@/hooks/useChildProfile";
@@ -17,13 +17,14 @@ import { Sprout } from "@/components/Sprout";
 import { WelcomeSplash } from "@/components/WelcomeSplash";
 import { StoriesScreen } from "@/components/StoriesScreen";
 import { StoryReader } from "@/components/StoryReader";
+import { TreeComplete } from "@/components/TreeComplete";
 import type { Story } from "@/data/stories";
 import { setMusicWanted } from "@/lib/sound";
 import { stopAllSpeech } from "@/hooks/useTTS";
 import { xpFor } from "@/lib/scoring";
 
 
-type Screen = "levels" | "map" | "intro" | "learn" | "quiz" | "result" | "minigame" | "stories" | "story";
+type Screen = "levels" | "map" | "intro" | "learn" | "quiz" | "result" | "minigame" | "tree" | "stories" | "story";
 
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
@@ -90,6 +91,8 @@ export function App() {
   const [resultPassed, setResultPassed] = useState(false);
   const [parentsOpen, setParentsOpen] = useState(false);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
+  // Level whose tree was just completed (its last phase passed for the first time).
+  const [treeLevel, setTreeLevel] = useState<number | null>(null);
   const phaseStartRef = useRef<number>(0);
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -156,6 +159,7 @@ export function App() {
     if (!phase) return;
     const durationMs = phaseStartRef.current ? Date.now() - phaseStartRef.current : 0;
     phaseStartRef.current = 0;
+    const wasCompleted = !!progress.phases[phase.id]?.completed;
     const { stars, completed } = recordPhase(
       phase.id,
       score,
@@ -167,10 +171,16 @@ export function App() {
     setResultScore(score);
     setResultStars(stars);
     setResultPassed(completed);
+    setTreeLevel(completed && !wasCompleted && isLastPhaseOfLevel(phase.id) ? phase.level : null);
     setScreen("result");
   };
 
   const goHome = () => {
+    if (treeLevel) {
+      setScreen("tree");
+      setPhaseId(null);
+      return;
+    }
     if (resultPassed && phase && phase.id % 3 === 0 && questions.length >= 4) {
       setScreen("minigame");
       return;
@@ -224,12 +234,31 @@ export function App() {
         onOpenParents={() => setParentsOpen(true)}
       />
     );
+  } else if (screen === "tree" && treeLevel) {
+    const done = levels.find((l) => l.id === treeLevel)!;
+    const next = levels.find((l) => l.id === treeLevel + 1);
+    screenNode = (
+      <TreeComplete
+        level={done}
+        nextLevel={next}
+        onNextLevel={() => {
+          setTreeLevel(null);
+          if (next) selectLevel(next.id);
+        }}
+        onMap={() => {
+          setTreeLevel(null);
+          setLevelId(done.id);
+          setScreen("map");
+        }}
+      />
+    );
   } else if (screen === "map" || !phase) {
     screenNode = (
       <WorldMap
         levelId={levelId}
         onSelectPhase={startPhase}
         onBackToLevels={goBackToLevels}
+        onSelectLevel={selectLevel}
       />
     );
   } else if (screen === "intro") {
