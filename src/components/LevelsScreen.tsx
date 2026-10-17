@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { isLevelUnlocked as levelUnlocked, levels, phases } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import { Sprout } from "./Sprout";
+import { MusicToggle } from "./MusicToggle";
 
 type Props = {
   onSelectLevel: (id: number) => void;
@@ -33,6 +34,7 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
             <p className="text-[10px] text-muted-foreground truncate">Escolha um nível</p>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
+            <MusicToggle />
             {onOpenStories && (
               <button
                 onClick={onOpenStories}

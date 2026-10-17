@@ -4,6 +4,7 @@ import { phases as allPhases, levels } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import { Sprout } from "./Sprout";
 import { Emoji } from "./Emoji";
+import { MusicToggle } from "./MusicToggle";
 
 type Props = {
   levelId: number;
@@ -97,6 +98,7 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
             <p className="text-[10px] text-muted-foreground truncate">{level.subtitle}</p>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
+            <MusicToggle />
             {onOpenStories && (
               <button
                 onClick={onOpenStories}

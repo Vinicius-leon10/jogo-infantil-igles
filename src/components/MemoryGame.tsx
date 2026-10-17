@@ -4,6 +4,7 @@ import type { Word } from "@/data/content";
 import { useTTS } from "@/hooks/useTTS";
 import { Sprout } from "./Sprout";
 import { Emoji } from "./Emoji";
+import { playCorrect } from "@/lib/sound";
 
 type Props = {
   words: Word[]; // 4–6 words ideal
@@ -49,7 +50,8 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
       setTimeout(() => {
         setMatched((m) => new Set(m).add(a.word.id));
         setFlipped([]);
-        speak(a.word.en);
+        playCorrect();
+        setTimeout(() => speak(a.word.en), 300);
       }, 350);
     } else {
       setTimeout(() => setFlipped([]), 800);

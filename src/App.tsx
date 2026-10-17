@@ -18,6 +18,7 @@ import { WelcomeSplash } from "@/components/WelcomeSplash";
 import { StoriesScreen } from "@/components/StoriesScreen";
 import { StoryReader } from "@/components/StoryReader";
 import type { Story } from "@/data/stories";
+import { setMusicWanted } from "@/lib/sound";
 
 
 type Screen = "levels" | "map" | "intro" | "learn" | "quiz" | "result" | "minigame" | "stories" | "story";
@@ -68,6 +69,12 @@ export function App() {
   const [activeStory, setActiveStory] = useState<Story | null>(null);
   const phaseStartRef = useRef<number>(0);
   const [showWelcome, setShowWelcome] = useState(false);
+
+  // Background music on the menus only; it stops for learning, quiz and stories.
+  const musicScreen = screen === "levels" || screen === "map" || screen === "intro" || screen === "stories";
+  useEffect(() => {
+    setMusicWanted(!!profile && musicScreen);
+  }, [profile, musicScreen]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

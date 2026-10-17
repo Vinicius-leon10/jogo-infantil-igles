@@ -59,3 +59,11 @@ Os 14 animais usam ilustrações próprias em vez de emoji (`src/assets/animals/
 referência de estilo; os demais são vetores gerados por `python3 scripts/make-animals.py`. Para trocar um animal por
 uma imagem nova, salve `src/assets/animals/<id>.png` (fundo transparente, quadrado) e apague o `.svg` de mesmo nome.
 Palavras sem ilustração continuam mostrando o emoji (componente `src/components/Emoji.tsx`).
+
+## Música e efeitos sonoros
+
+Tudo é sintetizado no navegador (`src/lib/sound.ts`, Web Audio API), sem arquivos de áudio nem direitos autorais:
+uma música instrumental alegre em loop toca nas telas de níveis, mapa, introdução da fase e lista de histórias,
+e para ao começar o aprendizado/quiz e nas histórias (para não atrapalhar a voz). Há som de acerto, de erro
+(suave, sem punir), de par formado no jogo da memória e de fim de fase (fanfarra se passou, melodia de
+"tente de novo" se não). O botão 🎵 no topo dos níveis e do mapa liga/desliga a música (fica salvo no aparelho).

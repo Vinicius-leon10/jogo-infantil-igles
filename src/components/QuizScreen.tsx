@@ -4,6 +4,7 @@ import type { Word } from "@/data/content";
 import { useTTS } from "@/hooks/useTTS";
 import { Sprout } from "./Sprout";
 import { Emoji } from "./Emoji";
+import { playCorrect, playWrong } from "@/lib/sound";
 
 type Props = {
   pool: Word[];
@@ -69,10 +70,12 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
       setCorrect((c) => c + 1);
       correctIdsRef.current.push(q.word.id);
       setMood("excited");
-      speak(q.word.en);
+      playCorrect();
+      setTimeout(() => speak(q.word.en), 350);
     } else {
       wrongIdsRef.current.push(q.word.id);
       setMood("wink");
+      playWrong();
       setShake(true);
       setTimeout(() => setShake(false), 350);
     }

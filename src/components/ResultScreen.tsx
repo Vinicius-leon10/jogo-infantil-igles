@@ -4,6 +4,7 @@ import confetti from "canvas-confetti";
 import type { Phase } from "@/data/content";
 import { Sprout } from "./Sprout";
 import { useTTS } from "@/hooks/useTTS";
+import { playComplete } from "@/lib/sound";
 
 const PRAISE = ["Great job!", "Awesome!", "Well done!", "Fantastic!", "Amazing!", "You did it!"];
 
@@ -22,6 +23,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
   const { speak } = useTTS();
 
   useEffect(() => {
+    playComplete(passed);
     if (!passed) return;
     const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
     const t = setTimeout(() => speak(praise, { rate: 0.8, pitch: 1.35 }), 350);
