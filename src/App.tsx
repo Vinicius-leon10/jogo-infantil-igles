@@ -27,6 +27,13 @@ function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
+function ScrollToTop({ screenKey }: { screenKey: string }) {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [screenKey]);
+  return null;
+}
+
 function LoadingSplash() {
   return (
     <div className="min-h-screen bg-aurora flex flex-col items-center justify-center gap-5">
@@ -266,6 +273,7 @@ export function App() {
 
   return (
     <>
+      <ScrollToTop screenKey={screenKey} />
       {welcomeOverlay}
       <AnimatePresence mode="wait">
         <motion.div

@@ -36,8 +36,11 @@ export function ParentArea({ profile, onSave, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
-      <header className="sticky top-0 z-10 backdrop-blur-xl bg-background/80 border-b border-border">
+    <div
+      className="fixed inset-0 z-50 bg-background overflow-y-auto"
+      style={{ top: "var(--safe-top)", paddingBottom: "var(--safe-bottom)" }}
+    >
+      <header className="sticky top-0 z-10 backdrop-blur-xl bg-background/80 border-b border-border" style={{ top: 0 }}>
         <div className="mx-auto max-w-md px-5 py-4 flex items-center gap-3">
           <ShieldCheck className="size-5" style={{ color: "var(--sprout)" }} />
           <h1 className="flex-1 text-lg font-bold" style={{ fontFamily: "Fredoka, sans-serif" }}>

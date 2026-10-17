@@ -12,7 +12,7 @@ export function WelcomeSplash({ onDone }: Props) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-aurora flex flex-col items-center justify-center gap-6 px-6"
+      className="fixed inset-0 z-[70] bg-aurora flex flex-col items-center justify-center gap-6 px-6"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}

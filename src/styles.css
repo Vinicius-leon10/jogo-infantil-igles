@@ -201,3 +201,32 @@
   .animate-sparkle { animation: sparkle 2s ease-in-out infinite; }
 }
 
+
+/* iPhone notch / Dynamic Island and home indicator. The app runs edge to edge
+   (viewport-fit=cover, translucent status bar), so keep content inside the
+   safe area and paint the status-bar band with the page background. */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+#root {
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+}
+header.sticky {
+  top: var(--safe-top);
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: var(--safe-top);
+  background: var(--color-background);
+  z-index: 60;
+}
+/* Full-height screens fill the safe area instead of the whole viewport, so
+   they don't scroll by the size of the notch and home indicator. */
+#root .min-h-screen {
+  min-height: calc(100svh - var(--safe-top) - var(--safe-bottom));
+}
