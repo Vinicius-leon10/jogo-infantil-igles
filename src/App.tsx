@@ -99,17 +99,17 @@ export function App() {
     setMusicWanted(!!profile && musicScreen);
   }, [profile, musicScreen]);
 
+  // The opening screen shows every time the app is opened: its tap is what lets the
+  // music play. (The regression tests skip it with the sprout_skip_splash flag.)
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!sessionStorage.getItem("sprout_welcomed")) {
-      setShowWelcome(true);
-    }
+    let skip = false;
+    try {
+      skip = !!sessionStorage.getItem("sprout_skip_splash");
+    } catch {}
+    if (!skip) setShowWelcome(true);
   }, []);
 
-  const dismissWelcome = () => {
-    sessionStorage.setItem("sprout_welcomed", "1");
-    setShowWelcome(false);
-  };
+  const dismissWelcome = () => setShowWelcome(false);
 
   const welcomeOverlay = (
     <AnimatePresence>

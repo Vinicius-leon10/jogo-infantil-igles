@@ -1,18 +1,17 @@
-import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Sprout } from "./Sprout";
 
 type Props = { onDone: () => void };
 
+/**
+ * Opening screen. It waits for a tap because browsers only allow sound after one:
+ * that tap unlocks audio, so the music starts as soon as the app opens.
+ */
 export function WelcomeSplash({ onDone }: Props) {
-  useEffect(() => {
-    const t = setTimeout(onDone, 2600);
-    return () => clearTimeout(t);
-  }, [onDone]);
-
   return (
     <motion.div
-      className="fixed inset-0 z-[70] bg-aurora flex flex-col items-center justify-center gap-6 px-6"
+      onClick={onDone}
+      className="fixed inset-0 z-[70] bg-aurora flex flex-col items-center justify-center gap-6 px-6 cursor-pointer"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
@@ -51,21 +50,24 @@ export function WelcomeSplash({ onDone }: Props) {
         <p className="text-lg text-muted-foreground">Bem-vindo ao Sprout 🌱</p>
       </motion.div>
 
-      <motion.div
-        className="absolute bottom-12 flex gap-1.5"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
+      <motion.button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDone();
+        }}
+        className="mt-4 rounded-full px-8 py-4 text-lg font-extrabold glow-sprout"
+        style={{
+          background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))",
+          color: "var(--primary-foreground)",
+          marginBottom: "var(--safe-bottom)",
+        }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: [1, 1.06, 1] }}
+        transition={{ opacity: { delay: 0.7 }, scale: { delay: 0.7, duration: 1.4, repeat: Infinity } }}
       >
-        {[0, 1, 2].map((i) => (
-          <motion.span
-            key={i}
-            className="w-2 h-2 rounded-full bg-primary"
-            animate={{ opacity: [0.3, 1, 0.3] }}
-            transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
-          />
-        ))}
-      </motion.div>
+        Toque para começar 🎵
+      </motion.button>
     </motion.div>
   );
 }

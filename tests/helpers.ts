@@ -4,11 +4,11 @@ export type Spoken = { text: string; rate: number; lang: string; question: strin
 
 /**
  * Records what the app says (speech synthesis) and how many notes it plays (Web Audio),
- * and skips the 2.6 s welcome splash. Call before page.goto().
+ * and skips the opening screen (its "Toque para começar" tap). Call before page.goto().
  */
 export async function instrument(page: Page) {
   await page.addInitScript(() => {
-    sessionStorage.setItem("sprout_welcomed", "1");
+    sessionStorage.setItem("sprout_skip_splash", "1");
     const w = window as unknown as { __said: Spoken[]; __notes: number };
     w.__said = [];
     w.__notes = 0;

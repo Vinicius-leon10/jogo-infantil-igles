@@ -362,3 +362,12 @@ test("R22 ao achar versão nova, abre um endereço novo (?v=) que o iPhone não 
   expect(page.url()).toMatch(/[?&]v=/);
   expect(loads).toBeLessThanOrEqual(2);
 });
+
+test("R23 a abertura pede um toque e a música começa logo em seguida", async ({ page }) => {
+  // Browsers only allow sound after a tap: the opening screen asks for it.
+  await page.addInitScript(() => sessionStorage.removeItem("sprout_skip_splash"));
+  await seed(page);
+  await page.getByRole("button", { name: /Toque para começar/ }).click();
+  await expect(page.getByRole("button", { name: /Toque para começar/ })).toHaveCount(0);
+  expect(await notesDuring(page, 1500)).toBeGreaterThan(5);
+});

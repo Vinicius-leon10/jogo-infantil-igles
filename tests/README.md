@@ -28,6 +28,7 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R20 | Ao trocar de tela, falas que a tela anterior tinha agendado são descartadas (ex.: última palavra do aprender no quiz) | Achado ao investigar o R19 |
 | R21 | Nível 1 só animais (10 fases), nível 2 só números de 0 a 10 (7 fases, com ilustrações), histórias ocultas, fase mostrada pela posição | Níveis separados: animais e números |
 | R22 | Ao achar versão nova, abre um endereço novo (`?v=`) que o iPhone não tem guardado, e tenta só uma vez (sem ciclo de recarregar) | "Versão de teste do GitHub não atualizou" |
+| R23 | A abertura pede um toque ("Toque para começar 🎵") e a música começa logo em seguida | "A música do início não começa tocando" |
 
 (R14 ficou dentro do R02.)
 
