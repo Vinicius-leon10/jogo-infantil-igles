@@ -22,7 +22,7 @@ type Feedback =
 
 export function LearnScreen({ words, onDone, onBack }: Props) {
   const [idx, setIdx] = useState(0);
-  const { speak, speaking } = useTTS();
+  const { speak, speakLater, speaking } = useTTS();
   const { supported: micSupported, listening, start, stop } = useSpeechRecognition();
   const [feedback, setFeedback] = useState<Feedback>(null);
   const word = words[idx];
@@ -31,8 +31,7 @@ export function LearnScreen({ words, onDone, onBack }: Props) {
 
   useEffect(() => {
     setFeedback(null);
-    const t = setTimeout(() => speak(word.en), 350);
-    return () => clearTimeout(t);
+    return speakLater(word.en, 350);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx]);
 
@@ -48,7 +47,7 @@ export function LearnScreen({ words, onDone, onBack }: Props) {
         const ok = alts.some((a) => matchesWord(a, word.en));
         setFeedback({ kind: ok ? "ok" : "near", heard: alts[0] ?? "" });
         if (ok) {
-          setTimeout(() => speak(word.en), 200);
+          speakLater(word.en, 200);
         }
       },
       (err) => {

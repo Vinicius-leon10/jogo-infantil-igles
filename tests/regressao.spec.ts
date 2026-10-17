@@ -140,13 +140,14 @@ test("R11 sons de acerto, erro e fim de fase", async ({ page }) => {
   await next(page);
   expect(await notesFrom(page, () => answer(page, false)), "erro").toBeGreaterThan(0);
   await next(page);
-  let ended = false;
-  while (!ended) {
+  const button = page.getByRole("button", { name: /^(Continuar|Ver resultado)$/ });
+  for (;;) {
     await answer(page, true);
-    if (await page.getByText("Ver resultado").isVisible()) {
-      expect(await notesFrom(page, () => next(page), 1500), "fim de fase").toBeGreaterThan(0);
-      ended = true;
-    } else await next(page);
+    if ((await button.textContent()) === "Ver resultado") {
+      expect(await notesFrom(page, () => button.click(), 1500), "fim de fase").toBeGreaterThan(0);
+      break;
+    }
+    await button.click();
   }
 });
 
@@ -250,4 +251,67 @@ test("R18 se a fala engasgar (não começar), o app tenta de novo", async ({ pag
   await expect
     .poll(() => page.evaluate(() => (window as unknown as { __played: string[] }).__played), { timeout: 4000 })
     .toContain("Dog");
+});
+
+test("R19 tocar em Continuar não corta a palavra certa no meio", async ({ page }) => {
+  // Fake speech engine that reports when something is cancelled while it is still talking.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __cut: string[]; __done: string[] };
+    w.__cut = [];
+    w.__done = [];
+    let talking: SpeechSynthesisUtterance | null = null;
+    Object.defineProperty(speechSynthesis, "speaking", { get: () => !!talking });
+    Object.defineProperty(speechSynthesis, "pending", { get: () => false });
+    speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
+      if (!u.text.trim()) return;
+      setTimeout(() => {
+        talking = u;
+        u.dispatchEvent(new Event("start"));
+        setTimeout(() => {
+          if (talking !== u) return;
+          talking = null;
+          w.__done.push(u.text);
+          u.dispatchEvent(new Event("end"));
+        }, 500);
+      }, 20);
+    };
+    speechSynthesis.cancel = () => {
+      if (talking) w.__cut.push(talking.text);
+      talking = null;
+    };
+  });
+  await seed(page, { canRead: true });
+  await openPhase(page);
+  await finishLearning(page);
+  await page.evaluate(() => ((window as unknown as { __cut: string[] }).__cut = [])); // leaving "learn" may cut its word
+  const quiz = page.getByTestId("quiz");
+  for (let i = 0; i < 3; i++) {
+    await page.waitForTimeout(1000); // let the audio question's own word finish
+    const word = (await quiz.getAttribute("data-answer"))!;
+    await answer(page, true);
+    await page.waitForTimeout(700); // the right word is being said right now
+    await next(page);
+    const w = await page.evaluate(() => {
+      const { __cut, __done } = window as unknown as { __cut: string[]; __done: string[] };
+      return { __cut, __done };
+    });
+    expect(w.__cut, "palavra cortada").toEqual([]);
+    expect(w.__done.map((t) => t.toLowerCase())).toContain(word);
+  }
+});
+
+test("R20 sair da tela de aprender logo depois de trocar a palavra não leva a palavra para o quiz", async ({ page }) => {
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  const button = page.getByRole("button", { name: /Próxima|Fazer o quiz/ });
+  // Child taps through fast: the last word's speech is still scheduled when the quiz opens.
+  for (;;) {
+    const label = await button.textContent();
+    await button.click();
+    if (label?.includes("Fazer o quiz")) break;
+  }
+  await expect(page.getByTestId("quiz")).toBeVisible();
+  await page.waitForTimeout(1500);
+  for (const s of (await said(page)).filter((x) => x.question))
+    expect(s.text.toLowerCase(), `na pergunta ${s.question}`).toBe(s.question);
 });

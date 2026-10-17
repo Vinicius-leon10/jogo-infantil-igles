@@ -118,13 +118,11 @@ export async function answer(page: Page, right = true) {
 
 /** "Continuar", or "Ver resultado" on the last question. Returns true when the quiz ended. */
 export async function next(page: Page) {
-  const finish = page.getByText("Ver resultado");
-  if (await finish.isVisible()) {
-    await finish.click();
-    return true;
-  }
-  await page.getByText("Continuar", { exact: true }).click();
-  return false;
+  // The button appears once the right word has been said.
+  const button = page.getByRole("button", { name: /^(Continuar|Ver resultado)$/ });
+  const label = await button.textContent();
+  await button.click();
+  return label === "Ver resultado";
 }
 
 /** Answers every question (all right by default) and opens the result screen. */

@@ -20,13 +20,13 @@ type Props = {
 
 export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, onHome }: Props) {
   const mood = stars >= 2 ? "love" : stars >= 1 ? "excited" : "happy";
-  const { speak } = useTTS();
+  const { speakLater } = useTTS();
 
   useEffect(() => {
     playComplete(passed);
     if (!passed) return;
     const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
-    const t = setTimeout(() => speak(praise, { rate: 0.8, pitch: 1.35 }), 350);
+    const cancelPraise = speakLater(praise, 350, { rate: 0.8, pitch: 1.35 });
 
     const fire = (particles: number, spread: number, originY: number) =>
       confetti({
@@ -40,7 +40,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
     if (stars >= 2) setTimeout(() => fire(60, 100, 0.7), 250);
     if (stars === 3) setTimeout(() => fire(120, 120, 0.5), 500);
 
-    return () => clearTimeout(t);
+    return cancelPraise;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const title = !passed

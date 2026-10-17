@@ -26,12 +26,16 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }: Props) {
-  const { speak, stop } = useTTS();
+  const { speak, speakLater, stop } = useTTS();
   // Delayed "say the word" after a right answer; must never leak into the next question.
   const sayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const readyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // "Continuar" waits for the right word to be said, so tapping it never cuts the word off.
+  const [ready, setReady] = useState(false);
   const cancelSay = () => {
     if (sayTimer.current) clearTimeout(sayTimer.current);
-    sayTimer.current = null;
+    if (readyTimer.current) clearTimeout(readyTimer.current);
+    sayTimer.current = readyTimer.current = null;
     stop();
   };
   useEffect(() => cancelSay, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -59,14 +63,16 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const idxRef = useRef(idx);
+  idxRef.current = idx;
+
   const q = qs[idx];
   const isLast = idx === qs.length - 1;
   const progress = ((idx + (picked ? 1 : 0)) / qs.length) * 100;
 
   useEffect(() => {
     if (q?.mode === "audio") {
-      const t = setTimeout(() => speak(q.word.en), 400);
-      return () => clearTimeout(t);
+      return speakLater(q.word.en, 400);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx]);
@@ -81,9 +87,13 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
       setMood("excited");
       playCorrect();
       const word = q.word.en;
-      sayTimer.current = setTimeout(() => speak(word), 550);
+      const question = idx;
+      const showContinue = () => question === idxRef.current && setReady(true);
+      sayTimer.current = setTimeout(() => speak(word, { onDone: showContinue }), 550);
+      readyTimer.current = setTimeout(showContinue, 2500); // in case the phone never reports the end
     } else {
       wrongIdsRef.current.push(q.word.id);
+      setReady(true);
       setMood("wink");
       playWrong();
       setShake(true);
@@ -93,6 +103,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
 
   const handleNext = () => {
     cancelSay();
+    setReady(false);
     setPicked(null);
     setMood("happy");
     if (isLast) {
@@ -253,7 +264,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
       </div>
 
       <div className="px-6 pb-10 pt-4 min-h-[100px]">
-        {picked && (
+        {picked && ready && (
           <button
             onClick={handleNext}
             className="w-full max-w-md mx-auto rounded-2xl py-4 font-bold text-lg active:scale-95 transition-transform glow-sprout animate-pop"

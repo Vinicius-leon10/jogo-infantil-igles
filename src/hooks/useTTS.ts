@@ -17,6 +17,9 @@ let chosenVoice: SpeechSynthesisVoice | null = null;
 // Keep a reference to the live utterance: Chrome may garbage-collect it mid-speech.
 let current: SpeechSynthesisUtterance | null = null;
 let pending: ReturnType<typeof setTimeout> | null = null;
+// Bumped on every stop and every screen change: speech scheduled before that is dropped,
+// so a screen that is leaving (still animating out) can never talk over the next one.
+let epoch = 0;
 const listeners = new Set<(speaking: boolean) => void>();
 
 function setSpeaking(v: boolean) {
@@ -62,8 +65,16 @@ function clearWatchdog() {
   watchdog = null;
 }
 
-function speakNow(text: string, rate: number, pitch: number, retried = false) {
+type SpeakOpts = { rate?: number; pitch?: number; onDone?: () => void };
+
+function speakNow(text: string, rate: number, pitch: number, onDone?: () => void, retried = false) {
   const synth = window.speechSynthesis;
+  let doneCalled = false;
+  const done = () => {
+    if (doneCalled) return;
+    doneCalled = true;
+    onDone?.();
+  };
   const u = new SpeechSynthesisUtterance(text);
   if (chosenVoice) u.voice = chosenVoice;
   u.lang = chosenVoice?.lang ?? "en-US";
@@ -72,9 +83,9 @@ function speakNow(text: string, rate: number, pitch: number, retried = false) {
   let started = false;
   const retry = () => {
     clearWatchdog();
-    if (retried || current !== u) return;
+    if (retried || current !== u) return done();
     synth.cancel();
-    watchdog = setTimeout(() => current === u && speakNow(text, rate, pitch, true), 120);
+    watchdog = setTimeout(() => (current === u ? speakNow(text, rate, pitch, onDone, true) : done()), 120);
   };
   u.onstart = () => {
     started = true;
@@ -84,11 +95,15 @@ function speakNow(text: string, rate: number, pitch: number, retried = false) {
   u.onend = () => {
     if (current === u) setSpeaking(false);
     resumeAudio();
+    done();
   };
   u.onerror = (e) => {
     // "interrupted"/"canceled" come from our own cancel(): nothing to redo.
     if (e.error !== "interrupted" && e.error !== "canceled") retry();
-    else if (current === u) setSpeaking(false);
+    else {
+      if (current === u) setSpeaking(false);
+      done();
+    }
     resumeAudio();
   };
   current = u;
@@ -96,6 +111,18 @@ function speakNow(text: string, rate: number, pitch: number, retried = false) {
   synth.speak(u);
   clearWatchdog();
   watchdog = setTimeout(() => !started && retry(), START_TIMEOUT_MS);
+}
+
+/** Silences speech and drops anything scheduled (used on screen changes). */
+export function stopAllSpeech() {
+  epoch++;
+  if (!supported) return;
+  if (pending) clearTimeout(pending);
+  pending = null;
+  clearWatchdog();
+  current = null;
+  window.speechSynthesis.cancel();
+  setSpeaking(false);
 }
 
 export function useTTS() {
@@ -108,7 +135,8 @@ export function useTTS() {
     };
   }, []);
 
-  const speak = useCallback((text: string, opts?: { rate?: number; pitch?: number }) => {
+  /** `onDone` runs once the text has been said (or could not be). */
+  const speak = useCallback((text: string, opts?: SpeakOpts) => {
     if (!supported) return;
     const synth = window.speechSynthesis;
     const rate = opts?.rate ?? 0.7;
@@ -121,22 +149,27 @@ export function useTTS() {
       synth.cancel();
       pending = setTimeout(() => {
         pending = null;
-        speakNow(text, rate, pitch);
+        speakNow(text, rate, pitch, opts?.onDone);
       }, 60);
     } else {
-      speakNow(text, rate, pitch);
+      speakNow(text, rate, pitch, opts?.onDone);
     }
   }, []);
 
-  const stop = useCallback(() => {
-    if (!supported) return;
-    if (pending) clearTimeout(pending);
-    pending = null;
-    clearWatchdog();
-    current = null;
-    window.speechSynthesis.cancel();
-    setSpeaking(false);
-  }, []);
+  const stop = useCallback(() => stopAllSpeech(), []);
 
-  return { speak, stop, speaking, supported };
+  /** Speaks after `delay` ms unless speech was stopped or the screen changed meanwhile. */
+  const speakLater = useCallback(
+    (text: string, delay: number, opts?: SpeakOpts) => {
+      const scheduledIn = epoch;
+      const t = setTimeout(() => {
+        if (scheduledIn === epoch) speak(text, opts);
+        else opts?.onDone?.();
+      }, delay);
+      return () => clearTimeout(t);
+    },
+    [speak],
+  );
+
+  return { speak, speakLater, stop, speaking, supported };
 }

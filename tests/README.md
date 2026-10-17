@@ -24,6 +24,8 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R16 | App recarrega sozinho quando uma versão nova é publicada | iPhone abrindo versão antiga (cache) |
 | R17 | No jogo da memória, virar outra carta logo após um par não fala a palavra antiga | Mesmo problema do R07 |
 | R18 | Se a fala engasgar (o celular aceita e não toca, ou falha), o app tenta de novo uma vez | "Às vezes engasga e não sai o som" |
+| R19 | "Continuar" só aparece depois que a palavra certa termina, então tocar nele não corta a fala | "Som rápido e cortado ao clicar Continuar" |
+| R20 | Ao trocar de tela, falas que a tela anterior tinha agendado são descartadas (ex.: última palavra do aprender no quiz) | Achado ao investigar o R19 |
 
 (R14 ficou dentro do R02.)
 

@@ -19,6 +19,7 @@ import { StoriesScreen } from "@/components/StoriesScreen";
 import { StoryReader } from "@/components/StoryReader";
 import type { Story } from "@/data/stories";
 import { setMusicWanted } from "@/lib/sound";
+import { stopAllSpeech } from "@/hooks/useTTS";
 import { xpFor } from "@/lib/scoring";
 
 
@@ -40,9 +41,11 @@ function TestBadge() {
   );
 }
 
+/** On every screen change: start at the top and silence anything the old screen scheduled. */
 function ScrollToTop({ screenKey }: { screenKey: string }) {
   useEffect(() => {
     window.scrollTo(0, 0);
+    stopAllSpeech();
   }, [screenKey]);
   return null;
 }
