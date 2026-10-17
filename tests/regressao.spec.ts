@@ -344,3 +344,21 @@ test("R21 nível 1 só tem animais, nível 2 só números de 0 a 10 (com ilustra
     if (await next(page)) break;
   }
 });
+
+test("R22 ao achar versão nova, abre um endereço novo (?v=) que o iPhone não tem guardado, e só tenta uma vez", async ({
+  page,
+}) => {
+  // The server keeps answering with a "newer" build (like a stale cache would): the app must
+  // jump to a cache-busting URL once, then stop instead of reloading forever.
+  await page.route(/index\.html\?t=/, async (route) => {
+    const res = await route.fetch();
+    const html = (await res.text()).replace(/assets\/index-/g, "assets/index-NEW");
+    await route.fulfill({ response: res, body: html });
+  });
+  let loads = 0;
+  page.on("load", () => loads++);
+  await seed(page);
+  await page.waitForTimeout(3000);
+  expect(page.url()).toMatch(/[?&]v=/);
+  expect(loads).toBeLessThanOrEqual(2);
+});
