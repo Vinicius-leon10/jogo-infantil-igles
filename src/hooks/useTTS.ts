@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const PRIORITY = [
   "Samantha",
@@ -8,55 +8,102 @@ const PRIORITY = [
   "Microsoft Jenny Online (Natural)",
 ];
 
+const supported = typeof window !== "undefined" && "speechSynthesis" in window;
+
+// Shared across every screen, so speech scheduled from an effect (which may hold
+// a callback from before the voices loaded) still uses the chosen English voice.
+let chosenVoice: SpeechSynthesisVoice | null = null;
+// Keep a reference to the live utterance: Chrome may garbage-collect it mid-speech.
+let current: SpeechSynthesisUtterance | null = null;
+let pending: ReturnType<typeof setTimeout> | null = null;
+const listeners = new Set<(speaking: boolean) => void>();
+
+function setSpeaking(v: boolean) {
+  listeners.forEach((l) => l(v));
+}
+
+function pickVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return;
+  let chosen: SpeechSynthesisVoice | undefined;
+  for (const name of PRIORITY) {
+    chosen = voices.find((v) => v.name.includes(name));
+    if (chosen) break;
+  }
+  if (!chosen) chosen = voices.find((v) => v.lang.toLowerCase().startsWith("en"));
+  chosenVoice = chosen ?? null;
+}
+
+if (supported) {
+  pickVoice();
+  window.speechSynthesis.addEventListener("voiceschanged", pickVoice);
+
+  // iOS Safari (and some Android browsers) only allow speech after a speak()
+  // made inside a user gesture. Speak a silent utterance on the first touch so
+  // the automatic speech on later screens is allowed.
+  const unlock = () => {
+    const u = new SpeechSynthesisUtterance(" ");
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
+    window.removeEventListener("pointerdown", unlock, true);
+    window.removeEventListener("keydown", unlock, true);
+  };
+  window.addEventListener("pointerdown", unlock, true);
+  window.addEventListener("keydown", unlock, true);
+}
+
+function speakNow(text: string, rate: number, pitch: number) {
+  const u = new SpeechSynthesisUtterance(text);
+  if (chosenVoice) u.voice = chosenVoice;
+  u.lang = chosenVoice?.lang ?? "en-US";
+  u.rate = rate;
+  u.pitch = pitch;
+  u.onstart = () => setSpeaking(true);
+  u.onend = u.onerror = () => {
+    if (current === u) setSpeaking(false);
+  };
+  current = u;
+  window.speechSynthesis.resume(); // Chrome can get stuck in a paused state.
+  window.speechSynthesis.speak(u);
+}
+
 export function useTTS() {
-  const [voice, setVoice] = useState<SpeechSynthesisVoice | null>(null);
-  const [speaking, setSpeaking] = useState(false);
-  const supported = typeof window !== "undefined" && "speechSynthesis" in window;
-  const queueRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [speaking, setLocalSpeaking] = useState(false);
 
   useEffect(() => {
-    if (!supported) return;
-    const pick = () => {
-      const voices = window.speechSynthesis.getVoices();
-      if (!voices.length) return;
-      let chosen: SpeechSynthesisVoice | undefined;
-      for (const name of PRIORITY) {
-        chosen = voices.find((v) => v.name.includes(name));
-        if (chosen) break;
-      }
-      if (!chosen) chosen = voices.find((v) => v.lang.startsWith("en"));
-      if (chosen) setVoice(chosen);
-    };
-    pick();
-    window.speechSynthesis.onvoiceschanged = pick;
+    listeners.add(setLocalSpeaking);
     return () => {
-      window.speechSynthesis.onvoiceschanged = null;
+      listeners.delete(setLocalSpeaking);
     };
-  }, [supported]);
+  }, []);
 
-  const speak = useCallback(
-    (text: string, opts?: { rate?: number; pitch?: number }) => {
-      if (!supported) return;
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      if (voice) u.voice = voice;
-      u.lang = voice?.lang ?? "en-US";
-      u.rate = opts?.rate ?? 0.78;
-      u.pitch = opts?.pitch ?? 1.25;
-      u.onstart = () => setSpeaking(true);
-      u.onend = () => setSpeaking(false);
-      u.onerror = () => setSpeaking(false);
-      queueRef.current = u;
-      window.speechSynthesis.speak(u);
-    },
-    [voice, supported],
-  );
+  const speak = useCallback((text: string, opts?: { rate?: number; pitch?: number }) => {
+    if (!supported) return;
+    const synth = window.speechSynthesis;
+    const rate = opts?.rate ?? 0.78;
+    const pitch = opts?.pitch ?? 1.25;
+    if (pending) clearTimeout(pending);
+    pending = null;
+    if (synth.speaking || synth.pending) {
+      // Chrome drops an utterance queued right after cancel(); give it a beat.
+      synth.cancel();
+      pending = setTimeout(() => {
+        pending = null;
+        speakNow(text, rate, pitch);
+      }, 60);
+    } else {
+      speakNow(text, rate, pitch);
+    }
+  }, []);
 
   const stop = useCallback(() => {
     if (!supported) return;
+    if (pending) clearTimeout(pending);
+    pending = null;
+    current = null;
     window.speechSynthesis.cancel();
     setSpeaking(false);
-  }, [supported]);
+  }, []);
 
   return { speak, stop, speaking, supported };
 }
