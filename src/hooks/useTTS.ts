@@ -39,17 +39,16 @@ if (supported) {
   window.speechSynthesis.addEventListener("voiceschanged", pickVoice);
 
   // iOS Safari (and some Android browsers) only allow speech after a speak()
-  // made inside a user gesture. Speak a silent utterance on the first touch so
-  // the automatic speech on later screens is allowed.
+  // made inside a user gesture (the end of a tap, not pointerdown). Speak a
+  // silent utterance on the first tap so later automatic speech is allowed.
+  const gestures = ["pointerup", "touchend", "click", "keydown"];
   const unlock = () => {
     const u = new SpeechSynthesisUtterance(" ");
     u.volume = 0;
     window.speechSynthesis.speak(u);
-    window.removeEventListener("pointerdown", unlock, true);
-    window.removeEventListener("keydown", unlock, true);
+    gestures.forEach((e) => window.removeEventListener(e, unlock, true));
   };
-  window.addEventListener("pointerdown", unlock, true);
-  window.addEventListener("keydown", unlock, true);
+  gestures.forEach((e) => window.addEventListener(e, unlock, true));
 }
 
 function speakNow(text: string, rate: number, pitch: number) {

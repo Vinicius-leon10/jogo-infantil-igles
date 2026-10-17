@@ -8,8 +8,8 @@ import { readJSON, writeJSON } from "./storage";
 const MUSIC_KEY = "sprout-music-enabled";
 const BPM = 112;
 const STEP = 60 / BPM / 2; // eighth note, in seconds
-const MUSIC_VOLUME = 0.16;
-const SFX_VOLUME = 0.35;
+const MUSIC_VOLUME = 0.55;
+const SFX_VOLUME = 1;
 
 let ctx: AudioContext | null = null;
 let musicGain: GainNode | null = null;
@@ -29,33 +29,79 @@ function audio(): AudioContext | null {
   const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!AC) return null;
   ctx = new AC();
+  // Compressor on the master bus lets us play loud without clipping.
+  const master = ctx.createDynamicsCompressor();
+  master.threshold.value = -14;
+  master.knee.value = 10;
+  master.ratio.value = 4;
+  const out = ctx.createGain();
+  out.gain.value = 1.6;
+  master.connect(out).connect(ctx.destination);
   musicGain = ctx.createGain();
   musicGain.gain.value = 0;
-  musicGain.connect(ctx.destination);
+  musicGain.connect(master);
   sfxGain = ctx.createGain();
   sfxGain.gain.value = SFX_VOLUME;
-  sfxGain.connect(ctx.destination);
+  sfxGain.connect(master);
   noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
   const data = noise.getChannelData(0);
   for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
   return ctx;
 }
 
-// Browsers only let audio start after a user gesture: unlock on the first touch.
+/** A tiny silent WAV, looped in an <audio> element (see unlock below). */
+function silentWav(): string {
+  const rate = 8000;
+  const samples = rate / 2;
+  const buf = new ArrayBuffer(44 + samples);
+  const v = new DataView(buf);
+  const str = (o: number, t: string) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  str(0, "RIFF"); v.setUint32(4, 36 + samples, true); str(8, "WAVE"); str(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+  str(36, "data"); v.setUint32(40, samples, true);
+  for (let i = 0; i < samples; i++) v.setUint8(44 + i, 128);
+  let bin = "";
+  new Uint8Array(buf).forEach((b) => (bin += String.fromCharCode(b)));
+  return "data:audio/wav;base64," + btoa(bin);
+}
+
+// Browsers only let audio start inside a real user gesture. On phones that is
+// the end of a tap (touchend/click), not pointerdown, so listen to all of them.
+const GESTURES = ["pointerup", "touchend", "click", "keydown"] as const;
 if (typeof window !== "undefined") {
+  let keepAlive: HTMLAudioElement | null = null;
   const unlock = () => {
     const c = audio();
     if (!c) return;
+    // iOS mutes Web Audio with the silent switch unless the page is also
+    // playing media; a looping silent <audio> moves it to the "playback" session.
+    const nav = navigator as Navigator & { audioSession?: { type: string } };
+    if (nav.audioSession) nav.audioSession.type = "playback";
+    if (!keepAlive) {
+      keepAlive = new Audio(silentWav());
+      keepAlive.loop = true;
+      keepAlive.setAttribute("playsinline", "");
+    }
+    keepAlive.play().catch(() => {});
+    // A short silent buffer started inside the gesture fully unlocks old Safari.
+    const src = c.createBufferSource();
+    src.buffer = c.createBuffer(1, 1, 22050);
+    src.connect(c.destination);
+    src.start(0);
     c.resume().then(() => {
+      if (c.state !== "running") return;
+      GESTURES.forEach((e) => window.removeEventListener(e, unlock, true));
       if (musicWanted && musicEnabled) startLoop();
     });
-    if (c.state === "running") {
-      window.removeEventListener("pointerdown", unlock, true);
-      window.removeEventListener("keydown", unlock, true);
-    }
   };
-  window.addEventListener("pointerdown", unlock, true);
-  window.addEventListener("keydown", unlock, true);
+  GESTURES.forEach((e) => window.addEventListener(e, unlock, true));
+  // Coming back from the background (iOS "interrupted" state): resume.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && ctx && ctx.state !== "running") {
+      ctx.resume().then(() => musicWanted && musicEnabled && startLoop());
+    }
+  });
 }
 
 // ---------------------------------------------------------------- notes
