@@ -25,7 +25,7 @@ export function StoryReader({ story, onBack }: Props) {
       stop();
       return;
     }
-    speak(current.en, { rate: 0.7, pitch: 1.15 });
+    speak(current.en, { rate: 0.6, pitch: 1.15 });
   };
 
   const next = () => {

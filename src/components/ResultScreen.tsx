@@ -24,7 +24,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
   useEffect(() => {
     if (!passed) return;
     const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
-    const t = setTimeout(() => speak(praise, { rate: 0.9, pitch: 1.35 }), 350);
+    const t = setTimeout(() => speak(praise, { rate: 0.8, pitch: 1.35 }), 350);
 
     const fire = (particles: number, spread: number, originY: number) =>
       confetti({

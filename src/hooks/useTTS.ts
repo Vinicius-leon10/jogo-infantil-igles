@@ -80,7 +80,7 @@ export function useTTS() {
   const speak = useCallback((text: string, opts?: { rate?: number; pitch?: number }) => {
     if (!supported) return;
     const synth = window.speechSynthesis;
-    const rate = opts?.rate ?? 0.78;
+    const rate = opts?.rate ?? 0.6;
     const pitch = opts?.pitch ?? 1.25;
     if (pending) clearTimeout(pending);
     pending = null;
