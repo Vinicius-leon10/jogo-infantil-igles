@@ -1,5 +1,5 @@
 import { ArrowLeft, Volume2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Word } from "@/data/content";
 import { useTTS } from "@/hooks/useTTS";
 import { Sprout } from "./Sprout";
@@ -40,6 +40,8 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
   const [cards, setCards] = useState(initialCards);
   const [flipped, setFlipped] = useState<string[]>([]);
   const [matched, setMatched] = useState<Set<string>>(new Set());
+  const sayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (sayTimer.current) clearTimeout(sayTimer.current); }, []);
   const [moves, setMoves] = useState(0);
   const allMatched = matched.size === pairs.length;
 
@@ -51,7 +53,7 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
         setMatched((m) => new Set(m).add(a.word.id));
         setFlipped([]);
         playCorrect();
-        setTimeout(() => speak(a.word.en), 300);
+        sayTimer.current = setTimeout(() => speak(a.word.en), 300);
       }, 350);
     } else {
       setTimeout(() => setFlipped([]), 800);
@@ -61,6 +63,9 @@ export function MemoryGame({ words, onDone, onBack }: Props) {
   }, [flipped]);
 
   const handleFlip = (k: string) => {
+    // A newly flipped card speaks its own word; drop any pending "pair found" word.
+    if (sayTimer.current) clearTimeout(sayTimer.current);
+    sayTimer.current = null;
     if (flipped.length >= 2) return;
     if (flipped.includes(k)) return;
     const card = cards.find((c) => c.key === k)!;

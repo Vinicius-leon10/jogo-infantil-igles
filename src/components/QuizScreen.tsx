@@ -25,7 +25,15 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }: Props) {
-  const { speak } = useTTS();
+  const { speak, stop } = useTTS();
+  // Delayed "say the word" after a right answer; must never leak into the next question.
+  const sayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelSay = () => {
+    if (sayTimer.current) clearTimeout(sayTimer.current);
+    sayTimer.current = null;
+    stop();
+  };
+  useEffect(() => cancelSay, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [correct, setCorrect] = useState(0);
@@ -71,7 +79,8 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
       correctIdsRef.current.push(q.word.id);
       setMood("excited");
       playCorrect();
-      setTimeout(() => speak(q.word.en), 550);
+      const word = q.word.en;
+      sayTimer.current = setTimeout(() => speak(word), 550);
     } else {
       wrongIdsRef.current.push(q.word.id);
       setMood("wink");
@@ -82,6 +91,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
   };
 
   const handleNext = () => {
+    cancelSay();
     setPicked(null);
     setMood("happy");
     if (isLast) {
