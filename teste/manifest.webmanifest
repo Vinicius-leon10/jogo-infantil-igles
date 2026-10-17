@@ -1,0 +1,16 @@
+{
+  "name": "Sprout TESTE",
+  "short_name": "Sprout TESTE",
+  "description": "App divertido para crianças aprenderem inglês com um brotinho amigável.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "icons": [
+    { "src": "apple-touch-icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "apple-touch-icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "apple-touch-icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
