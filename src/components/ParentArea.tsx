@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { X, LogOut, History, UserCog, ShieldCheck, Star } from "lucide-react";
+import { X, History, UserCog, ShieldCheck, Star } from "lucide-react";
 import { phases } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import type { ChildProfile, ChildProfileInput } from "@/hooks/useChildProfile";
@@ -9,11 +9,10 @@ type Tab = "history" | "edit";
 type Props = {
   profile: ChildProfile;
   onSave: (input: ChildProfileInput) => Promise<unknown>;
-  onSignOut: () => void;
   onClose: () => void;
 };
 
-export function ParentArea({ profile, onSave, onSignOut, onClose }: Props) {
+export function ParentArea({ profile, onSave, onClose }: Props) {
   const [unlocked, setUnlocked] = useState(false);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState(false);
@@ -99,14 +98,6 @@ export function ParentArea({ profile, onSave, onSignOut, onClose }: Props) {
             </div>
 
             {tab === "history" ? <HistoryPanel /> : <EditPanel profile={profile} onSave={onSave} />}
-
-            <button
-              onClick={onSignOut}
-              className="mt-6 w-full rounded-2xl py-3 font-bold bg-card flex items-center justify-center gap-2 active:scale-95"
-            >
-              <LogOut className="size-4" />
-              Sair da conta
-            </button>
           </>
         )}
       </div>

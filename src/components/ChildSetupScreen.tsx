@@ -1,15 +1,13 @@
 import { useState } from "react";
-import { LogOut } from "lucide-react";
 import { Sprout } from "./Sprout";
 import type { ChildProfileInput } from "@/hooks/useChildProfile";
 
 type Props = {
   onSave: (input: ChildProfileInput) => Promise<unknown>;
-  onSignOut: () => void;
   initial?: Partial<ChildProfileInput>;
 };
 
-export function ChildSetupScreen({ onSave, onSignOut, initial }: Props) {
+export function ChildSetupScreen({ onSave, initial }: Props) {
   const [name, setName] = useState(initial?.name ?? "");
   const [age, setAge] = useState<number>(initial?.age ?? 5);
   const [sex, setSex] = useState<"boy" | "girl" | null>(initial?.sex ?? null);
@@ -43,13 +41,6 @@ export function ChildSetupScreen({ onSave, onSignOut, initial }: Props) {
             Sobre a criança
           </h1>
         </div>
-        <button
-          onClick={onSignOut}
-          className="size-10 rounded-full bg-card flex items-center justify-center"
-          aria-label="Sair"
-        >
-          <LogOut className="size-4" />
-        </button>
       </header>
 
       <p className="text-sm text-muted-foreground mb-6">

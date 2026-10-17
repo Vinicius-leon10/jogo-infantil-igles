@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { getLearnWords, getPoolWords, getQuizWords, phases } from "@/data/content";
 import type { Word } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
-import { useAuth } from "@/hooks/useAuth";
 import { useChildProfile } from "@/hooks/useChildProfile";
 import { WorldMap } from "@/components/WorldMap";
 import { LevelsScreen } from "@/components/LevelsScreen";
@@ -11,7 +10,6 @@ import { PhaseIntro } from "@/components/PhaseIntro";
 import { LearnScreen } from "@/components/LearnScreen";
 import { QuizScreen } from "@/components/QuizScreen";
 import { ResultScreen } from "@/components/ResultScreen";
-import { LoginScreen } from "@/components/LoginScreen";
 import { ChildSetupScreen } from "@/components/ChildSetupScreen";
 import { ParentArea } from "@/components/ParentArea";
 import { MemoryGame } from "@/components/MemoryGame";
@@ -57,8 +55,7 @@ function LoadingSplash() {
 }
 
 export function App() {
-  const { user, ready: authReady, signOut } = useAuth();
-  const { profile, loading: profileLoading, save: saveProfile } = useChildProfile(user?.id);
+  const { profile, loading: profileLoading, save: saveProfile } = useChildProfile();
   const { progress, recordPhase } = useProgress();
   const [screen, setScreen] = useState<Screen>("levels");
   const [levelId, setLevelId] = useState<number>(1);
@@ -90,11 +87,9 @@ export function App() {
     </AnimatePresence>
   );
 
-  if (!authReady) return <>{welcomeOverlay}<LoadingSplash /></>;
-  if (!user) return <>{welcomeOverlay}<LoginScreen /></>;
   if (profileLoading) return <>{welcomeOverlay}<LoadingSplash /></>;
   if (!profile) {
-    return <>{welcomeOverlay}<ChildSetupScreen onSave={saveProfile} onSignOut={signOut} /></>;
+    return <>{welcomeOverlay}<ChildSetupScreen onSave={saveProfile} /></>;
   }
 
   const phase = phaseId ? phases.find((p) => p.id === phaseId)! : null;
@@ -280,7 +275,6 @@ export function App() {
         <ParentArea
           profile={profile}
           onSave={saveProfile}
-          onSignOut={signOut}
           onClose={() => setParentsOpen(false)}
         />
       )}
