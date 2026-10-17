@@ -25,7 +25,7 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   "pode publicar na versão real" (fast-forward de `claude/sprout-app` para `main`).
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
   cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
-- Sugestão pendente, sem resposta do dono: aviso "🔔 Tire o celular do silencioso para ouvir as palavras" na abertura.
+- Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
 
 ## Lições do iPhone (não repetir)
 - O silencioso corta a voz (speechSynthesis), não a música/efeitos: antes de caçar bug de "sem som", pedir para
