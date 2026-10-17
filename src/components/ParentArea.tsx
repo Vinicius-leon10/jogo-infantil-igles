@@ -49,7 +49,7 @@ export function ParentArea({ profile, onSave, onClose }: Props) {
           </h1>
           <button
             onClick={onClose}
-            className="size-10 rounded-full bg-card flex items-center justify-center active:scale-95"
+            className="size-10 rounded-full bg-card flex items-center justify-center btn-3d btn-3d-soft"
             aria-label="Fechar"
           >
             <X className="size-5" />
@@ -223,7 +223,7 @@ function HistoryPanel() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-card p-3 text-center">
-      <div className="text-xl font-bold" style={{ color: "var(--sprout)" }}>{value}</div>
+      <div className="text-xl font-bold" style={{ color: "var(--sprout-ink)" }}>{value}</div>
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{label}</div>
     </div>
   );
@@ -300,7 +300,7 @@ function EditPanel({
       </Field>
 
       {error && <p className="text-sm text-destructive font-semibold">{error}</p>}
-      {saved && <p className="text-sm font-semibold" style={{ color: "var(--sprout)" }}>Salvo! ✅</p>}
+      {saved && <p className="text-sm font-semibold" style={{ color: "var(--sprout-ink)" }}>Salvo! ✅</p>}
 
       <button
         onClick={submit}

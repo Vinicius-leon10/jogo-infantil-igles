@@ -55,7 +55,7 @@ export function StoryReader({ story, onBack }: Props) {
         <div className="mx-auto max-w-md px-5 py-3 flex items-center gap-3">
           <button
             onClick={onBack}
-            className="size-10 rounded-full bg-card flex items-center justify-center active:scale-95"
+            className="size-10 rounded-full bg-card flex items-center justify-center btn-3d btn-3d-soft"
             aria-label="Voltar"
           >
             <ArrowLeft className="size-5" />
@@ -167,7 +167,7 @@ export function StoryReader({ story, onBack }: Props) {
         <button
           onClick={prev}
           disabled={page === 0}
-          className="size-14 rounded-full bg-card flex items-center justify-center active:scale-95 disabled:opacity-30"
+          className="size-14 rounded-full bg-card flex items-center justify-center disabled:opacity-30 btn-3d btn-3d-soft"
           aria-label="Página anterior"
         >
           <ChevronLeft className="size-6" />
@@ -190,7 +190,7 @@ export function StoryReader({ story, onBack }: Props) {
         <button
           onClick={next}
           disabled={page === total - 1}
-          className="size-14 rounded-full bg-card flex items-center justify-center active:scale-95 disabled:opacity-30"
+          className="size-14 rounded-full bg-card flex items-center justify-center disabled:opacity-30 btn-3d btn-3d-soft"
           aria-label="Próxima página"
         >
           <ChevronRight className="size-6" />

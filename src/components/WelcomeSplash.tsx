@@ -43,7 +43,7 @@ export function WelcomeSplash({ onDone }: Props) {
       >
         <h1
           className="text-5xl font-bold mb-2"
-          style={{ fontFamily: "Fredoka, sans-serif", color: "var(--sprout)" }}
+          style={{ fontFamily: "Fredoka, sans-serif", color: "var(--sprout-ink)" }}
         >
           Olá!
         </h1>
@@ -56,7 +56,7 @@ export function WelcomeSplash({ onDone }: Props) {
           e.stopPropagation();
           onDone();
         }}
-        className="mt-4 rounded-full px-8 py-4 text-lg font-extrabold glow-sprout"
+        className="mt-4 rounded-full px-8 py-4 text-lg font-extrabold btn-3d"
         style={{
           background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))",
           color: "var(--primary-foreground)",

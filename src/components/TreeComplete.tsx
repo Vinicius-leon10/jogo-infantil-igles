@@ -35,7 +35,7 @@ export function TreeComplete({ level, nextLevel, onNextLevel, onMap }: Props) {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-6 text-center gap-4"
-      style={{ background: "radial-gradient(circle at 50% 35%, #2f6b34 0%, #1b2950 70%, #151a3d 100%)" }}
+      style={{ background: "radial-gradient(circle at 50% 30%, #fff6c9 0%, #dff4ff 55%, #9fdcff 100%)" }}
       data-testid="tree-complete"
     >
       <motion.div initial={{ scale: 0.3, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 140, damping: 12 }}>
@@ -44,7 +44,7 @@ export function TreeComplete({ level, nextLevel, onNextLevel, onMap }: Props) {
       <Sprout size={72} mood="love" className="animate-float -mt-6" />
       <div>
         <p className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground">{level.title} concluído</p>
-        <h1 className="text-3xl font-bold mt-1" style={{ color: "var(--sprout)" }}>
+        <h1 className="text-3xl font-bold mt-1" style={{ color: "var(--sprout-ink)" }}>
           Você completou a {level.treeName}! 🎉
         </h1>
         <p className="text-sm text-muted-foreground mt-2">Do broto pequenininho até a árvore, fase por fase.</p>
@@ -53,13 +53,13 @@ export function TreeComplete({ level, nextLevel, onNextLevel, onMap }: Props) {
         {nextLevel && (
           <button
             onClick={onNextLevel}
-            className="w-full rounded-2xl py-4 font-extrabold text-lg active:scale-95 transition-transform glow-sprout"
+            className="w-full rounded-2xl py-4 font-extrabold text-lg transition-transform btn-3d"
             style={{ background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))", color: "var(--primary-foreground)" }}
           >
             Ir para o {nextLevel.title} →
           </button>
         )}
-        <button onClick={onMap} className="w-full rounded-2xl py-3 font-bold bg-card active:scale-95">
+        <button onClick={onMap} className="w-full rounded-2xl py-3 font-bold bg-card btn-3d btn-3d-soft">
           Ver minha {level.treeName}
         </button>
       </div>

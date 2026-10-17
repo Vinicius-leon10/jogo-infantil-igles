@@ -21,7 +21,7 @@ js = js.replace("</script", "<\\/script")
 css = open(glob.glob(f"{dist}/assets/*.css")[0]).read()
 page = open(template).read()
 a, b = page.index("<style>"), page.index("</style>")
-page = page[:a] + "<style>:root{color-scheme:dark;background:#1a1a2e}\n" + css + page[b:]
+page = page[:a] + "<style>:root{color-scheme:light;background:#dff4ff}\n" + css + page[b:]
 a = page.index('<script type="module">') + len('<script type="module">')
 b = page.rindex("</script>")
 page = page[:a] + js + page[b:]

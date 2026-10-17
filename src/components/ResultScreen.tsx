@@ -100,7 +100,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
           ))}
         </div>
 
-        <div className="mt-6 text-4xl font-bold tabular-nums" style={{ color: "var(--sprout)" }}>
+        <div className="mt-6 text-4xl font-bold tabular-nums" style={{ color: "var(--sprout-ink)" }}>
           {score}%
         </div>
       </div>
@@ -109,7 +109,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
         {passed ? (
           <button
             onClick={onHome}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-lg active:scale-95 transition-transform glow-sprout"
+            className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-lg transition-transform btn-3d"
             style={{
               background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))",
               color: "var(--primary-foreground)",
@@ -120,7 +120,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
         ) : (
           <button
             onClick={onRetry}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-lg active:scale-95 transition-transform glow-sprout"
+            className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold text-lg transition-transform btn-3d"
             style={{
               background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))",
               color: "var(--primary-foreground)",
@@ -132,7 +132,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
         )}
         <button
           onClick={onHome}
-          className="w-full flex items-center justify-center gap-2 rounded-2xl bg-card py-4 font-semibold active:scale-95 transition-transform"
+          className="w-full flex items-center justify-center gap-2 rounded-2xl bg-card py-4 font-bold btn-3d btn-3d-soft"
         >
           <Home className="size-5" />
           Mapa de fases

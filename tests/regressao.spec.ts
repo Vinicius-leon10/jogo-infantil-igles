@@ -501,3 +501,37 @@ test("R29 depois que a palavra termina normalmente, ela não é repetida sozinha
   await page.waitForTimeout(6000); // longer than the "stuck" timeout
   expect(await page.evaluate(() => (window as unknown as { __spoken: string[] }).__spoken)).toEqual(["Dog"]);
 });
+
+test("R30 visual 'Dia ensolarado': fundo claro, texto escuro e botões principais 3D", async ({ page }) => {
+  await seed(page);
+  const look = await page.evaluate(() => {
+    const lum = (c: string) => {
+      const [r, g, b] = c.match(/\d+(\.\d+)?/g)!.map(Number);
+      return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    };
+    const css = getComputedStyle(document.documentElement);
+    return {
+      background: lum(getComputedStyle(document.body).backgroundColor),
+      text: lum(getComputedStyle(document.body).color),
+      radius: parseFloat(css.getPropertyValue("--radius")),
+    };
+  });
+  expect(look.background).toBeGreaterThan(0.85);
+  expect(look.text).toBeLessThan(0.3);
+  expect(look.radius).toBeGreaterThanOrEqual(1.5);
+  await openPhase(page);
+  const shadow = await page.getByRole("button", { name: /Próxima|Fazer o quiz/ }).evaluate((b) => getComputedStyle(b).boxShadow);
+  expect(shadow).toMatch(/0px 6px 0px/);
+});
+
+test("R31 versão oficial não mostra o texto da versão; a de teste mostra", async ({ page }) => {
+  await seed(page);
+  await expect(page.getByText(/novos níveis em breve/)).toBeVisible();
+  await expect(page.getByText(/versão /)).toHaveCount(0);
+  await page.goto("http://localhost:4174/");
+  await page.getByPlaceholder("Ex.: Lia").fill("Teste");
+  await page.getByText("Menino", { exact: true }).click();
+  await page.getByText("Ainda não", { exact: true }).click();
+  await page.getByText("Começar a aventura").click();
+  await expect(page.getByText(/versão .* \(teste\)/)).toBeVisible();
+});

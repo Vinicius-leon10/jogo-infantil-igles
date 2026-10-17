@@ -24,7 +24,7 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
         <div className="mx-auto max-w-md px-5 py-4 flex items-center gap-3">
           <button
             onClick={onOpenParents}
-            className="size-10 rounded-full bg-card flex items-center justify-center active:scale-95"
+            className="size-10 rounded-full bg-card flex items-center justify-center btn-3d btn-3d-soft"
             aria-label="Área dos pais"
           >
             <Menu className="size-5" />
@@ -38,7 +38,7 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
             {onOpenStories && (
               <button
                 onClick={onOpenStories}
-                className="size-9 rounded-full bg-card flex items-center justify-center active:scale-95"
+                className="size-9 rounded-full bg-card flex items-center justify-center btn-3d btn-3d-soft"
                 aria-label="Histórias"
               >
                 <BookOpen className="size-4 text-primary" />
@@ -85,8 +85,8 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
                 <button
                   onClick={() => unlocked && onSelectLevel(level.id)}
                   disabled={!unlocked}
-                  className={`w-full rounded-3xl p-5 text-left transition-all
-                    ${unlocked ? "bg-card hover:scale-[1.02] active:scale-95" : "bg-card/40 cursor-not-allowed"}
+                  className={`w-full rounded-3xl p-5 text-left transition-all btn-3d btn-3d-soft
+                    ${unlocked ? "bg-card" : "bg-card/40 cursor-not-allowed"}
                   `}
                   style={
                     unlocked
@@ -101,7 +101,7 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
                     {/* The level's tree, grown as far as the child has got. */}
                     <div
                       className="relative size-16 shrink-0 rounded-2xl flex items-end justify-center shadow-lg overflow-hidden"
-                      style={{ background: "radial-gradient(circle at 50% 75%, #2f6b34 0%, #1e4a27 70%, #173a20 100%)" }}
+                      style={{ background: "radial-gradient(circle at 50% 75%, #a7e48a 0%, #74c45a 70%, #5fae47 100%)" }}
                     >
                       <Plant stage={Math.max(1, done)} stages={totalPhases} kind={level.tree} size={64} dim={!unlocked} />
                       {!unlocked && (
@@ -153,7 +153,9 @@ export function LevelsScreen({ onSelectLevel, onOpenParents, onOpenStories }: Pr
         </ul>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          {phases.length} fases no total · novos níveis em breve · versão {__APP_VERSION__}{__APP_ENV__ === "teste" ? " (teste)" : ""}
+          {phases.length} fases no total · novos níveis em breve
+          {/* The build version only shows on the test site, to check that a phone picked up a new build. */}
+          {__APP_ENV__ === "teste" && ` · versão ${__APP_VERSION__} (teste)`}
         </p>
       </div>
     </div>

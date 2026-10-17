@@ -46,86 +46,46 @@
   --shadow-card: 0 10px 30px -10px color-mix(in oklab, #000 60%, transparent);
 }
 
+/* Palette "Dia ensolarado": a sunny day over a meadow. Single light theme for the
+   whole app (the meadow/tree story happens in daylight). */
 :root {
-  --radius: 1.25rem;
+  --radius: 1.6rem;
+  color-scheme: light;
 
-  /* Dark theme is the canonical app theme. Light tokens below are kept for
-     specific surfaces but the global background stays dark to match brand. */
-  --background: oklch(0.18 0.04 270);
-  --foreground: oklch(0.98 0.01 250);
-  --card: oklch(0.23 0.05 270);
-  --card-foreground: oklch(0.98 0.01 250);
-  --popover: oklch(0.23 0.05 270);
-  --popover-foreground: oklch(0.98 0.01 250);
+  --background: #dff4ff;
+  --foreground: #1f2a44;
+  --card: #ffffff;
+  --card-foreground: #1f2a44;
+  --popover: #ffffff;
+  --popover-foreground: #1f2a44;
 
-  --primary: oklch(0.82 0.22 145);
-  --primary-foreground: oklch(0.15 0.04 270);
-  --secondary: oklch(0.32 0.08 275);
-  --secondary-foreground: oklch(0.98 0.01 250);
-  --muted: oklch(0.28 0.05 270);
-  --muted-foreground: oklch(0.72 0.03 260);
-  --accent: oklch(0.65 0.22 295);
-  --accent-foreground: oklch(0.98 0.01 250);
-  --destructive: oklch(0.68 0.22 25);
-  --destructive-foreground: oklch(0.98 0.01 250);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.82 0.22 145);
+  --primary: #58cc02;
+  --primary-foreground: #173b12;
+  --secondary: #eef4ff;
+  --secondary-foreground: #1f2a44;
+  --muted: #e6edf7;
+  --muted-foreground: #5b6b86;
+  --accent: #ffc93c;
+  --accent-foreground: #1f2a44;
+  --destructive: #ff5a5f;
+  --destructive-foreground: #ffffff;
+  --border: rgb(31 42 68 / 0.1);
+  --input: rgb(31 42 68 / 0.14);
+  --ring: #58cc02;
 
-  --sprout: oklch(0.82 0.22 145);
-  --sprout-glow: oklch(0.88 0.25 140);
-  --indigo: oklch(0.55 0.24 285);
-  --amber: oklch(0.78 0.17 80);
-  --pink: oklch(0.68 0.25 0);
-  --azure: oklch(0.62 0.22 250);
-}
+  --sprout: #58cc02;
+  --sprout-glow: #89e219;
+  --sprout-ink: #2e8a00; /* green for text on light backgrounds */
+  --indigo: #4fb3ff;
+  --amber: #ffb020;
+  --pink: #ff7aa8;
+  --azure: #4fb3ff;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.18 0.04 270);
-    --foreground: oklch(0.98 0.01 250);
-    --card: oklch(0.23 0.05 270);
-    --card-foreground: oklch(0.98 0.01 250);
-    --popover: oklch(0.23 0.05 270);
-    --popover-foreground: oklch(0.98 0.01 250);
-    --primary: oklch(0.82 0.22 145);
-    --primary-foreground: oklch(0.15 0.04 270);
-    --secondary: oklch(0.32 0.08 275);
-    --secondary-foreground: oklch(0.98 0.01 250);
-    --muted: oklch(0.28 0.05 270);
-    --muted-foreground: oklch(0.72 0.03 260);
-    --accent: oklch(0.65 0.22 295);
-    --accent-foreground: oklch(0.98 0.01 250);
-    --destructive: oklch(0.68 0.22 25);
-    --destructive-foreground: oklch(0.98 0.01 250);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 12%);
-    --ring: oklch(0.82 0.22 145);
-    --sprout: oklch(0.82 0.22 145);
-    --sprout-glow: oklch(0.88 0.25 140);
-  }
-}
-
-.dark {
-  --background: oklch(0.18 0.04 270);
-  --foreground: oklch(0.98 0.01 250);
-  --card: oklch(0.23 0.05 270);
-  --card-foreground: oklch(0.98 0.01 250);
-  --popover: oklch(0.23 0.05 270);
-  --popover-foreground: oklch(0.98 0.01 250);
-  --primary: oklch(0.82 0.22 145);
-  --primary-foreground: oklch(0.15 0.04 270);
-  --secondary: oklch(0.32 0.08 275);
-  --secondary-foreground: oklch(0.98 0.01 250);
-  --muted: oklch(0.28 0.05 270);
-  --muted-foreground: oklch(0.72 0.03 260);
-  --accent: oklch(0.65 0.22 295);
-  --accent-foreground: oklch(0.98 0.01 250);
-  --destructive: oklch(0.68 0.22 25);
-  --destructive-foreground: oklch(0.98 0.01 250);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.82 0.22 145);
+  /* chunky 3D buttons: the darker "edge" under each kind of button */
+  --edge-green: #3f9b00;
+  --edge-soft: #c9d5e6;
+  --edge-blue: #2f8fd9;
+  --edge-coral: #d9465a;
 }
 
 @layer base {
@@ -133,10 +93,12 @@
     border-color: var(--color-border);
   }
 
+  html {
+    font-size: 17px; /* everything a bit bigger for small fingers and eyes */
+  }
   html, body {
     background-color: var(--color-background);
-    background-image:
-      radial-gradient(ellipse at top, color-mix(in oklab, var(--accent) 18%, var(--color-background)) 0%, transparent 60%);
+    background-image: linear-gradient(180deg, #bfe9ff 0%, #e6f7ff 45%, #fff6dc 100%);
     background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-body);
@@ -161,18 +123,38 @@
 @layer utilities {
   .text-balance { text-wrap: balance; }
 
+  /* Daytime sky with soft clouds, fading to warm sunlight at the bottom. */
   .bg-aurora {
     background-color: var(--color-background);
     background-image:
-      radial-gradient(circle at 20% 10%, color-mix(in oklab, var(--indigo) 35%, transparent) 0%, transparent 45%),
-      radial-gradient(circle at 80% 20%, color-mix(in oklab, var(--pink) 25%, transparent) 0%, transparent 40%),
-      radial-gradient(circle at 50% 90%, color-mix(in oklab, var(--sprout) 22%, transparent) 0%, transparent 50%);
+      radial-gradient(ellipse 120px 40px at 18% 12%, #ffffffd9 60%, transparent 62%),
+      radial-gradient(ellipse 90px 30px at 26% 9%, #ffffffd9 60%, transparent 62%),
+      radial-gradient(ellipse 140px 44px at 82% 20%, #ffffffcc 60%, transparent 62%),
+      linear-gradient(180deg, #bfe9ff 0%, #e6f7ff 45%, #fff6dc 100%);
   }
 
   .glow-sprout {
-    box-shadow: 0 0 0 1px color-mix(in oklab, var(--sprout) 40%, transparent),
-                0 10px 40px -10px color-mix(in oklab, var(--sprout) 60%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--sprout) 55%, transparent),
+                0 10px 30px -12px color-mix(in oklab, var(--sprout) 70%, transparent);
   }
+
+  /* Chunky "toy" buttons: a solid darker edge underneath that sinks when pressed. */
+  .btn-3d {
+    --edge: var(--edge-green);
+    box-shadow: 0 6px 0 var(--edge);
+    transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, filter 0.15s;
+  }
+  .btn-3d:active:not(:disabled) {
+    transform: translateY(5px) !important;
+    box-shadow: 0 1px 0 var(--edge);
+  }
+  .btn-3d:disabled {
+    filter: grayscale(0.4) opacity(0.7);
+  }
+  .btn-3d-soft { --edge: var(--edge-soft); }
+  .btn-3d-soft:disabled { filter: none; } /* answered quiz options keep their colours */
+  .btn-3d-blue { --edge: var(--edge-blue); }
+  .btn-3d-coral { --edge: var(--edge-coral); }
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }

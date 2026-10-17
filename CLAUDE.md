@@ -18,15 +18,23 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   (republicar com o Artifact tool a partir do HTML gerado por `scripts/build-claude-test.py`).
 - Teste no GitHub Pages: https://vinicius-leon10.github.io/jogo-infantil-igles/teste/ (branch `claude/sprout-app`).
 - Oficial: https://vinicius-leon10.github.io/jogo-infantil-igles/ (branch `main`). O deploy roda no GitHub Actions
-  depois dos testes; o rodapé da tela de níveis mostra a versão (commit) em uso.
+  depois dos testes; só na versão de teste o rodapé da tela de níveis mostra a versão (commit) em uso
+  (escondido na oficial a pedido do dono).
 
 ## Estado atual (atualizar quando mudar)
-- Oficial atualizada pelo PR #1 (juntado em `main`) com tudo até o commit que contém esta linha. Mudanças
-  depois disso ficam só no teste até o dono pedir para publicar (novo PR de `claude/sprout-app` para `main`,
-  ou fast-forward).
+- Oficial atualizada pelo PR #2 (juntado em `main`) com tudo até o commit que contém esta linha (inclui a
+  paleta "Dia ensolarado"). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
+  de `claude/sprout-app` para `main`).
+- Fontes: o dono viu as opções (Baloo 2/Andika/Sniglet) e decidiu manter Fredoka + Nunito por enquanto.
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
   cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
 - Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
+
+## Visual
+- Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
+  (texto verde usa `--sprout-ink`), amarelo-sol, coral e azul. Tema único claro; mapa é um campo de dia.
+- Botões "fofinhos" 3D: classes `btn-3d` (verde) e `btn-3d-soft` / `btn-3d-blue` / `btn-3d-coral`; texto escuro
+  sobre o verde (branco não tem contraste). Fonte base 17px e `--radius` 1.6rem.
 
 ## Lições do iPhone (não repetir)
 - O silencioso corta a voz (speechSynthesis), não a música/efeitos: antes de caçar bug de "sem som", pedir para

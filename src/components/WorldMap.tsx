@@ -14,14 +14,14 @@ type Props = {
   onSelectLevel?: (id: number) => void;
 };
 
-// Night sky at the top fading into a meadow and soil at the bottom, where phase 1 starts.
+// Sunny sky with clouds at the top, a meadow in the middle and soil at the bottom, where phase 1 starts.
 const TERRAIN = `
-  radial-gradient(2px 2px at 12% 4%, #fff9 50%, transparent 51%),
-  radial-gradient(1.5px 1.5px at 30% 9%, #fff8 50%, transparent 51%),
-  radial-gradient(2px 2px at 72% 3%, #fffa 50%, transparent 51%),
-  radial-gradient(1.5px 1.5px at 88% 11%, #fff7 50%, transparent 51%),
-  radial-gradient(1.5px 1.5px at 55% 14%, #fff6 50%, transparent 51%),
-  linear-gradient(180deg, #151a3d 0%, #1b2950 18%, #1d3b45 40%, #1f4a35 62%, #26582e 82%, #3a2a1e 100%)`;
+  radial-gradient(circle 34px at 86% 70px, #ffe36e 98%, transparent 100%),
+  radial-gradient(circle 70px at 86% 70px, #fff3a855 60%, transparent 100%),
+  radial-gradient(ellipse 70px 22px at 18% 90px, #ffffffe6 60%, transparent 62%),
+  radial-gradient(ellipse 52px 18px at 27% 76px, #ffffffe6 60%, transparent 62%),
+  radial-gradient(ellipse 80px 24px at 60% 150px, #ffffffcc 60%, transparent 62%),
+  linear-gradient(180deg, #8fd3ff 0%, #bfe9ff 12%, #dff4ff 22%, #b9e98a 32%, #95d870 55%, #7cc85c 80%, #b08356 100%)`;
 
 export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories, onSelectLevel }: Props) {
   const { progress, isUnlocked } = useProgress();
@@ -108,12 +108,12 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
   }, [currentPhase]);
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: TERRAIN, backgroundColor: "#151a3d" }}>
+    <div className="min-h-screen pb-10" style={{ background: TERRAIN, backgroundColor: "#bfe9ff" }}>
       <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/60 border-b border-border">
         <div className="mx-auto max-w-md px-5 py-4 flex items-center gap-3">
           <button
             onClick={onBackToLevels}
-            className="size-10 rounded-full bg-card flex items-center justify-center active:scale-95"
+            className="size-10 rounded-full bg-card flex items-center justify-center btn-3d btn-3d-soft"
             aria-label="Voltar aos níveis"
           >
             <ArrowLeft className="size-5" />
@@ -127,7 +127,7 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
             {onOpenStories && (
               <button
                 onClick={onOpenStories}
-                className="size-9 rounded-full bg-card flex items-center justify-center active:scale-95"
+                className="size-9 rounded-full bg-card flex items-center justify-center btn-3d btn-3d-soft"
                 aria-label="Histórias"
               >
                 <BookOpen className="size-4 text-primary" />
@@ -157,7 +157,7 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
               {nextLevel && onSelectLevel && (
                 <button
                   onClick={() => onSelectLevel(nextLevel.id)}
-                  className="mt-3 inline-flex items-center gap-1 rounded-full px-6 py-3 font-extrabold active:scale-95 glow-sprout"
+                  className="mt-3 inline-flex items-center gap-1 rounded-full px-6 py-3 font-extrabold btn-3d"
                   style={{ background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))", color: "var(--primary-foreground)" }}
                 >
                   Ir para o {nextLevel.title} <ChevronRight className="size-5" />
@@ -229,8 +229,8 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
                       }}
                       className={`relative size-[104px] shrink-0 rounded-full flex items-end justify-center ${isCurrent ? "glow-sprout" : ""}`}
                       style={{
-                        background: "radial-gradient(circle at 50% 70%, #2f6b34 0%, #1e4a27 65%, #173a20 100%)",
-                        boxShadow: isCurrent ? "0 0 0 3px var(--sprout), 0 0 30px -4px var(--sprout-glow)" : "0 6px 16px -8px #0009",
+                        background: "radial-gradient(circle at 50% 70%, #a7e48a 0%, #74c45a 65%, #5fae47 100%)",
+                        boxShadow: isCurrent ? "0 0 0 4px #fff, 0 0 0 7px var(--sprout), 0 6px 0 7px var(--edge-green)" : "0 0 0 4px #ffffffb3, 0 6px 0 4px #4e9a3a",
                       }}
                     >
                       <Plant stage={idx + 1} stages={stages} kind={level.tree} size={100} dim={!unlocked} />
@@ -241,7 +241,7 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
                       )}
                     </div>
                     <div
-                      className={`flex-1 min-w-0 rounded-2xl p-3 backdrop-blur-sm ${unlocked ? "bg-card/80" : "bg-card/40"} ${
+                      className={`flex-1 min-w-0 rounded-3xl p-3 shadow-[0_5px_0_var(--edge-soft)] ${unlocked ? "bg-card" : "bg-card/60"} ${
                         isCurrent ? "ring-2 ring-primary" : ""
                       }`}
                     >
@@ -280,7 +280,7 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
         </div>
 
         {/* Soil where the journey starts. */}
-        <div className="mt-6 mb-6 text-center text-xs font-bold uppercase tracking-[0.2em] text-[#d9b48f]">
+        <div className="mt-6 mb-6 text-center text-xs font-bold uppercase tracking-[0.2em] text-[#fff3e0]">
           🌱 Início
         </div>
 

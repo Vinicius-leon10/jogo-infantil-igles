@@ -135,7 +135,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
       <header className="px-5 py-4 flex items-center gap-3">
         <button
           onClick={onBack}
-          className="size-10 rounded-full bg-card flex items-center justify-center"
+          className="size-10 rounded-full bg-card flex items-center justify-center btn-3d btn-3d-soft"
           aria-label="Voltar"
         >
           <ArrowLeft className="size-5" />
@@ -177,11 +177,8 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
         {q.mode === "audio" && (
           <button
             onClick={() => speak(q.word.en)}
-            className="size-28 rounded-full flex items-center justify-center mb-6 active:scale-95 transition-transform"
-            style={{
-              background: "linear-gradient(135deg, var(--indigo), var(--accent))",
-              boxShadow: "0 10px 40px -10px var(--indigo)",
-            }}
+            className="size-28 rounded-full flex items-center justify-center mb-6 text-white btn-3d btn-3d-blue"
+            style={{ background: "var(--indigo)" }}
             aria-label="Ouvir novamente"
           >
             <Volume2 className="size-12" />
@@ -197,7 +194,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
         {q.mode === "translate" && (
           <div className="mb-6 text-center animate-pop">
             <p className="text-xs text-muted-foreground mb-1">Em português:</p>
-            <h2 className="text-4xl font-bold" style={{ color: "var(--sprout)" }}>{q.word.pt}</h2>
+            <h2 className="text-4xl font-bold" style={{ color: "var(--sprout-ink)" }}>{q.word.pt}</h2>
           </div>
         )}
 
@@ -222,7 +219,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
                 data-word={opt.id}
                 onClick={() => handlePick(opt.id)}
                 disabled={!!picked}
-                className={`relative rounded-2xl p-4 text-center transition-all active:scale-95 ${bg} ${ring}`}
+                className={`relative rounded-3xl p-4 text-center transition-all btn-3d btn-3d-soft ${bg} ${ring}`}
                 style={
                   showResult && isCorrect
                     ? { background: "color-mix(in oklab, var(--sprout) 25%, var(--card))", boxShadow: "0 0 0 2px var(--sprout)" }
@@ -267,7 +264,7 @@ export function QuizScreen({ pool, questions, onFinish, onBack, canRead = true }
         {picked && ready && (
           <button
             onClick={handleNext}
-            className="w-full max-w-md mx-auto rounded-2xl py-4 font-bold text-lg active:scale-95 transition-transform glow-sprout animate-pop"
+            className="w-full max-w-md mx-auto rounded-2xl py-4 font-bold text-lg transition-transform btn-3d animate-pop"
             style={{
               background: "linear-gradient(135deg, var(--sprout), var(--sprout-glow))",
               color: "var(--primary-foreground)",

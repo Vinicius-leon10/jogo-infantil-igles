@@ -35,7 +35,7 @@ export function StoriesScreen({ onBack, onOpenStory }: Props) {
         <div className="mx-auto max-w-md px-5 py-4 flex items-center gap-3">
           <button
             onClick={onBack}
-            className="size-10 rounded-full bg-card flex items-center justify-center active:scale-95"
+            className="size-10 rounded-full bg-card flex items-center justify-center btn-3d btn-3d-soft"
             aria-label="Voltar"
           >
             <ArrowLeft className="size-5" />

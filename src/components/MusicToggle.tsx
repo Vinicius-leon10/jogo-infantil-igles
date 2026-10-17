@@ -17,7 +17,7 @@ export function MusicToggle() {
       role="switch"
       aria-checked={on}
       aria-label="Música de fundo"
-      className="w-full mb-6 rounded-3xl bg-card px-5 py-4 flex items-center gap-4 active:scale-[0.98] transition-transform"
+      className="w-full mb-6 rounded-3xl bg-card px-5 py-4 flex items-center gap-4 btn-3d btn-3d-soft"
     >
       <span
         className="size-11 rounded-full flex items-center justify-center shrink-0"
