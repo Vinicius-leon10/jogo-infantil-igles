@@ -15,7 +15,8 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 
 ## Endereços
 - Teste no Claude (link que o dono usa): https://claude.ai/artifact/N7JrhLNphV4CroyejAFHyf
-  (republicar com o Artifact tool a partir do HTML gerado por `scripts/build-claude-test.py`).
+  (republicar com o Artifact tool a partir do HTML gerado por `scripts/build-claude-test.py`; o build precisa de
+  `--emptyOutDir`, senão sobra CSS antigo — o script agora recusa pasta com mais de um .js/.css).
 - Teste no GitHub Pages: https://vinicius-leon10.github.io/jogo-infantil-igles/teste/ (branch `claude/sprout-app`).
 - Oficial: https://vinicius-leon10.github.io/jogo-infantil-igles/ (branch `main`). O deploy roda no GitHub Actions
   depois dos testes; só na versão de teste o rodapé da tela de níveis mostra a versão (commit) em uso
