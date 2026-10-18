@@ -388,6 +388,9 @@ const TAKE_NOTES: Record<string, string> = {
   g: "voz só em inglês, falada calma (sem exclamação)",
   h: "sons exatos escritos de outro jeito (IPA)",
   i: "escrita do jeito que se fala",
+  j: "a atual com o “n” final curto (sem o “e” no fim)",
+  k: "a atual com o “n” final bem curto",
+  l: "a G (calma) com o “n” final curto",
 };
 
 /**

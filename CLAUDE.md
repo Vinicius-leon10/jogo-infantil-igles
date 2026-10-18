@@ -58,7 +58,10 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   permissão de speech_to_text, então não dá para conferir por transcrição; quem decide é o ouvido do dono.
   3ª rodada `--labels=g,h,i`: G = turbo_v2 sem exclamação, H = flash_v2 com `<phoneme>` IPA, I = turbo_v2 com
   grafia do som (RESPELL).
-- Em avaliação agora: Ten (A–F não serviram; takes G/H/I no "Escolher vozes").
+- "Tene" (dono): a voz segura o "n" final ~200 ms quase no volume da vogal e solta, o que soa como um "e" a mais.
+  Não adianta regravar: `python3 scripts/trim-nasal.py <in> <out> --keep <ms>` acha o começo do "n" (som abafado,
+  pouca energia acima de 1 kHz) e deixa só alguns ms com fade. Serve para outras palavras que terminem em n/m.
+- Em avaliação agora: Ten (A–I soavam "tene"; takes J/K/L = cortadas com trim-nasal.py no "Escolher vozes").
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
