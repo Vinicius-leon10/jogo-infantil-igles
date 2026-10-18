@@ -6,6 +6,7 @@
  * context, so they are heard even with the iPhone's silent switch on.
  */
 import { readJSON, writeJSON } from "./storage";
+import { TAKE_URLS } from "./voiceTakes";
 
 const MUSIC_KEY = "sprout-music-enabled";
 const BPM = 112;
@@ -77,22 +78,25 @@ function silentWav(): string {
 const GESTURES = ["pointerup", "touchend", "click", "keydown"] as const;
 if (typeof window !== "undefined") {
   let keepAlive: HTMLAudioElement | null = null;
+  const nav = navigator as Navigator & { audioSession?: { type: string } };
   const unlock = () => {
     const c = audio();
     if (!c) return;
     c.onstatechange = () => {
       if (c.state === "running" && musicWanted && musicEnabled) startLoop();
     };
-    // iOS mutes Web Audio with the silent switch unless the page is also
-    // playing media; a looping silent <audio> moves it to the "playback" session.
-    const nav = navigator as Navigator & { audioSession?: { type: string } };
+    // iOS mutes Web Audio with the silent switch unless the page is in the "playback" session.
+    // iOS 17+ sets it directly; older iOS needs a looping silent <audio>, which also puts a
+    // player on the lock screen, so it is only used where there is no other way.
     if (nav.audioSession) nav.audioSession.type = "playback";
-    if (!keepAlive) {
-      keepAlive = new Audio(silentWav());
-      keepAlive.loop = true;
-      keepAlive.setAttribute("playsinline", "");
+    else {
+      if (!keepAlive) {
+        keepAlive = new Audio(silentWav());
+        keepAlive.loop = true;
+        keepAlive.setAttribute("playsinline", "");
+      }
+      keepAlive.play().catch(() => {});
     }
-    keepAlive.play().catch(() => {});
     preloadVoiceClips();
     // A short silent buffer started inside the gesture fully unlocks old Safari.
     const src = c.createBufferSource();
@@ -106,13 +110,30 @@ if (typeof window !== "undefined") {
   // Keep listening for the whole session: on iOS, speech synthesis and phone
   // calls put the context in an "interrupted" state that only a new tap clears.
   const wake = () => {
-    if (ctx?.state === "running" && keepAlive && !keepAlive.paused) return;
+    if (ctx?.state === "running" && (nav.audioSession ? nav.audioSession.type === "playback" : keepAlive && !keepAlive.paused))
+      return;
     unlock();
   };
   GESTURES.forEach((e) => window.addEventListener(e, wake, true));
-  // Coming back from the background (iOS "interrupted" state): resume.
+  // Locked phone / app in the background: go quiet, like a closed app. The looping silent <audio>
+  // would otherwise keep playing and iOS shows the app as music on the lock screen.
+  const sleep = () => {
+    stopLoop();
+    stopVoiceClip();
+    if (keepAlive) {
+      keepAlive.pause();
+      keepAlive.removeAttribute("src");
+      keepAlive.load(); // drops the media session, so the lock screen player goes away
+      keepAlive = null; // recreated by the next tap (unlock)
+    }
+    if (ctx?.state === "running") ctx.suspend().catch(() => {});
+    if (nav.audioSession) nav.audioSession.type = "auto"; // hand the session back; the next tap claims it again
+  };
+  window.addEventListener("pagehide", sleep);
+  // Coming back from the background (iOS "interrupted" state): resume; a tap restarts the keep-alive.
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && ctx && ctx.state !== "running") {
+    if (document.visibilityState === "hidden") sleep();
+    else if (ctx && ctx.state !== "running") {
       ctx.resume().then(() => musicWanted && musicEnabled && startLoop());
     }
   });
@@ -353,6 +374,33 @@ const CLIP_URLS: Record<string, string> = Object.fromEntries(
     import.meta.glob<string>("../assets/voice/*.mp3", { eager: true, query: "?url", import: "default" }),
   ).map(([path, url]) => [path.slice(path.lastIndexOf("/") + 1, -".mp3".length), url]),
 );
+const TAKE_CHOICE_KEY = "sprout-voice-choice";
+let takeChoice = readJSON<Record<string, string>>(TAKE_CHOICE_KEY) ?? {};
+
+/** Words with takes to choose from, each with its take labels ("a", "b", "c"). */
+export function voiceTakes(): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const name of Object.keys(TAKE_URLS).sort()) {
+    const cut = name.lastIndexOf("-");
+    (out[name.slice(0, cut)] ??= []).push(name.slice(cut + 1));
+  }
+  return out;
+}
+
+/** The take the owner picked for a word, or null for the current recording. */
+export function voiceTakeChoice(id: string): string | null {
+  const t = takeChoice[id];
+  return t && `${id}-${t}` in TAKE_URLS ? t : null;
+}
+
+export function setVoiceTakeChoice(id: string, take: string | null) {
+  takeChoice = { ...takeChoice };
+  if (take) takeChoice[id] = take;
+  else delete takeChoice[id];
+  writeJSON(TAKE_CHOICE_KEY, takeChoice);
+}
+
+const CLIP_SOURCES: Record<string, string> = { ...CLIP_URLS, ...TAKE_URLS };
 const decoded = new Map<string, Promise<AudioBuffer | null>>();
 let voiceSource: AudioBufferSourceNode | null = null;
 let voiceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -399,13 +447,14 @@ function download(url: string): Promise<ArrayBuffer> {
   return fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))));
 }
 
+/** `id` is a word id ("lion") or one of its takes ("lion-b"). */
 function loadClip(id: string): Promise<AudioBuffer | null> {
   let p = decoded.get(id);
   if (!p) {
     const c = audio();
     p = !c
       ? Promise.resolve(null)
-      : download(CLIP_URLS[id])
+      : download(CLIP_SOURCES[id])
           .then((data) => c.decodeAudioData(data))
           .catch(() => {
             decoded.delete(id); // try the download again next time
@@ -417,7 +466,12 @@ function loadClip(id: string): Promise<AudioBuffer | null> {
 }
 
 function preloadVoiceClips() {
-  Object.keys(CLIP_URLS).forEach(loadClip);
+  Object.keys(CLIP_URLS).forEach((id) => loadClip(clipName(id)));
+}
+
+/** Which file says a word: the picked take (test version) or the current recording. */
+function clipName(id: string, take = voiceTakeChoice(id)) {
+  return take ? `${id}-${take}` : id;
 }
 
 /** Stops the recorded word playing now, if any (its onEnd still runs). */
@@ -431,12 +485,14 @@ export function stopVoiceClip() {
 /**
  * Plays the recorded word. Resolves false (without calling onEnd) when it cannot be
  * played (no recording, download failed, audio still locked), so the caller can speak it.
+ * `take` previews one recording ("b", or null for the current one) instead of the picked one.
  */
-export async function playVoiceClip(id: string, onEnd: () => void): Promise<boolean> {
+export async function playVoiceClip(word: string, onEnd: () => void, take?: string | null): Promise<boolean> {
+  const id = clipName(word, take);
   stopVoiceClip();
   const token = voiceToken;
   const c = audio();
-  if (!c || !voiceGain || !(id in CLIP_URLS)) {
+  if (!c || !voiceGain || !(id in CLIP_SOURCES)) {
     lastClipEvent = `sem áudio para "${id}"`;
     return false;
   }

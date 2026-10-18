@@ -384,7 +384,6 @@ test("R24 mapa é um terreno: fase 1 embaixo, e a planta cresce a cada fase até
   for (const n of [1, 3, 10]) await expect(phase(n).locator(`svg[data-stage="${n}"]`)).toHaveCount(1);
   await expect(phase(3)).toBeEnabled();
   await expect(phase(4)).toBeDisabled();
-  await expect(page.getByTestId("tree-goal")).toContainText("Complete as 10 fases");
 });
 
 test("R25 ao completar a fase 10 aparece a árvore completa e dá para ir ao nível 2", async ({ page }) => {
@@ -436,6 +435,7 @@ test("R27 área dos pais tem 'Testar voz', que fala e mostra o que o aparelho re
   const [a, b] = (await page.getByText(/Quanto é/).textContent())!.match(/\d+/g)!.map(Number);
   await page.getByPlaceholder("Resposta").fill(String(a + b));
   await page.getByText("Entrar").click();
+  await page.getByRole("button", { name: "Falas" }).click();
   await clearSaid(page);
   await page.getByRole("button", { name: /Testar voz/ }).click();
   await expect.poll(async () => (await said(page)).map((s) => s.text)).toContain("Hello! Dog, cat, one, two, three.");
@@ -554,6 +554,7 @@ test("R32 usa a voz Ava (a melhor versão instalada) em vez da Samantha", async 
   const [a, b] = (await page.getByText(/Quanto é/).textContent())!.match(/\d+/g)!.map(Number);
   await page.getByPlaceholder("Resposta").fill(String(a + b));
   await page.getByText("Entrar").click();
+  await page.getByRole("button", { name: "Falas" }).click();
   await expect(page.getByTestId("sound-check")).toContainText("Ava (Premium)");
   // The panel lists every English voice the phone offers, to diagnose a voice that is not offered to web apps.
   await page.getByText("Vozes em inglês que o aparelho liberou").click();
@@ -629,4 +630,229 @@ test("R36 áudio gravado numa velocidade calma (o 'Dog' dura pelo menos 0,9 s)",
   await openPhase(page);
   await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(0);
   expect((await clips(page))[0]).toBeGreaterThanOrEqual(0.9);
+});
+
+/** Opens the test version (port 4174) with a saved profile and no progress. */
+async function openTestVersion(page: import("@playwright/test").Page) {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "teste:sprout-profile",
+      JSON.stringify({ id: "local", name: "Lia", age: 5, sex: "girl", can_read: true }),
+    );
+  });
+  await page.goto("http://localhost:4174/");
+  await expect(page.getByText("Escolha seu nível")).toBeVisible();
+}
+
+test("R37 versão de teste: todas as fases e níveis liberados, sem progresso", async ({ page }) => {
+  await openTestVersion(page);
+  await expect(page.getByRole("button", { name: /Nível 2/ })).toBeEnabled();
+  await page.getByRole("button", { name: /Nível 1/ }).click();
+  await expect(page.getByRole("button", { name: /Animal 10\b/ })).toBeEnabled();
+  await page.goto("http://localhost:4174/");
+  await page.getByRole("button", { name: /Nível 2/ }).click();
+  await expect(page.getByRole("button", { name: /Número 7\b/ })).toBeEnabled();
+});
+
+test("R38 versão de teste: Área dos Pais abre sem a conta; a real continua pedindo", async ({ page }) => {
+  await openTestVersion(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await expect(page.getByRole("button", { name: "Falas" })).toBeVisible();
+  await expect(page.getByText(/Quanto é/)).toHaveCount(0);
+
+  await seed(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await expect(page.getByText(/Quanto é/)).toBeVisible();
+});
+
+test("R39 versão de teste: Área dos Pais lista todos os animais e números com imagem e toca o áudio de cada um", async ({
+  page,
+}) => {
+  await allowVoiceClips(page);
+  await openTestVersion(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await page.getByRole("button", { name: "Falas" }).click();
+  const words = page.getByTestId("all-words").getByRole("button");
+  await expect(words).toHaveCount(25);
+  await expect(page.getByTestId("all-words").locator("img")).toHaveCount(25);
+  for (const name of ["Elephant", "Ten"]) {
+    const before = (await clips(page)).length;
+    await page.getByRole("button", { name: `Ouvir ${name}` }).click();
+    await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
+  }
+  expect((await said(page)).map((s) => s.text)).toEqual([]);
+});
+
+test("R40 mapa limpo: só os brotos, sem caixa de texto, e o broto da vez pisca como botão", async ({ page }) => {
+  await seed(page, { completed: [1, 2] });
+  await page.getByRole("button", { name: /Nível 1/ }).first().click();
+  const map = page.getByTestId("phase-map");
+  await expect(map.getByRole("button")).toHaveCount(10);
+  // No phase number, title or word list written on the map.
+  await expect(map.getByText(/Fase \d/)).toHaveCount(0);
+  await expect(map.getByText(/Animal \d/)).toHaveCount(0);
+  await expect(page.getByText(/Complete as \d+ fases/)).toHaveCount(0);
+  // Only the current phase (3) beckons; it opens the phase when tapped.
+  const current = map.locator("[data-current]");
+  await expect(current).toHaveCount(1);
+  await expect(current).toHaveAttribute("data-phase", "3");
+  await expect(current.locator(".animate-beckon")).toHaveCount(1);
+  await expect(map.locator(".animate-beckon")).toHaveCount(1);
+  await current.click();
+  await expect(page.getByText("Começar a brotar")).toBeVisible();
+});
+
+test("R41 ao bloquear o celular (app em segundo plano) a música e o áudio param; ao voltar, a música volta", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    // Which <audio> elements are playing, and the audio contexts the app made.
+    const w = window as unknown as { __media: Set<HTMLMediaElement>; __ctxs: AudioContext[]; __hidden: boolean };
+    w.__media = new Set();
+    w.__ctxs = [];
+    w.__hidden = false;
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      w.__media.add(this);
+      return play.call(this);
+    };
+    const pause = HTMLMediaElement.prototype.pause;
+    HTMLMediaElement.prototype.pause = function () {
+      w.__media.delete(this);
+      return pause.call(this);
+    };
+    const Ctx = window.AudioContext;
+    window.AudioContext = class extends Ctx {
+      constructor(o?: AudioContextOptions) {
+        super(o);
+        w.__ctxs.push(this);
+      }
+    } as typeof AudioContext;
+    Object.defineProperty(document, "visibilityState", { get: () => (w.__hidden ? "hidden" : "visible") });
+    Object.defineProperty(document, "hidden", { get: () => w.__hidden });
+  });
+  const setHidden = (hidden: boolean) =>
+    page.evaluate((h) => {
+      (window as unknown as { __hidden: boolean }).__hidden = h;
+      document.dispatchEvent(new Event("visibilitychange"));
+    }, hidden);
+  const state = () =>
+    page.evaluate(() => {
+      const w = window as unknown as { __media: Set<HTMLMediaElement>; __ctxs: AudioContext[] };
+      return { media: [...w.__media].filter((m) => !m.paused).length, ctx: w.__ctxs.map((c) => c.state) };
+    });
+
+  await seed(page);
+  await page.getByText("Escolha seu nível").click(); // first tap unlocks audio
+  expect(await notesDuring(page, 1500)).toBeGreaterThan(5);
+  expect((await state()).media).toBeGreaterThan(0); // the silent keep-alive for the silent switch
+
+  await setHidden(true);
+  await page.waitForTimeout(500);
+  expect(await state()).toEqual({ media: 0, ctx: ["suspended"] });
+  expect(await notesDuring(page, 1500)).toBe(0);
+
+  await setHidden(false);
+  await page.getByText("Escolha seu nível").click(); // iOS may need a tap to restart sound
+  expect(await notesDuring(page, 1500)).toBeGreaterThan(5);
+});
+
+test("R42 iPhone novo (com audioSession): nada de <audio> tocando, então não aparece player na tela bloqueada", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __played: number; __hidden: boolean };
+    w.__played = 0;
+    w.__hidden = false;
+    HTMLMediaElement.prototype.play = function () {
+      w.__played++;
+      return Promise.resolve();
+    };
+    Object.defineProperty(navigator, "audioSession", { value: { type: "auto" } });
+    Object.defineProperty(document, "visibilityState", { get: () => (w.__hidden ? "hidden" : "visible") });
+  });
+  const session = () => page.evaluate(() => (navigator as Navigator & { audioSession: { type: string } }).audioSession.type);
+  await seed(page);
+  await page.getByText("Escolha seu nível").click(); // first tap unlocks audio
+  expect(await notesDuring(page, 1500)).toBeGreaterThan(5);
+  expect(await session()).toBe("playback"); // plays through the silent switch
+  expect(await page.evaluate(() => (window as unknown as { __played: number }).__played)).toBe(0);
+  // Locking the phone hands the audio session back, so nothing stays on the lock screen.
+  await page.evaluate(() => {
+    (window as unknown as { __hidden: boolean }).__hidden = true;
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  expect(await session()).toBe("auto");
+});
+
+test("R43 Área dos Pais tem a aba 'Falas' com o teste de som; as outras abas não mostram o teste", async ({ page }) => {
+  await openTestVersion(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await expect(page.getByRole("button", { name: "Histórico" })).toBeVisible();
+  await expect(page.getByTestId("sound-check")).toHaveCount(0);
+  await expect(page.getByTestId("all-words")).toHaveCount(0);
+  await page.getByRole("button", { name: "Falas" }).click();
+  await expect(page.getByTestId("sound-check")).toBeVisible();
+  await expect(page.getByTestId("all-words")).toBeVisible();
+  await page.getByRole("button", { name: "Cadastro" }).click();
+  await expect(page.getByTestId("sound-check")).toHaveCount(0);
+});
+
+test("R44 versão de teste: 'Escolher vozes' toca o atual e as gravações novas, guarda a escolhida e o app passa a usá-la", async ({
+  page,
+}) => {
+  // Works with whatever word is under evaluation (src/assets/voice-takes/<id>-<take>.mp3).
+  await allowVoiceClips(page);
+  const mp3s: string[] = [];
+  page.on("request", (r) => r.url().endsWith(".mp3") && mp3s.push(r.url().slice(r.url().lastIndexOf("/") + 1)));
+  await openTestVersion(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await page.getByRole("button", { name: "Falas" }).click();
+  const picker = page.getByTestId("voice-picker");
+  await expect(picker).toBeVisible();
+  if ((await picker.getByTestId("voice-word").count()) === 0) {
+    // Nothing under evaluation right now: the section says so (the rest runs whenever takes exist).
+    await expect(picker).toContainText("Nenhuma voz em avaliação");
+    return;
+  }
+  const word = picker.getByTestId("voice-word").first();
+  const id = (await word.getAttribute("data-word"))!;
+  const options = word.getByRole("button", { name: /, versão [A-Z]$/ });
+  expect(await options.count()).toBeGreaterThanOrEqual(2);
+  const [first, last] = [(await options.first().getAttribute("aria-label"))!, (await options.last().getAttribute("aria-label"))!];
+  const en = first.split(",")[0];
+  const [t1, t2] = [first.slice(-1), last.slice(-1)];
+  // Each option plays its own recording.
+  const before = (await clips(page)).length;
+  await options.last().click();
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
+  expect(mp3s.some((u) => u.startsWith(`${id}-${t2.toLowerCase()}-`))).toBe(true);
+  // Choosing another take is remembered and shown in the summary to send.
+  await word.getByRole("radio", { name: `Usar ${t1}` }).check();
+  await expect(picker.getByTestId("voice-summary")).toContainText(`${en}: ${t1}`);
+  mp3s.length = 0;
+  await page.reload();
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await page.getByRole("button", { name: "Falas" }).click();
+  await expect(page.locator(`[data-word="${id}"]`).getByRole("radio", { name: `Usar ${t1}` })).toBeChecked();
+  // The app now says the word with that take (preloaded on the first tap after the reload).
+  const n = (await clips(page)).length;
+  await page.getByRole("button", { name: `Ouvir ${en}`, exact: true }).click();
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(n);
+  expect(mp3s.some((u) => u.startsWith(`${id}-${t1.toLowerCase()}-`))).toBe(true);
+});
+
+test("R45 versão oficial não tem 'Escolher vozes' nem carrega as gravações em avaliação", async ({ page }) => {
+  await allowVoiceClips(page);
+  const takes: string[] = [];
+  page.on("request", (r) => /\/[a-z]+-[a-z]-[A-Za-z0-9_-]{8}\.mp3$/.test(r.url()) && takes.push(r.url()));
+  await seed(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  const [a, b] = (await page.getByText(/Quanto é/).textContent())!.match(/\d+/g)!.map(Number);
+  await page.getByPlaceholder("Resposta").fill(String(a + b));
+  await page.getByText("Entrar").click();
+  await page.getByRole("button", { name: "Falas" }).click();
+  await expect(page.getByTestId("sound-check")).toBeVisible();
+  await expect(page.getByTestId("voice-picker")).toHaveCount(0);
+  expect(takes).toEqual([]);
 });

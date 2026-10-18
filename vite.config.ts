@@ -14,6 +14,12 @@ export default defineConfig({
     __APP_ENV__: JSON.stringify(process.env.SPROUT_ENV === "teste" ? "teste" : "producao"),
   },
   resolve: {
-    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+    alias: [
+      // Recordings under evaluation (parents' area "Escolher vozes") exist only in the test version.
+      ...(process.env.SPROUT_ENV === "teste"
+        ? []
+        : [{ find: /^\.\/voiceTakes$/, replacement: fileURLToPath(new URL("./src/lib/voiceTakes.none.ts", import.meta.url)) }]),
+      { find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) },
+    ],
   },
 });

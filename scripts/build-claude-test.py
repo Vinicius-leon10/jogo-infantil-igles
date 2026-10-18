@@ -9,7 +9,17 @@ import os
 import sys
 
 dist, template, out = sys.argv[1:4]
-js = open(glob.glob(f"{dist}/assets/*.js")[0]).read()
+
+
+def only(pattern):
+    # A dist folder reused without --emptyOutDir keeps old bundles; picking one at random shipped stale CSS.
+    found = glob.glob(f"{dist}/assets/{pattern}")
+    if len(found) != 1:
+        sys.exit(f"esperava 1 arquivo {pattern} em {dist}/assets, achei {len(found)}: rode o build com --emptyOutDir")
+    return found[0]
+
+
+js = open(only("*.js")).read()
 MIME = {".png": "image/png", ".svg": "image/svg+xml", ".mp3": "audio/mpeg"}
 for f in [f for ext in MIME for f in glob.glob(f"{dist}/assets/*{ext}")]:
     mime = MIME[os.path.splitext(f)[1]]
@@ -19,7 +29,7 @@ for f in [f for ext in MIME for f in glob.glob(f"{dist}/assets/*{ext}")]:
     js = js.replace(f'new URL("{name}",import.meta.url).href', f'"{uri}"')
     js = js.replace("./assets/" + name, uri).replace("/assets/" + name, uri)
 js = js.replace("</script", "<\\/script")
-css = open(glob.glob(f"{dist}/assets/*.css")[0]).read()
+css = open(only("*.css")).read()
 page = open(template).read()
 a, b = page.index("<style>"), page.index("</style>")
 page = page[:a] + "<style>:root{color-scheme:light;background:#dff4ff}\n" + css + page[b:]
