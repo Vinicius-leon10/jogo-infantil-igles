@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { X, History, UserCog, ShieldCheck, Star } from "lucide-react";
+import { X, History, UserCog, ShieldCheck, Star, Volume2 } from "lucide-react";
 import { categories, phases, phaseNumber } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import type { ChildProfile, ChildProfileInput } from "@/hooks/useChildProfile";
@@ -7,7 +7,7 @@ import { Emoji } from "./Emoji";
 import { ttsStatus, useTTS } from "@/hooks/useTTS";
 import { voiceClipFor, voiceClipStatus } from "@/lib/sound";
 
-type Tab = "history" | "edit";
+type Tab = "history" | "edit" | "speech";
 
 type Props = {
   profile: ChildProfile;
@@ -102,12 +102,19 @@ export function ParentArea({ profile, onSave, onClose }: Props) {
               <TabButton active={tab === "edit"} onClick={() => setTab("edit")} icon={<UserCog className="size-4" />}>
                 Cadastro
               </TabButton>
+              <TabButton active={tab === "speech"} onClick={() => setTab("speech")} icon={<Volume2 className="size-4" />}>
+                Falas
+              </TabButton>
             </div>
 
-            {tab === "history" ? <HistoryPanel /> : <EditPanel profile={profile} onSave={onSave} />}
-
-            <SoundCheck />
-            {__APP_ENV__ === "teste" && <AllWords />}
+            {tab === "history" && <HistoryPanel />}
+            {tab === "edit" && <EditPanel profile={profile} onSave={onSave} />}
+            {tab === "speech" && (
+              <>
+                <SoundCheck />
+                {__APP_ENV__ === "teste" && <AllWords />}
+              </>
+            )}
           </>
         )}
       </div>
@@ -405,7 +412,7 @@ function SoundCheck() {
     return () => clearInterval(t);
   }, []);
   return (
-    <div className="mt-6 rounded-3xl bg-card p-4" data-testid="sound-check">
+    <div className="rounded-3xl bg-card p-4" data-testid="sound-check">
       <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-3">Teste de som</h3>
       <button
         onClick={() => speak("Hello! Dog, cat, one, two, three.")}

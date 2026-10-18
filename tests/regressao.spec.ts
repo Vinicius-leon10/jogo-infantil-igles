@@ -435,6 +435,7 @@ test("R27 área dos pais tem 'Testar voz', que fala e mostra o que o aparelho re
   const [a, b] = (await page.getByText(/Quanto é/).textContent())!.match(/\d+/g)!.map(Number);
   await page.getByPlaceholder("Resposta").fill(String(a + b));
   await page.getByText("Entrar").click();
+  await page.getByRole("button", { name: "Falas" }).click();
   await clearSaid(page);
   await page.getByRole("button", { name: /Testar voz/ }).click();
   await expect.poll(async () => (await said(page)).map((s) => s.text)).toContain("Hello! Dog, cat, one, two, three.");
@@ -553,6 +554,7 @@ test("R32 usa a voz Ava (a melhor versão instalada) em vez da Samantha", async 
   const [a, b] = (await page.getByText(/Quanto é/).textContent())!.match(/\d+/g)!.map(Number);
   await page.getByPlaceholder("Resposta").fill(String(a + b));
   await page.getByText("Entrar").click();
+  await page.getByRole("button", { name: "Falas" }).click();
   await expect(page.getByTestId("sound-check")).toContainText("Ava (Premium)");
   // The panel lists every English voice the phone offers, to diagnose a voice that is not offered to web apps.
   await page.getByText("Vozes em inglês que o aparelho liberou").click();
@@ -655,7 +657,7 @@ test("R37 versão de teste: todas as fases e níveis liberados, sem progresso", 
 test("R38 versão de teste: Área dos Pais abre sem a conta; a real continua pedindo", async ({ page }) => {
   await openTestVersion(page);
   await page.getByRole("button", { name: "Área dos pais" }).click();
-  await expect(page.getByTestId("sound-check")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Falas" })).toBeVisible();
   await expect(page.getByText(/Quanto é/)).toHaveCount(0);
 
   await seed(page);
@@ -669,6 +671,7 @@ test("R39 versão de teste: Área dos Pais lista todos os animais e números com
   await allowVoiceClips(page);
   await openTestVersion(page);
   await page.getByRole("button", { name: "Área dos pais" }).click();
+  await page.getByRole("button", { name: "Falas" }).click();
   const words = page.getByTestId("all-words").getByRole("button");
   await expect(words).toHaveCount(25);
   await expect(page.getByTestId("all-words").locator("img")).toHaveCount(25);
@@ -780,4 +783,17 @@ test("R42 iPhone novo (com audioSession): nada de <audio> tocando, então não a
     document.dispatchEvent(new Event("visibilitychange"));
   });
   expect(await session()).toBe("auto");
+});
+
+test("R43 Área dos Pais tem a aba 'Falas' com o teste de som; as outras abas não mostram o teste", async ({ page }) => {
+  await openTestVersion(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await expect(page.getByRole("button", { name: "Histórico" })).toBeVisible();
+  await expect(page.getByTestId("sound-check")).toHaveCount(0);
+  await expect(page.getByTestId("all-words")).toHaveCount(0);
+  await page.getByRole("button", { name: "Falas" }).click();
+  await expect(page.getByTestId("sound-check")).toBeVisible();
+  await expect(page.getByTestId("all-words")).toBeVisible();
+  await page.getByRole("button", { name: "Cadastro" }).click();
+  await expect(page.getByTestId("sound-check")).toHaveCount(0);
 });

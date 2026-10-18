@@ -42,7 +42,7 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   os 14 animais e zero..ten (pula os que já existem; `--force` regrava). O app toca esses MP3 pelo Web Audio (funciona
   no silencioso) e usa speechSynthesis só como reserva (frases, Testar voz, MP3 que não carregou). Publicados na
   oficial pelo PR #4. Palavra nova no conteúdo = rodar o script de novo. Nunca pedir a
-  chave no chat (fica no ambiente como `ELEVENLABS_API_KEY`). Diagnóstico: "Teste de som" da Área dos Pais mostra
+  chave no chat (fica no ambiente como `ELEVENLABS_API_KEY`). Diagnóstico: aba "Falas" da Área dos Pais (Teste de som; no teste também "Ouvir todas as palavras") mostra
   "🐶 Testar áudio gravado", o último áudio (tocou / bloqueado / não carregou) e o estado do som do app.
 
 ## Visual
