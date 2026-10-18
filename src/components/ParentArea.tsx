@@ -4,8 +4,15 @@ import { categories, phases, phaseNumber } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import type { ChildProfile, ChildProfileInput } from "@/hooks/useChildProfile";
 import { Emoji } from "./Emoji";
-import { ttsStatus, useTTS } from "@/hooks/useTTS";
-import { voiceClipFor, voiceClipStatus } from "@/lib/sound";
+import { stopAllSpeech, ttsStatus, useTTS } from "@/hooks/useTTS";
+import {
+  playVoiceClip,
+  setVoiceTakeChoice,
+  voiceClipFor,
+  voiceClipStatus,
+  voiceTakeChoice,
+  voiceTakes,
+} from "@/lib/sound";
 
 type Tab = "history" | "edit" | "speech";
 
@@ -112,6 +119,7 @@ export function ParentArea({ profile, onSave, onClose }: Props) {
             {tab === "speech" && (
               <>
                 <SoundCheck />
+                {__APP_ENV__ === "teste" && <VoicePicker />}
                 {__APP_ENV__ === "teste" && <AllWords />}
               </>
             )}
@@ -369,6 +377,103 @@ function PickerBtn({
 }
 
 /** Test version only: every word that has a recording, to hear each one without playing the phases. */
+/**
+ * Test version only: new recordings (scripts/make-voices.mjs --takes) next to the current one.
+ * The owner listens, picks one per word (kept on this phone, and the app uses it right away),
+ * and sends the summary so the pick can be made permanent.
+ */
+function VoicePicker() {
+  const takes = voiceTakes();
+  const words = categories.flatMap((c) => c.words).filter((w) => takes[w.id]);
+  const [choice, setChoice] = useState(() => Object.fromEntries(words.map((w) => [w.id, voiceTakeChoice(w.id)])));
+  const [playing, setPlaying] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  if (!words.length) return null;
+
+  const play = (id: string, take: string | null) => {
+    const key = `${id}-${take ?? "atual"}`;
+    stopAllSpeech();
+    setPlaying(key);
+    void playVoiceClip(id, () => setPlaying((p) => (p === key ? null : p)), take).then(
+      (ok) => ok || setPlaying((p) => (p === key ? null : p)),
+    );
+  };
+  const pick = (id: string, take: string | null) => {
+    setVoiceTakeChoice(id, take);
+    setChoice((c) => ({ ...c, [id]: take }));
+  };
+  const summary = words.map((w) => `${w.en}: ${choice[w.id]?.toUpperCase() ?? "atual"}`).join(", ");
+  const label = (take: string | null) => (take ? take.toUpperCase() : "Atual");
+
+  return (
+    <div className="mt-6 rounded-3xl bg-card p-4" data-testid="voice-picker">
+      <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-1">Escolher vozes</h3>
+      <p className="text-xs text-muted-foreground mb-3">
+        Toque para ouvir o áudio atual e as gravações novas. Marque a que ficou melhor: o app de teste passa a usar
+        essa na hora. Depois me mande o resumo lá embaixo.
+      </p>
+      <div className="space-y-3">
+        {words.map((w) => {
+          const options = [null, ...takes[w.id]];
+          return (
+            <div key={w.id} data-word={w.id} data-testid="voice-word" className="rounded-2xl bg-background p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl"><Emoji char={w.emoji} label={w.en} /></span>
+                <span className="font-bold">{w.en}</span>
+                <span className="text-xs text-muted-foreground">{w.pt}</span>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {options.map((t) => {
+                  const key = `${w.id}-${t ?? "atual"}`;
+                  const chosen = (choice[w.id] ?? null) === t;
+                  return (
+                    <div key={key} className="flex flex-col items-center gap-1.5">
+                      <button
+                        onClick={() => play(w.id, t)}
+                        aria-label={`${w.en}, versão ${label(t)}`}
+                        className="w-full rounded-2xl py-2.5 text-sm font-extrabold bg-card btn-3d btn-3d-soft"
+                        style={playing === key ? { boxShadow: "0 0 0 2px var(--sprout), 0 6px 0 var(--edge-soft)" } : undefined}
+                      >
+                        ▶ {label(t)}
+                      </button>
+                      <label className="flex items-center gap-1 text-[11px] font-semibold cursor-pointer">
+                        <input
+                          type="radio"
+                          name={`voice-${w.id}`}
+                          checked={chosen}
+                          onChange={() => pick(w.id, t)}
+                          aria-label={`Usar ${label(t)}`}
+                          className="accent-[var(--sprout)]"
+                        />
+                        usar
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-3 rounded-2xl bg-background p-3">
+        <div className="text-xs font-bold mb-1">Resumo para me mandar</div>
+        <p className="text-sm select-all break-words" data-testid="voice-summary">{summary}</p>
+        <button
+          onClick={() =>
+            navigator.clipboard?.writeText(summary).then(
+              () => setCopied(true),
+              () => setCopied(false),
+            )
+          }
+          className="mt-2 w-full rounded-2xl py-2.5 text-sm font-bold btn-3d btn-3d-soft bg-card"
+        >
+          {copied ? "Copiado ✓" : "Copiar resumo"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AllWords() {
   const { speak } = useTTS();
   const [playing, setPlaying] = useState<string | null>(null);

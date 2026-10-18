@@ -45,6 +45,13 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   oficial pelo PR #4. Palavra nova no conteúdo = rodar o script de novo. Nunca pedir a
   chave no chat (fica no ambiente como `ELEVENLABS_API_KEY`). Diagnóstico: aba "Falas" da Área dos Pais (Teste de som; no teste também "Ouvir todas as palavras") mostra
   "🐶 Testar áudio gravado", o último áudio (tocou / bloqueado / não carregou) e o estado do som do app.
+- Trocar a voz de uma palavra: `node scripts/make-voices.mjs --takes <ids>` grava 3 versões em
+  `src/assets/voice-takes/<id>-a|b|c.mp3`. Na versão de teste, aba Falas → "Escolher vozes" toca atual/A/B/C, o dono
+  marca a melhor (fica no aparelho e o app de teste já usa) e manda o resumo ("Lion: B, …"). Com o resumo: copiar a
+  escolhida por cima de `src/assets/voice/<id>.mp3` e apagar as takes da palavra (as "atual" não precisam de nada).
+  As takes nunca vão para a oficial: o build oficial troca `src/lib/voiceTakes.ts` por `voiceTakes.none.ts`
+  (vite.config.ts), então nem copia os arquivos; teste R45.
+- Em avaliação agora: Lion, Monkey, One, Seven e Ten (o dono achou que não ficaram bons como os outros).
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`

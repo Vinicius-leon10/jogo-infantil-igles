@@ -797,3 +797,50 @@ test("R43 Área dos Pais tem a aba 'Falas' com o teste de som; as outras abas n�
   await page.getByRole("button", { name: "Cadastro" }).click();
   await expect(page.getByTestId("sound-check")).toHaveCount(0);
 });
+
+test("R44 versão de teste: 'Escolher vozes' toca o atual e as gravações novas, guarda a escolhida e o app passa a usá-la", async ({
+  page,
+}) => {
+  await allowVoiceClips(page);
+  const mp3s: string[] = [];
+  page.on("request", (r) => r.url().endsWith(".mp3") && mp3s.push(r.url().slice(r.url().lastIndexOf("/") + 1)));
+  await openTestVersion(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await page.getByRole("button", { name: "Falas" }).click();
+  const picker = page.getByTestId("voice-picker");
+  await expect(picker.getByTestId("voice-word")).toHaveCount(5);
+  const lion = picker.locator('[data-word="lion"]');
+  // Each option plays its own recording.
+  const before = (await clips(page)).length;
+  await lion.getByRole("button", { name: "Lion, versão C" }).click();
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
+  expect(mp3s.some((u) => u.startsWith("lion-c"))).toBe(true);
+  // Choosing B is remembered and shown in the summary to send.
+  await lion.getByRole("radio", { name: "Usar B" }).check();
+  await expect(picker.getByTestId("voice-summary")).toContainText("Lion: B");
+  mp3s.length = 0;
+  await page.reload();
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await page.getByRole("button", { name: "Falas" }).click();
+  await expect(page.locator('[data-word="lion"]').getByRole("radio", { name: "Usar B" })).toBeChecked();
+  // The app now says "Lion" with take B (preloaded on the first tap after the reload).
+  const n = (await clips(page)).length;
+  await page.getByRole("button", { name: "Ouvir Lion", exact: true }).click();
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(n);
+  expect(mp3s.some((u) => u.startsWith("lion-b"))).toBe(true);
+});
+
+test("R45 versão oficial não tem 'Escolher vozes' nem carrega as gravações em avaliação", async ({ page }) => {
+  await allowVoiceClips(page);
+  const takes: string[] = [];
+  page.on("request", (r) => /\/(lion|monkey|one|seven|ten)-[abc]-/.test(r.url()) && takes.push(r.url()));
+  await seed(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  const [a, b] = (await page.getByText(/Quanto é/).textContent())!.match(/\d+/g)!.map(Number);
+  await page.getByPlaceholder("Resposta").fill(String(a + b));
+  await page.getByText("Entrar").click();
+  await page.getByRole("button", { name: "Falas" }).click();
+  await expect(page.getByTestId("sound-check")).toBeVisible();
+  await expect(page.getByTestId("voice-picker")).toHaveCount(0);
+  expect(takes).toEqual([]);
+});

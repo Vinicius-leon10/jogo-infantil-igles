@@ -49,6 +49,8 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R41 | Ao bloquear o celular (app em segundo plano) a música para, o áudio mudo do silencioso é desligado (some o "tocando agora" da tela bloqueada) e o som fica suspenso; ao voltar, a música volta | "Música continua tocando com o celular bloqueado" |
 | R42 | iPhone com `audioSession` (iOS 17+): o silencioso é vencido só com `audioSession.type = "playback"`, sem `<audio>` mudo tocando (que deixava um player pausado na tela bloqueada); ao bloquear, a sessão volta para "auto" | "Player do app continua na tela de bloqueio" |
 | R43 | Área dos Pais tem a aba "Falas" com o Teste de som (e, no teste, "Ouvir todas as palavras"); Histórico e Cadastro não mostram o teste | "Crie uma aba nova para o teste das falas" |
+| R44 | Versão de teste: "Escolher vozes" (aba Falas) toca o áudio atual e as gravações novas de cada palavra, guarda a escolhida no aparelho, mostra o resumo e o app passa a usar a escolhida | "Um lugar na Área dos Pais para escolher as vozes" |
+| R45 | Versão oficial não tem "Escolher vozes" nem carrega as gravações em avaliação | Proteção do R44 |
 
 (R14 ficou dentro do R02.)
 
