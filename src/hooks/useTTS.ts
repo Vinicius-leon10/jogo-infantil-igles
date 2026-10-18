@@ -1,13 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
 import { resumeAudio } from "@/lib/sound";
 
+// Preferred English voices, best first. On iPhone the owner downloaded Ava; Premium and
+// Enhanced ("Aprimorada") versions sound far more natural than the default Samantha.
 const PRIORITY = [
+  "Ava",
+  "Zoe",
+  "Evan",
   "Samantha",
   "Google US English",
   "Microsoft Aria Online (Natural)",
   "Microsoft Aria",
   "Microsoft Jenny Online (Natural)",
 ];
+
+/** 2 = Premium, 1 = Enhanced (names vary with the phone's language), 0 = standard. */
+function quality(name: string) {
+  if (/premium/i.test(name)) return 2;
+  if (/enhanced|aprimorad|melhorad|avançad|mejorad/i.test(name)) return 1;
+  return 0;
+}
 
 const supported = typeof window !== "undefined" && "speechSynthesis" in window;
 
@@ -29,13 +41,16 @@ function setSpeaking(v: boolean) {
 function pickVoice() {
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return;
+  const english = voices.filter((v) => v.lang.toLowerCase().startsWith("en"));
   let chosen: SpeechSynthesisVoice | undefined;
   for (const name of PRIORITY) {
-    chosen = voices.find((v) => v.name.includes(name));
-    if (chosen) break;
+    const matches = english.filter((v) => v.name.startsWith(name) || v.name.includes(name));
+    if (matches.length) {
+      chosen = matches.sort((a, b) => quality(b.name) - quality(a.name))[0];
+      break;
+    }
   }
-  if (!chosen) chosen = voices.find((v) => v.lang.toLowerCase().startsWith("en"));
-  chosenVoice = chosen ?? null;
+  chosenVoice = chosen ?? english.sort((a, b) => quality(b.name) - quality(a.name))[0] ?? null;
 }
 
 if (supported) {
@@ -92,7 +107,11 @@ function speakNow(text: string, rate: number, pitch: number, onDone?: () => void
     onDone?.();
   };
   const u = new SpeechSynthesisUtterance(text);
-  if (chosenVoice) u.voice = chosenVoice;
+  try {
+    if (chosenVoice) u.voice = chosenVoice;
+  } catch {
+    // Some browsers reject a voice object they did not create: keep the language only.
+  }
   u.lang = chosenVoice?.lang ?? "en-US";
   u.rate = rate;
   u.pitch = pitch;

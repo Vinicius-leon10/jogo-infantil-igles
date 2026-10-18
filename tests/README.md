@@ -37,6 +37,7 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R29 | Depois que a palavra termina normalmente, ela não é repetida sozinha | Proteção da correção do R28 |
 | R30 | Visual "Dia ensolarado": fundo claro, texto escuro, cantos bem arredondados e botões principais 3D | Nova paleta e design infantil |
 | R31 | A versão oficial não mostra o texto da versão no rodapé; a de teste mostra "versão … (teste)" | "Esconda o texto da versão do app" |
+| R32 | Prefere a voz Ava (depois Zoe, Evan, Samantha…) e, dentro dela, a melhor versão instalada (Premium > Aprimorada > normal) | "Baixei a Ava" |
 
 (R14 ficou dentro do R02.)
 

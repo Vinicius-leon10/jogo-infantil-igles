@@ -29,6 +29,8 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
   cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
 - Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
+- Voz: o dono baixou a Ava no iPhone; o app prefere Ava > Zoe > Evan > Samantha, na melhor versão instalada
+  (Premium > Aprimorada). Áudios gravados por palavra foram sugeridos (tocam no silencioso), sem decisão ainda.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
