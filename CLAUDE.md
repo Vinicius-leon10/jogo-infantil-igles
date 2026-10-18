@@ -51,7 +51,10 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   escolhida por cima de `src/assets/voice/<id>.mp3` e apagar as takes da palavra (as "atual" não precisam de nada).
   As takes nunca vão para a oficial: o build oficial troca `src/lib/voiceTakes.ts` por `voiceTakes.none.ts`
   (vite.config.ts), então nem copia os arquivos; teste R45.
-- Em avaliação agora: Lion, Monkey, One, Seven e Ten (o dono achou que não ficaram bons como os outros).
+- Em avaliação agora: Lion, Monkey, One, Seven e Ten — o problema é a PRONÚNCIA. As takes usam 3 jeitos de acertar
+  o inglês (TAKES em make-voices.mjs): A = multilingual_v2 com contexto em inglês (previous/next_text), B = flash_v2
+  com `<phoneme>` ARPAbet, C = turbo_v2 (só inglês). A chave atual não tem permissão de speech_to_text, então não dá
+  para conferir a pronúncia por transcrição; quem decide é o ouvido do dono.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`

@@ -412,6 +412,9 @@ function VoicePicker() {
         Toque para ouvir o áudio atual e as gravações novas. Marque a que ficou melhor: o app de teste passa a usar
         essa na hora. Depois me mande o resumo lá embaixo.
       </p>
+      <p className="text-xs text-muted-foreground mb-3">
+        A: lida no meio de frases em inglês · B: com os sons exatos do inglês americano · C: voz treinada só em inglês.
+      </p>
       <div className="space-y-3">
         {words.map((w) => {
           const options = [null, ...takes[w.id]];

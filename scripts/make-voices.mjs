@@ -3,7 +3,8 @@
 //        node scripts/make-voices.mjs --takes lion monkey   (3 new takes per word, see below)
 // ELEVENLABS_VOICE_ID picks another voice (default: Jessica, bright and playful).
 //
-// --takes writes src/assets/voice-takes/<id>-a|b|c.mp3 (same settings, different seeds). The test version's
+// --takes writes src/assets/voice-takes/<id>-a|b|c.mp3, each a different way to get the English pronunciation
+// right (TAKES below). The test version's
 // parents' area ("Falas" → "Escolher vozes") plays them side by side with the current one so the owner picks;
 // the chosen take is then copied over src/assets/voice/<id>.mp3 and the takes deleted.
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -35,21 +36,44 @@ for (const cat of ["animals", "numbers"]) {
   for (const m of block.matchAll(/\{ id: "([^"]+)", emoji: "[^"]*", en: "([^"]+)"/g)) words.push({ id: m[1], en: m[2] });
 }
 
-async function tts(text, seed) {
+// American pronunciation (CMU ARPAbet) of every word, for take B's <phoneme> tag.
+const ARPABET = {
+  dog: "D AO1 G", cat: "K AE1 T", fish: "F IH1 SH", bird: "B ER1 D", horse: "HH AO1 R S", cow: "K AW1",
+  pig: "P IH1 G", rabbit: "R AE1 B AH0 T", sheep: "SH IY1 P", duck: "D AH1 K", elephant: "EH1 L AH0 F AH0 N T",
+  lion: "L AY1 AH0 N", monkey: "M AH1 NG K IY0", frog: "F R AA1 G", zero: "Z IH1 R OW0", one: "W AH1 N",
+  two: "T UW1", three: "TH R IY1", four: "F AO1 R", five: "F AY1 V", six: "S IH1 K S", seven: "S EH1 V AH0 N",
+  eight: "EY1 T", nine: "N AY1 N", ten: "T EH1 N",
+};
+
+// The default recording: multilingual model, cheerful single word.
+const MAIN = (w) => ({ text: `${w.en}!`, model_id: "eleven_multilingual_v2", language_code: "en" });
+// Takes when the owner hears a wrong pronunciation (the multilingual model can drift into another accent):
+const TAKES = {
+  // A: same model, but surrounded by English context so it reads the word as English.
+  a: (w) => ({
+    text: `${w.en}.`,
+    model_id: "eleven_multilingual_v2",
+    previous_text: "Let's learn some English words. Repeat after me.",
+    next_text: "Very good!",
+  }),
+  // B: English-only model told the exact sounds with a phoneme tag.
+  b: (w) => ({ text: `<phoneme alphabet="cmu-arpabet" ph="${ARPABET[w.id]}">${w.en}</phoneme>!`, model_id: "eleven_flash_v2" }),
+  // C: English-only model, plain word.
+  c: (w) => ({ text: `${w.en}!`, model_id: "eleven_turbo_v2" }),
+};
+
+async function tts(request) {
   const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_128`, {
     method: "POST",
     headers: { "xi-api-key": key, "content-type": "application/json" },
     body: JSON.stringify({
-      // The exclamation gives a cheerful, clear single-word reading; 0.7 is the slowest speed (the owner found 0.9 fast).
-      text: `${text}!`,
-      model_id: "eleven_multilingual_v2",
-      language_code: "en",
-      ...(seed === undefined ? {} : { seed }),
+      ...request,
+      // 0.7 is the slowest speed (the owner found 0.9 fast).
       voice_settings: { stability: 0.6, similarity_boost: 0.8, style: 0.3, speed: 0.7 },
     }),
   });
   if (!res.ok) {
-    console.error(`${text}: ${res.status} ${await res.text()}`);
+    console.error(`${request.text}: ${res.status} ${await res.text()}`);
     process.exit(1);
   }
   return Buffer.from(await res.arrayBuffer());
@@ -60,14 +84,14 @@ mkdirSync(out, { recursive: true });
 for (const w of words) {
   if (only.length && !only.includes(w.id)) continue;
   if (takes) {
-    for (const [label, seed] of [["a", 11], ["b", 22], ["c", 33]]) {
-      writeFileSync(join(out, `${w.id}-${label}.mp3`), await tts(w.en, seed));
+    for (const [label, take] of Object.entries(TAKES)) {
+      writeFileSync(join(out, `${w.id}-${label}.mp3`), await tts(take(w)));
       console.log(`ok ${w.id}-${label}`);
     }
     continue;
   }
   const file = join(out, `${w.id}.mp3`);
   if (existsSync(file) && !force) continue;
-  writeFileSync(file, await tts(w.en));
+  writeFileSync(file, await tts(MAIN(w)));
   console.log(`ok ${w.id}`);
 }
