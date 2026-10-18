@@ -46,6 +46,7 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R38 | Versão de teste: a Área dos Pais abre sem a conta de adulto; a real continua pedindo | "Não preciso fazer o cálculo no teste" |
 | R39 | Versão de teste: a Área dos Pais mostra todos os animais e números (com imagem) e toca o áudio gravado de cada um | "Testar o áudio de todas as palavras sem entrar nas fases" |
 | R40 | Mapa de fases limpo: só as plantas (sem caixa com fase/palavras, sem texto de instrução); a planta é o botão 3D e a da vez pisca | "A criança só clica no broto" |
+| R41 | Ao bloquear o celular (app em segundo plano) a música para, o áudio mudo do silencioso é desligado (some o "tocando agora" da tela bloqueada) e o som fica suspenso; ao voltar, a música volta | "Música continua tocando com o celular bloqueado" |
 
 (R14 ficou dentro do R02.)
 

@@ -110,9 +110,24 @@ if (typeof window !== "undefined") {
     unlock();
   };
   GESTURES.forEach((e) => window.addEventListener(e, wake, true));
-  // Coming back from the background (iOS "interrupted" state): resume.
+  // Locked phone / app in the background: go quiet, like a closed app. The looping silent <audio>
+  // would otherwise keep playing and iOS shows the app as music on the lock screen.
+  const sleep = () => {
+    stopLoop();
+    stopVoiceClip();
+    if (keepAlive) {
+      keepAlive.pause();
+      keepAlive.removeAttribute("src");
+      keepAlive.load(); // drops the media session, so the lock screen player goes away
+      keepAlive = null; // recreated by the next tap (unlock)
+    }
+    if (ctx?.state === "running") ctx.suspend().catch(() => {});
+  };
+  window.addEventListener("pagehide", sleep);
+  // Coming back from the background (iOS "interrupted" state): resume; a tap restarts the keep-alive.
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && ctx && ctx.state !== "running") {
+    if (document.visibilityState === "hidden") sleep();
+    else if (ctx && ctx.state !== "running") {
       ctx.resume().then(() => musicWanted && musicEnabled && startLoop());
     }
   });

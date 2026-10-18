@@ -698,3 +698,58 @@ test("R40 mapa limpo: só os brotos, sem caixa de texto, e o broto da vez pisca 
   await current.click();
   await expect(page.getByText("Começar a brotar")).toBeVisible();
 });
+
+test("R41 ao bloquear o celular (app em segundo plano) a música e o áudio param; ao voltar, a música volta", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    // Which <audio> elements are playing, and the audio contexts the app made.
+    const w = window as unknown as { __media: Set<HTMLMediaElement>; __ctxs: AudioContext[]; __hidden: boolean };
+    w.__media = new Set();
+    w.__ctxs = [];
+    w.__hidden = false;
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      w.__media.add(this);
+      return play.call(this);
+    };
+    const pause = HTMLMediaElement.prototype.pause;
+    HTMLMediaElement.prototype.pause = function () {
+      w.__media.delete(this);
+      return pause.call(this);
+    };
+    const Ctx = window.AudioContext;
+    window.AudioContext = class extends Ctx {
+      constructor(o?: AudioContextOptions) {
+        super(o);
+        w.__ctxs.push(this);
+      }
+    } as typeof AudioContext;
+    Object.defineProperty(document, "visibilityState", { get: () => (w.__hidden ? "hidden" : "visible") });
+    Object.defineProperty(document, "hidden", { get: () => w.__hidden });
+  });
+  const setHidden = (hidden: boolean) =>
+    page.evaluate((h) => {
+      (window as unknown as { __hidden: boolean }).__hidden = h;
+      document.dispatchEvent(new Event("visibilitychange"));
+    }, hidden);
+  const state = () =>
+    page.evaluate(() => {
+      const w = window as unknown as { __media: Set<HTMLMediaElement>; __ctxs: AudioContext[] };
+      return { media: [...w.__media].filter((m) => !m.paused).length, ctx: w.__ctxs.map((c) => c.state) };
+    });
+
+  await seed(page);
+  await page.getByText("Escolha seu nível").click(); // first tap unlocks audio
+  expect(await notesDuring(page, 1500)).toBeGreaterThan(5);
+  expect((await state()).media).toBeGreaterThan(0); // the silent keep-alive for the silent switch
+
+  await setHidden(true);
+  await page.waitForTimeout(500);
+  expect(await state()).toEqual({ media: 0, ctx: ["suspended"] });
+  expect(await notesDuring(page, 1500)).toBe(0);
+
+  await setHidden(false);
+  await page.getByText("Escolha seu nível").click(); // iOS may need a tap to restart sound
+  expect(await notesDuring(page, 1500)).toBeGreaterThan(5);
+});

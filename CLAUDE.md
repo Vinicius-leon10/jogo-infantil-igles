@@ -58,5 +58,8 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - Qualquer fala do speechSynthesis (até a fala em branco do desbloqueio) deixa o Web Audio "interrupted" por um
   instante: o áudio gravado espera até 2 s o som voltar antes de cair na voz do aparelho.
 - Não chamar `speechSynthesis.cancel()` sem nada tocando; esperar ~300 ms após cancelar antes de falar de novo.
+- Ao bloquear o celular / sair do app (`visibilitychange` hidden, `pagehide`) o som dorme: para a música, desliga o
+  áudio mudo em repetição (senão o iPhone mostra o app como música na tela bloqueada) e suspende o Web Audio; ao voltar,
+  a música retoma e o próximo toque religa o áudio mudo do silencioso (R41).
 - Atualizações: o app abre `?v=<build>` quando acha versão nova (o cache do iPhone ignora reload).
 - Ilustrações: o dono gera imagens (cachorro, número 1) e o resto segue o estilo; recortar com `scripts/cutout.py`.
