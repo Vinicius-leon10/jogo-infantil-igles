@@ -51,10 +51,12 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   escolhida por cima de `src/assets/voice/<id>.mp3` e apagar as takes da palavra (as "atual" não precisam de nada).
   As takes nunca vão para a oficial: o build oficial troca `src/lib/voiceTakes.ts` por `voiceTakes.none.ts`
   (vite.config.ts), então nem copia os arquivos; teste R45.
-- Em avaliação agora: Lion, Monkey, One, Seven e Ten — o problema é a PRONÚNCIA. As takes usam 3 jeitos de acertar
-  o inglês (TAKES em make-voices.mjs): A = multilingual_v2 com contexto em inglês (previous/next_text), B = flash_v2
-  com `<phoneme>` ARPAbet, C = turbo_v2 (só inglês). A chave atual não tem permissão de speech_to_text, então não dá
-  para conferir a pronúncia por transcrição; quem decide é o ouvido do dono.
+- Pronúncia: o dono escolheu Lion C, Monkey B, One C e Seven B (já copiadas para `src/assets/voice/`). As takes tentam
+  jeitos diferentes de acertar o inglês (TAKES em make-voices.mjs): A = multilingual_v2 com contexto em inglês,
+  B = flash_v2 com `<phoneme>` ARPAbet, C = turbo_v2 (só inglês); 2ª rodada com `--labels=d,e,f`: D = turbo_v2 +
+  `<phoneme>`, E = multilingual_v2 na sequência (contando), F = turbo_v2_5 com language_code en. A chave não tem
+  permissão de speech_to_text, então não dá para conferir por transcrição; quem decide é o ouvido do dono.
+- Em avaliação agora: Ten (A/B/C não serviram; takes D/E/F no "Escolher vozes").
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`

@@ -801,6 +801,7 @@ test("R43 Área dos Pais tem a aba 'Falas' com o teste de som; as outras abas n�
 test("R44 versão de teste: 'Escolher vozes' toca o atual e as gravações novas, guarda a escolhida e o app passa a usá-la", async ({
   page,
 }) => {
+  // Works with whatever word is under evaluation (src/assets/voice-takes/<id>-<take>.mp3).
   await allowVoiceClips(page);
   const mp3s: string[] = [];
   page.on("request", (r) => r.url().endsWith(".mp3") && mp3s.push(r.url().slice(r.url().lastIndexOf("/") + 1)));
@@ -808,32 +809,43 @@ test("R44 versão de teste: 'Escolher vozes' toca o atual e as gravações novas
   await page.getByRole("button", { name: "Área dos pais" }).click();
   await page.getByRole("button", { name: "Falas" }).click();
   const picker = page.getByTestId("voice-picker");
-  await expect(picker.getByTestId("voice-word")).toHaveCount(5);
-  const lion = picker.locator('[data-word="lion"]');
+  await expect(picker).toBeVisible();
+  if ((await picker.getByTestId("voice-word").count()) === 0) {
+    // Nothing under evaluation right now: the section says so (the rest runs whenever takes exist).
+    await expect(picker).toContainText("Nenhuma voz em avaliação");
+    return;
+  }
+  const word = picker.getByTestId("voice-word").first();
+  const id = (await word.getAttribute("data-word"))!;
+  const options = word.getByRole("button", { name: /, versão [A-Z]$/ });
+  expect(await options.count()).toBeGreaterThanOrEqual(2);
+  const [first, last] = [(await options.first().getAttribute("aria-label"))!, (await options.last().getAttribute("aria-label"))!];
+  const en = first.split(",")[0];
+  const [t1, t2] = [first.slice(-1), last.slice(-1)];
   // Each option plays its own recording.
   const before = (await clips(page)).length;
-  await lion.getByRole("button", { name: "Lion, versão C" }).click();
+  await options.last().click();
   await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
-  expect(mp3s.some((u) => u.startsWith("lion-c"))).toBe(true);
-  // Choosing B is remembered and shown in the summary to send.
-  await lion.getByRole("radio", { name: "Usar B" }).check();
-  await expect(picker.getByTestId("voice-summary")).toContainText("Lion: B");
+  expect(mp3s.some((u) => u.startsWith(`${id}-${t2.toLowerCase()}-`))).toBe(true);
+  // Choosing another take is remembered and shown in the summary to send.
+  await word.getByRole("radio", { name: `Usar ${t1}` }).check();
+  await expect(picker.getByTestId("voice-summary")).toContainText(`${en}: ${t1}`);
   mp3s.length = 0;
   await page.reload();
   await page.getByRole("button", { name: "Área dos pais" }).click();
   await page.getByRole("button", { name: "Falas" }).click();
-  await expect(page.locator('[data-word="lion"]').getByRole("radio", { name: "Usar B" })).toBeChecked();
-  // The app now says "Lion" with take B (preloaded on the first tap after the reload).
+  await expect(page.locator(`[data-word="${id}"]`).getByRole("radio", { name: `Usar ${t1}` })).toBeChecked();
+  // The app now says the word with that take (preloaded on the first tap after the reload).
   const n = (await clips(page)).length;
-  await page.getByRole("button", { name: "Ouvir Lion", exact: true }).click();
+  await page.getByRole("button", { name: `Ouvir ${en}`, exact: true }).click();
   await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(n);
-  expect(mp3s.some((u) => u.startsWith("lion-b"))).toBe(true);
+  expect(mp3s.some((u) => u.startsWith(`${id}-${t1.toLowerCase()}-`))).toBe(true);
 });
 
 test("R45 versão oficial não tem 'Escolher vozes' nem carrega as gravações em avaliação", async ({ page }) => {
   await allowVoiceClips(page);
   const takes: string[] = [];
-  page.on("request", (r) => /\/(lion|monkey|one|seven|ten)-[abc]-/.test(r.url()) && takes.push(r.url()));
+  page.on("request", (r) => /\/[a-z]+-[a-z]-[A-Za-z0-9_-]{8}\.mp3$/.test(r.url()) && takes.push(r.url()));
   await seed(page);
   await page.getByRole("button", { name: "Área dos pais" }).click();
   const [a, b] = (await page.getByText(/Quanto é/).textContent())!.match(/\d+/g)!.map(Number);

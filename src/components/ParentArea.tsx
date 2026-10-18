@@ -377,6 +377,16 @@ function PickerBtn({
 }
 
 /** Test version only: every word that has a recording, to hear each one without playing the phases. */
+/** How each take tries to get the English pronunciation right (TAKES in scripts/make-voices.mjs). */
+const TAKE_NOTES: Record<string, string> = {
+  a: "lida no meio de frases em inglês",
+  b: "com os sons exatos do inglês americano",
+  c: "voz treinada só em inglês",
+  d: "voz só em inglês com os sons exatos",
+  e: "lida na sequência (contando, nos números)",
+  f: "voz mais nova, fixada em inglês",
+};
+
 /**
  * Test version only: new recordings (scripts/make-voices.mjs --takes) next to the current one.
  * The owner listens, picks one per word (kept on this phone, and the app uses it right away),
@@ -388,7 +398,15 @@ function VoicePicker() {
   const [choice, setChoice] = useState(() => Object.fromEntries(words.map((w) => [w.id, voiceTakeChoice(w.id)])));
   const [playing, setPlaying] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  if (!words.length) return null;
+  if (!words.length)
+    return (
+      <div className="mt-6 rounded-3xl bg-card p-4" data-testid="voice-picker">
+        <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-1">Escolher vozes</h3>
+        <p className="text-xs text-muted-foreground">
+          Nenhuma voz em avaliação agora. Quando quiser trocar o áudio de uma palavra, peça versões novas no Claude.
+        </p>
+      </div>
+    );
 
   const play = (id: string, take: string | null) => {
     const key = `${id}-${take ?? "atual"}`;
@@ -413,7 +431,11 @@ function VoicePicker() {
         essa na hora. Depois me mande o resumo lá embaixo.
       </p>
       <p className="text-xs text-muted-foreground mb-3">
-        A: lida no meio de frases em inglês · B: com os sons exatos do inglês americano · C: voz treinada só em inglês.
+        {[...new Set(Object.values(takes).flat())]
+          .sort()
+          .filter((t) => TAKE_NOTES[t])
+          .map((t) => `${t.toUpperCase()}: ${TAKE_NOTES[t]}`)
+          .join(" · ")}
       </p>
       <div className="space-y-3">
         {words.map((w) => {

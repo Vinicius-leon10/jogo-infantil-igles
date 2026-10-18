@@ -1,6 +1,7 @@
 // Generates one MP3 per word with ElevenLabs into src/assets/voice/<id>.mp3.
 // Usage: ELEVENLABS_API_KEY=sk_... node scripts/make-voices.mjs [--force] [ids...]
 //        node scripts/make-voices.mjs --takes lion monkey   (3 new takes per word, see below)
+//        node scripts/make-voices.mjs --takes --labels=d,e,f ten   (other strategies, when a/b/c all failed)
 // ELEVENLABS_VOICE_ID picks another voice (default: Jessica, bright and playful).
 //
 // --takes writes src/assets/voice-takes/<id>-a|b|c.mp3, each a different way to get the English pronunciation
@@ -22,6 +23,7 @@ if (!key?.startsWith("sk_")) {
 const args = process.argv.slice(2);
 const force = args.includes("--force");
 const takes = args.includes("--takes");
+const labels = (args.find((a) => a.startsWith("--labels="))?.slice("--labels=".length) ?? "a,b,c").split(",");
 const only = args.filter((a) => !a.startsWith("--"));
 if (takes && !only.length) {
   console.error("--takes precisa das palavras, ex.: --takes lion monkey");
@@ -60,6 +62,23 @@ const TAKES = {
   b: (w) => ({ text: `<phoneme alphabet="cmu-arpabet" ph="${ARPABET[w.id]}">${w.en}</phoneme>!`, model_id: "eleven_flash_v2" }),
   // C: English-only model, plain word.
   c: (w) => ({ text: `${w.en}!`, model_id: "eleven_turbo_v2" }),
+  // Second round, for words where A, B and C still sounded wrong (Ten):
+  // D: English-only turbo model plus the phoneme tag (B's sounds, C's model).
+  d: (w) => ({ text: `<phoneme alphabet="cmu-arpabet" ph="${ARPABET[w.id]}">${w.en}</phoneme>!`, model_id: "eleven_turbo_v2" }),
+  // E: multilingual model reading it inside its natural sequence (counting for numbers).
+  e: (w) => ({
+    text: `${w.en}!`,
+    model_id: "eleven_multilingual_v2",
+    previous_text: NEIGHBORS[w.id] ?? "Look! It's a",
+    next_text: ".",
+  }),
+  // F: newer English-capable turbo model with the language pinned.
+  f: (w) => ({ text: `${w.en}!`, model_id: "eleven_turbo_v2_5", language_code: "en" }),
+};
+// What comes before a number when counting, for take E.
+const NEIGHBORS = {
+  one: "Zero,", two: "Zero, one,", three: "One, two,", four: "Two, three,", five: "Three, four,", six: "Four, five,",
+  seven: "Five, six,", eight: "Six, seven,", nine: "Seven, eight,", ten: "Seven, eight, nine,",
 };
 
 async function tts(request) {
@@ -84,7 +103,12 @@ mkdirSync(out, { recursive: true });
 for (const w of words) {
   if (only.length && !only.includes(w.id)) continue;
   if (takes) {
-    for (const [label, take] of Object.entries(TAKES)) {
+    for (const label of labels) {
+      const take = TAKES[label];
+      if (!take) {
+        console.error(`take desconhecida: ${label} (existem ${Object.keys(TAKES).join(", ")})`);
+        process.exit(1);
+      }
       writeFileSync(join(out, `${w.id}-${label}.mp3`), await tts(take(w)));
       console.log(`ok ${w.id}-${label}`);
     }
