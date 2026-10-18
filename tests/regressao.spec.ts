@@ -553,4 +553,8 @@ test("R32 usa a voz Ava (a melhor versão instalada) em vez da Samantha", async 
   await page.getByPlaceholder("Resposta").fill(String(a + b));
   await page.getByText("Entrar").click();
   await expect(page.getByTestId("sound-check")).toContainText("Ava (Premium)");
+  // The panel lists every English voice the phone offers, to diagnose a voice that is not offered to web apps.
+  await page.getByText("Vozes em inglês que o aparelho liberou").click();
+  await expect(page.getByTestId("voice-list")).toContainText("Samantha (en-US)");
+  await expect(page.getByTestId("voice-list")).not.toContainText("Luciana");
 });

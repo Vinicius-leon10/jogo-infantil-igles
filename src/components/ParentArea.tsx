@@ -386,6 +386,16 @@ function SoundCheck() {
         <dt className="text-muted-foreground">Última fala</dt>
         <dd className="break-words">{status.lastEvent}</dd>
       </dl>
+      {status.names.length > 0 && (
+        <details className="mt-3 text-xs">
+          <summary className="font-semibold cursor-pointer">Vozes em inglês que o aparelho liberou para o app</summary>
+          <ul className="mt-2 space-y-0.5 text-muted-foreground" data-testid="voice-list">
+            {status.names.map((n) => (
+              <li key={n}>{n}</li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   );
 }

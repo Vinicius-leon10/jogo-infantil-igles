@@ -80,9 +80,11 @@ let lastEvent = "nenhuma fala ainda";
 
 /** Diagnostics for the parent area: voices available and what happened to the last utterance. */
 export function ttsStatus() {
-  if (!supported) return { supported, englishVoices: 0, voice: "—", lastEvent };
+  if (!supported) return { supported, englishVoices: 0, voice: "—", lastEvent, names: [] as string[] };
+  // A voice downloaded in the phone's settings is not always offered to web apps: list what we actually get.
   const english = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("en"));
-  return { supported, englishVoices: english.length, voice: chosenVoice?.name ?? "padrão do aparelho", lastEvent };
+  const names = english.map((v) => `${v.name} (${v.lang})`).sort();
+  return { supported, englishVoices: english.length, voice: chosenVoice?.name ?? "padrão do aparelho", lastEvent, names };
 }
 
 /** iOS can go silent after cancel() is called with nothing playing: only cancel real speech. */
