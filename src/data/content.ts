@@ -328,8 +328,12 @@ export function previousPhaseId(phaseId: number): number | null {
   return idx > 0 ? level.phaseIds[idx - 1] : null;
 }
 
+/** The test version opens every level and phase, so the owner can try any of them straight away. */
+export const unlockEverything = __APP_ENV__ === "teste";
+
 /** Next level unlocks when the previous level's tree is complete (its last phase passed). */
 export function isLevelUnlocked(levelId: number, completed: (phaseId: number) => boolean): boolean {
+  if (unlockEverything) return true;
   const prev = levels.find((l) => l.id === levelId - 1);
   if (!prev) return true;
   return completed(prev.phaseIds[prev.phaseIds.length - 1]);

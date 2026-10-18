@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { X, History, UserCog, ShieldCheck, Star } from "lucide-react";
-import { phases, phaseNumber } from "@/data/content";
+import { categories, phases, phaseNumber } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import type { ChildProfile, ChildProfileInput } from "@/hooks/useChildProfile";
 import { Emoji } from "./Emoji";
 import { ttsStatus, useTTS } from "@/hooks/useTTS";
-import { voiceClipStatus } from "@/lib/sound";
+import { voiceClipFor, voiceClipStatus } from "@/lib/sound";
 
 type Tab = "history" | "edit";
 
@@ -16,7 +16,8 @@ type Props = {
 };
 
 export function ParentArea({ profile, onSave, onClose }: Props) {
-  const [unlocked, setUnlocked] = useState(false);
+  // The test version skips the math question so the owner gets straight in.
+  const [unlocked, setUnlocked] = useState(__APP_ENV__ === "teste");
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState(false);
   const [tab, setTab] = useState<Tab>("history");
@@ -106,6 +107,7 @@ export function ParentArea({ profile, onSave, onClose }: Props) {
             {tab === "history" ? <HistoryPanel /> : <EditPanel profile={profile} onSave={onSave} />}
 
             <SoundCheck />
+            {__APP_ENV__ === "teste" && <AllWords />}
           </>
         )}
       </div>
@@ -356,6 +358,37 @@ function PickerBtn({
       <div className="text-2xl mb-0.5">{emoji}</div>
       <div className="text-xs font-bold">{label}</div>
     </button>
+  );
+}
+
+/** Test version only: every word that has a recording, to hear each one without playing the phases. */
+function AllWords() {
+  const { speak } = useTTS();
+  const [playing, setPlaying] = useState<string | null>(null);
+  const words = categories.flatMap((c) => c.words).filter((w) => voiceClipFor(w.en));
+  return (
+    <div className="mt-6 rounded-3xl bg-card p-4">
+      <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-1">Ouvir todas as palavras</h3>
+      <p className="text-xs text-muted-foreground mb-3">Toque numa figura para ouvir o áudio gravado.</p>
+      <div className="grid grid-cols-3 gap-2" data-testid="all-words">
+        {words.map((w) => (
+          <button
+            key={w.id}
+            onClick={() => {
+              setPlaying(w.id);
+              speak(w.en, { onDone: () => setPlaying((p) => (p === w.id ? null : p)) });
+            }}
+            aria-label={`Ouvir ${w.en}`}
+            className="rounded-2xl p-2 text-center btn-3d btn-3d-soft bg-background"
+            style={playing === w.id ? { boxShadow: "0 0 0 2px var(--sprout), 0 6px 0 var(--edge-soft)" } : undefined}
+          >
+            <div className="text-4xl"><Emoji char={w.emoji} label={w.en} /></div>
+            <div className="text-sm font-bold">{w.en}</div>
+            <div className="text-[10px] text-muted-foreground">{w.pt}</div>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 

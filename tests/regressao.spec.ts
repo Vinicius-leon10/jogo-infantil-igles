@@ -630,3 +630,53 @@ test("R36 áudio gravado numa velocidade calma (o 'Dog' dura pelo menos 0,9 s)",
   await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(0);
   expect((await clips(page))[0]).toBeGreaterThanOrEqual(0.9);
 });
+
+/** Opens the test version (port 4174) with a saved profile and no progress. */
+async function openTestVersion(page: import("@playwright/test").Page) {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "teste:sprout-profile",
+      JSON.stringify({ id: "local", name: "Lia", age: 5, sex: "girl", can_read: true }),
+    );
+  });
+  await page.goto("http://localhost:4174/");
+  await expect(page.getByText("Escolha seu nível")).toBeVisible();
+}
+
+test("R37 versão de teste: todas as fases e níveis liberados, sem progresso", async ({ page }) => {
+  await openTestVersion(page);
+  await expect(page.getByRole("button", { name: /Nível 2/ })).toBeEnabled();
+  await page.getByRole("button", { name: /Nível 1/ }).click();
+  await expect(page.getByRole("button", { name: /Animal 10\b/ })).toBeEnabled();
+  await page.goto("http://localhost:4174/");
+  await page.getByRole("button", { name: /Nível 2/ }).click();
+  await expect(page.getByRole("button", { name: /Número 7\b/ })).toBeEnabled();
+});
+
+test("R38 versão de teste: Área dos Pais abre sem a conta; a real continua pedindo", async ({ page }) => {
+  await openTestVersion(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await expect(page.getByTestId("sound-check")).toBeVisible();
+  await expect(page.getByText(/Quanto é/)).toHaveCount(0);
+
+  await seed(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  await expect(page.getByText(/Quanto é/)).toBeVisible();
+});
+
+test("R39 versão de teste: Área dos Pais lista todos os animais e números com imagem e toca o áudio de cada um", async ({
+  page,
+}) => {
+  await allowVoiceClips(page);
+  await openTestVersion(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  const words = page.getByTestId("all-words").getByRole("button");
+  await expect(words).toHaveCount(25);
+  await expect(page.getByTestId("all-words").locator("img")).toHaveCount(25);
+  for (const name of ["Elephant", "Ten"]) {
+    const before = (await clips(page)).length;
+    await page.getByRole("button", { name: `Ouvir ${name}` }).click();
+    await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
+  }
+  expect((await said(page)).map((s) => s.text)).toEqual([]);
+});

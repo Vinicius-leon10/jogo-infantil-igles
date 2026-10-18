@@ -30,6 +30,10 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
 - PARA VER DEPOIS (pedido do dono): o repositório `emilkowalski/skills` no GitHub tem uma skill com design no estilo
   Apple; olhar e propor o que dá para aproveitar no visual do Sprout (sem mudar nada antes do dono aprovar).
+- Só na versão de teste (`__APP_ENV__ === "teste"`, a pedido do dono): todas as fases/níveis liberados, Área dos Pais
+  sem a conta de adulto e com "Ouvir todas as palavras" (figura + áudio gravado de cada animal e número). A oficial
+  continua com bloqueios e conta.
+- Decidido pelo dono: sem estilo Apple/visual adulto (viu exemplos e não gostou); manter o visual infantil atual.
 - Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
 - Voz: o iPhone NÃO libera a Ava (nem vozes Premium/Aprimoradas) para apps web — confirmado pela lista do
   "Teste de som": só Samantha, Daniel, Karen, Moira, Tessa, Rishi e vozes "engraçadas". O app usa Samantha.

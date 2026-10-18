@@ -42,6 +42,9 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R34 | Se o áudio gravado não carregar, a palavra é dita pela voz do aparelho | Proteção do R33 |
 | R35 | Se o som do app estiver bloqueado por um instante (o iPhone interrompe o Web Audio depois de uma fala), espera e toca o áudio gravado em vez da voz do aparelho | "Não mudou os áudios" |
 | R36 | Áudio gravado numa velocidade calma: palavras geradas com `speed` 0,7 (o "Dog" dura pelo menos 0,9 s) | "A voz está rápida" |
+| R37 | Versão de teste: todos os níveis e fases liberados, mesmo sem progresso (a real continua liberando pela ordem: R03/R04) | "Libere todas as fases no teste" |
+| R38 | Versão de teste: a Área dos Pais abre sem a conta de adulto; a real continua pedindo | "Não preciso fazer o cálculo no teste" |
+| R39 | Versão de teste: a Área dos Pais mostra todos os animais e números (com imagem) e toca o áudio gravado de cada um | "Testar o áudio de todas as palavras sem entrar nas fases" |
 
 (R14 ficou dentro do R02.)
 

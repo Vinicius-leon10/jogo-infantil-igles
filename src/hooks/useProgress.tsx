@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { isLevelUnlocked, phases as allPhases, previousPhaseId } from "@/data/content";
+import { isLevelUnlocked, phases as allPhases, previousPhaseId, unlockEverything } from "@/data/content";
 import { readJSON, writeJSON } from "@/lib/storage";
 import { starsFor, xpFor } from "@/lib/scoring";
 
@@ -145,6 +145,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
   const isUnlocked = useCallback(
     (phaseId: number) => {
+      if (unlockEverything) return true;
       const done = (id: number) => !!progress.phases[id]?.completed;
       const prev = previousPhaseId(phaseId);
       if (prev !== null) return done(prev);
