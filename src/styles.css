@@ -156,6 +156,22 @@
   .btn-3d-blue { --edge: var(--edge-blue); }
   .btn-3d-coral { --edge: var(--edge-coral); }
 
+  /* A phase on the map: the plant itself is the button, with a solid shadow that sinks when pressed. */
+  .phase-sprout {
+    filter: drop-shadow(0 6px 0 #3e7a2b99);
+    transition: transform 0.08s ease-out, filter 0.08s ease-out;
+  }
+  .phase-sprout:active:not(:disabled) {
+    transform: translateY(5px);
+    filter: drop-shadow(0 1px 0 #3e7a2b99);
+  }
+  /* The phase to play now pulses and glows so the child knows where to tap. */
+  @keyframes beckon {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 #ffffff00) drop-shadow(0 0 0 #ffe36e00); }
+    50% { transform: scale(1.12); filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 18px #ffe36e); }
+  }
+  .animate-beckon { animation: beckon 1.1s ease-in-out infinite; }
+
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }

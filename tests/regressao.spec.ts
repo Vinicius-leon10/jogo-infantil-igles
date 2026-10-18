@@ -384,7 +384,6 @@ test("R24 mapa é um terreno: fase 1 embaixo, e a planta cresce a cada fase até
   for (const n of [1, 3, 10]) await expect(phase(n).locator(`svg[data-stage="${n}"]`)).toHaveCount(1);
   await expect(phase(3)).toBeEnabled();
   await expect(phase(4)).toBeDisabled();
-  await expect(page.getByTestId("tree-goal")).toContainText("Complete as 10 fases");
 });
 
 test("R25 ao completar a fase 10 aparece a árvore completa e dá para ir ao nível 2", async ({ page }) => {
@@ -679,4 +678,23 @@ test("R39 versão de teste: Área dos Pais lista todos os animais e números com
     await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
   }
   expect((await said(page)).map((s) => s.text)).toEqual([]);
+});
+
+test("R40 mapa limpo: só os brotos, sem caixa de texto, e o broto da vez pisca como botão", async ({ page }) => {
+  await seed(page, { completed: [1, 2] });
+  await page.getByRole("button", { name: /Nível 1/ }).first().click();
+  const map = page.getByTestId("phase-map");
+  await expect(map.getByRole("button")).toHaveCount(10);
+  // No phase number, title or word list written on the map.
+  await expect(map.getByText(/Fase \d/)).toHaveCount(0);
+  await expect(map.getByText(/Animal \d/)).toHaveCount(0);
+  await expect(page.getByText(/Complete as \d+ fases/)).toHaveCount(0);
+  // Only the current phase (3) beckons; it opens the phase when tapped.
+  const current = map.locator("[data-current]");
+  await expect(current).toHaveCount(1);
+  await expect(current).toHaveAttribute("data-phase", "3");
+  await expect(current.locator(".animate-beckon")).toHaveCount(1);
+  await expect(map.locator(".animate-beckon")).toHaveCount(1);
+  await current.click();
+  await expect(page.getByText("Começar a brotar")).toBeVisible();
 });

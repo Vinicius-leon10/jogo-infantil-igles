@@ -1,6 +1,6 @@
-import { ArrowLeft, Lock, Star, Flame, BookOpen, ChevronRight } from "lucide-react";
+import { ArrowLeft, Star, Flame, BookOpen, ChevronRight } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { phases as allPhases, levels, phaseNumber } from "@/data/content";
+import { phases as allPhases, levels } from "@/data/content";
 import { useProgress } from "@/hooks/useProgress";
 import { Sprout } from "./Sprout";
 import { Plant } from "./Plant";
@@ -13,6 +13,9 @@ type Props = {
   onOpenStories?: () => void;
   onSelectLevel?: (id: number) => void;
 };
+
+// Horizontal position of each phase's plant (fraction of the free width), repeating up the map.
+const ZIGZAG = [0.15, 0.5, 0.85, 0.5];
 
 // Sunny sky with clouds at the top, a meadow in the middle and soil at the bottom, where phase 1 starts.
 const TERRAIN = `
@@ -57,7 +60,7 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
       const pts = phases
         .map((p) => plotRefs.current[p.id]?.getBoundingClientRect())
         .filter((r): r is DOMRect => !!r)
-        .map((r) => [r.left - c.left + r.width / 2, r.top - c.top + r.height * 0.62] as const);
+        .map((r) => [r.left - c.left + r.width / 2, r.top - c.top + r.height * 0.9] as const);
       if (pts.length) {
         let d = `M${pts[0][0]} ${c.height}L${pts[0][0]} ${pts[0][1]}`;
         for (let i = 1; i < pts.length; i++) {
@@ -151,7 +154,7 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
           <div className={treeDone ? "animate-float" : ""}>
             <Plant stage={stages} stages={stages} kind={level.tree} size={190} dim={!treeDone} className="mx-auto" />
           </div>
-          {treeDone ? (
+          {treeDone && (
             <>
               <h2 className="text-2xl font-bold">Sua {level.treeName} está completa! 🎉</h2>
               {nextLevel && onSelectLevel && (
@@ -164,10 +167,6 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
                 </button>
               )}
             </>
-          ) : (
-            <p className="text-sm text-muted-foreground max-w-[16rem] mx-auto">
-              Complete as {stages} fases para a sua <strong className="text-foreground">{level.treeName}</strong> crescer 🌱
-            </p>
           )}
         </section>
 
@@ -198,15 +197,13 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
             </div>
           )}
 
-          {/* Last phase on top, phase 1 at the bottom: the child climbs as the plant grows. */}
-          <ul className="space-y-5 relative">
+          {/* Last phase on top, phase 1 at the bottom: the child climbs as the plant grows.
+              No text: each phase is just its plant, a chunky 3D button; the current one beckons. */}
+          <ul className="space-y-3 relative" data-testid="phase-map">
             {[...phases].reverse().map((phase) => {
               const idx = phases.indexOf(phase);
-              const result = progress.phases[phase.id];
               const unlocked = isUnlocked(phase.id);
-              const stars = result?.stars ?? 0;
               const isCurrent = phase.id === currentPhase && !treeDone; // nothing left to do once the tree is complete
-              const plantLeft = idx % 2 === 0;
 
               return (
                 <li
@@ -214,63 +211,26 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
                   ref={(el) => {
                     phaseRefs.current[phase.id] = el;
                   }}
+                  // Zigzag up the meadow: left, middle, right, middle…
+                  style={{ paddingLeft: `calc((100% - 120px) * ${ZIGZAG[idx % ZIGZAG.length]})` }}
                 >
                   <button
                     onClick={() => unlocked && onSelectPhase(phase.id)}
                     disabled={!unlocked}
                     data-phase={phase.id}
-                    className={`w-full flex items-center gap-3 text-left ${plantLeft ? "flex-row" : "flex-row-reverse"} ${
-                      unlocked ? "active:scale-[0.98] cursor-pointer" : "cursor-not-allowed"
-                    } transition-transform`}
+                    data-current={isCurrent || undefined}
+                    aria-label={phase.title}
+                    className={`block phase-sprout ${unlocked ? "cursor-pointer" : "cursor-not-allowed"}`}
                   >
                     <div
                       ref={(el) => {
                         plotRefs.current[phase.id] = el;
                       }}
-                      className={`relative size-[104px] shrink-0 rounded-full flex items-end justify-center ${isCurrent ? "glow-sprout" : ""}`}
-                      style={{
-                        background: "radial-gradient(circle at 50% 70%, #a7e48a 0%, #74c45a 65%, #5fae47 100%)",
-                        boxShadow: isCurrent ? "0 0 0 4px #fff, 0 0 0 7px var(--sprout), 0 6px 0 7px var(--edge-green)" : "0 0 0 4px #ffffffb3, 0 6px 0 4px #4e9a3a",
-                      }}
+                      className={isCurrent ? "animate-beckon" : undefined}
+                      // Locked plants are grey but solid, so the trail doesn't show through them.
+                      style={unlocked ? undefined : { filter: "grayscale(1) brightness(1.15)" }}
                     >
-                      <Plant stage={idx + 1} stages={stages} kind={level.tree} size={100} dim={!unlocked} />
-                      {!unlocked && (
-                        <span className="absolute top-1 right-1 size-7 rounded-full bg-card/90 flex items-center justify-center">
-                          <Lock className="size-3.5 text-muted-foreground" />
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      className={`flex-1 min-w-0 rounded-3xl p-3 shadow-[0_5px_0_var(--edge-soft)] ${unlocked ? "bg-card" : "bg-card/60"} ${
-                        isCurrent ? "ring-2 ring-primary" : ""
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-                          Fase {phaseNumber(phase.id)}
-                        </span>
-                        {isCurrent && (
-                          <span
-                            className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-full"
-                            style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
-                          >
-                            Você
-                          </span>
-                        )}
-                      </div>
-                      <h4 className={`font-bold text-base truncate ${unlocked ? "" : "opacity-60"}`}>{phase.title}</h4>
-                      <p className="text-xs text-muted-foreground truncate">{phase.subtitle}</p>
-                      {result && (
-                        <div className="mt-1 flex gap-0.5">
-                          {[1, 2, 3].map((s) => (
-                            <Star
-                              key={s}
-                              className={`size-3.5 ${s <= stars ? "fill-current" : ""}`}
-                              style={{ color: s <= stars ? "var(--amber)" : "var(--muted)" }}
-                            />
-                          ))}
-                        </div>
-                      )}
+                      <Plant stage={idx + 1} stages={stages} kind={level.tree} size={120} />
                     </div>
                   </button>
                 </li>
@@ -279,10 +239,7 @@ export function WorldMap({ levelId, onSelectPhase, onBackToLevels, onOpenStories
           </ul>
         </div>
 
-        {/* Soil where the journey starts. */}
-        <div className="mt-6 mb-6 text-center text-xs font-bold uppercase tracking-[0.2em] text-[#fff3e0]">
-          🌱 Início
-        </div>
+        <div className="h-8" />
 
         <MusicToggle />
       </div>
