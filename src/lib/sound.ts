@@ -357,6 +357,30 @@ const decoded = new Map<string, Promise<AudioBuffer | null>>();
 let voiceSource: AudioBufferSourceNode | null = null;
 let voiceTimer: ReturnType<typeof setTimeout> | null = null;
 let voiceToken = 0;
+// What happened to the last recorded word; shown by "Teste de som" in the parent area.
+let lastClipEvent = "nenhum ainda";
+
+/** Diagnostics for the parent area. */
+export function voiceClipStatus() {
+  return { count: Object.keys(CLIP_URLS).length, lastEvent: lastClipEvent, audio: ctx?.state ?? "não iniciado" };
+}
+
+/**
+ * iOS leaves Web Audio "interrupted" while (and just after) speech synthesis talks, even the
+ * blank utterance that unlocks the voice: keep asking to resume for a moment instead of giving up.
+ */
+function whenRunning(c: AudioContext, ms: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const until = Date.now() + ms;
+    const check = () => {
+      if (c.state === "running") return resolve(true);
+      if (Date.now() > until) return resolve(false);
+      c.resume().catch(() => {});
+      setTimeout(check, 100);
+    };
+    check();
+  });
+}
 
 /** Clip name for a text ("Dog!" → "dog"), if a recording exists for it. */
 export function voiceClipFor(text: string): string | null {
@@ -412,15 +436,21 @@ export async function playVoiceClip(id: string, onEnd: () => void): Promise<bool
   stopVoiceClip();
   const token = voiceToken;
   const c = audio();
-  if (!c || !voiceGain || !(id in CLIP_URLS)) return false;
-  if (c.state !== "running") await c.resume().catch(() => {});
-  const buffer = await loadClip(id);
+  if (!c || !voiceGain || !(id in CLIP_URLS)) {
+    lastClipEvent = `sem áudio para "${id}"`;
+    return false;
+  }
+  const [buffer, running] = await Promise.all([loadClip(id), whenRunning(c, 2000)]);
   if (token !== voiceToken) {
     // Stopped or replaced while loading: count it as said, nothing to fall back to.
     onEnd();
     return true;
   }
-  if (!buffer || c.state !== "running") return false;
+  if (!buffer || !running) {
+    lastClipEvent = !buffer ? `não carregou "${id}"` : `áudio bloqueado (${c.state}): "${id}"`;
+    return false;
+  }
+  lastClipEvent = `tocou "${id}"`;
   const src = c.createBufferSource();
   src.buffer = buffer;
   src.connect(voiceGain);

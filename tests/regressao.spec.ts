@@ -593,3 +593,32 @@ test("R34 se o áudio gravado não carregar, a palavra é dita pela voz do apare
   await expect.poll(async () => (await said(page)).map((s) => s.text)).toContain("Dog");
   expect(await clips(page)).toEqual([]);
 });
+
+test("R35 se o áudio estiver bloqueado por um instante (iPhone depois de uma fala), espera e toca o gravado", async ({
+  page,
+}) => {
+  await allowVoiceClips(page);
+  // Like iOS: speech (even the blank one that unlocks the voice) leaves Web Audio "interrupted" for a moment.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __blocked: boolean };
+    w.__blocked = false;
+    const desc = Object.getOwnPropertyDescriptor(BaseAudioContext.prototype, "state")!;
+    Object.defineProperty(BaseAudioContext.prototype, "state", {
+      get() {
+        return w.__blocked ? "interrupted" : desc.get!.call(this);
+      },
+    });
+  });
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(0);
+  await clearSaid(page);
+  const before = (await clips(page)).length;
+  await page.evaluate(() => {
+    (window as unknown as { __blocked: boolean }).__blocked = true;
+    setTimeout(() => ((window as unknown as { __blocked: boolean }).__blocked = false), 600);
+  });
+  await page.getByRole("button", { name: /Ouvir/ }).first().click();
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
+  expect((await said(page)).map((s) => s.text)).not.toContain("Dog");
+});

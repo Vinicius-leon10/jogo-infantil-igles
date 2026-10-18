@@ -35,7 +35,8 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   os 14 animais e zero..ten (pula os que já existem; `--force` regrava). O app toca esses MP3 pelo Web Audio (funciona
   no silencioso) e usa speechSynthesis só como reserva (frases, Testar voz, MP3 que não carregou). Estão SÓ no teste;
   a oficial (`main`) não recebe até o dono pedir. Palavra nova no conteúdo = rodar o script de novo. Nunca pedir a
-  chave no chat (fica no ambiente como `ELEVENLABS_API_KEY`).
+  chave no chat (fica no ambiente como `ELEVENLABS_API_KEY`). Diagnóstico: "Teste de som" da Área dos Pais mostra
+  "🐶 Testar áudio gravado", o último áudio (tocou / bloqueado / não carregou) e o estado do som do app.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
@@ -47,6 +48,8 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - O silencioso corta a voz (speechSynthesis), não a música/efeitos: antes de caçar bug de "sem som", pedir para
   conferir o silencioso e o "🔊 Testar voz" da Área dos Pais.
 - Som só depois de um toque (por isso a abertura "Toque para começar").
+- Qualquer fala do speechSynthesis (até a fala em branco do desbloqueio) deixa o Web Audio "interrupted" por um
+  instante: o áudio gravado espera até 2 s o som voltar antes de cair na voz do aparelho.
 - Não chamar `speechSynthesis.cancel()` sem nada tocando; esperar ~300 ms após cancelar antes de falar de novo.
 - Atualizações: o app abre `?v=<build>` quando acha versão nova (o cache do iPhone ignora reload).
 - Ilustrações: o dono gera imagens (cachorro, número 1) e o resto segue o estilo; recortar com `scripts/cutout.py`.

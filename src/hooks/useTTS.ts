@@ -65,6 +65,8 @@ if (supported) {
   const unlock = () => {
     // A blank utterance at normal volume: on iOS a volume-0 one can leave later speech muted.
     const u = new SpeechSynthesisUtterance(" ");
+    // On iOS even this blank utterance interrupts Web Audio (the recorded words): resume it after.
+    u.onend = u.onerror = () => resumeAudio();
     window.speechSynthesis.speak(u);
     gestures.forEach((e) => window.removeEventListener(e, unlock, true));
   };

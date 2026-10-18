@@ -40,6 +40,7 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R32 | Prefere a voz Ava (depois Zoe, Evan, Samantha…) e, dentro dela, a melhor versão instalada (Premium > Aprimorada > normal) | "Baixei a Ava" |
 | R33 | Palavras (animais e números) tocam o áudio gravado na ElevenLabs pelo Web Audio, que funciona no silencioso; "Continuar" espera o áudio terminar | "Voz do iPhone não é a Ava / some no silencioso" |
 | R34 | Se o áudio gravado não carregar, a palavra é dita pela voz do aparelho | Proteção do R33 |
+| R35 | Se o som do app estiver bloqueado por um instante (o iPhone interrompe o Web Audio depois de uma fala), espera e toca o áudio gravado em vez da voz do aparelho | "Não mudou os áudios" |
 
 (R14 ficou dentro do R02.)
 
