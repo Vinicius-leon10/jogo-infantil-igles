@@ -535,3 +535,22 @@ test("R31 versão oficial não mostra o texto da versão; a de teste mostra", as
   await page.getByText("Começar a aventura").click();
   await expect(page.getByText(/versão .* \(teste\)/)).toBeVisible();
 });
+
+test("R32 usa a voz Ava (a melhor versão instalada) em vez da Samantha", async ({ page }) => {
+  // Voices as an iPhone with Ava downloaded reports them.
+  await page.addInitScript(() => {
+    const voices = [
+      { name: "Samantha", lang: "en-US", default: true, localService: true, voiceURI: "samantha" },
+      { name: "Ava (Aprimorada)", lang: "en-US", default: false, localService: true, voiceURI: "ava-enhanced" },
+      { name: "Ava (Premium)", lang: "en-US", default: false, localService: true, voiceURI: "ava-premium" },
+      { name: "Luciana", lang: "pt-BR", default: false, localService: true, voiceURI: "luciana" },
+    ];
+    speechSynthesis.getVoices = () => voices as unknown as SpeechSynthesisVoice[];
+  });
+  await seed(page);
+  await page.getByRole("button", { name: "Área dos pais" }).click();
+  const [a, b] = (await page.getByText(/Quanto é/).textContent())!.match(/\d+/g)!.map(Number);
+  await page.getByPlaceholder("Resposta").fill(String(a + b));
+  await page.getByText("Entrar").click();
+  await expect(page.getByTestId("sound-check")).toContainText("Ava (Premium)");
+});

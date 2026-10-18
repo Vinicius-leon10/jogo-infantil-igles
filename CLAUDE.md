@@ -22,13 +22,15 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   (escondido na oficial a pedido do dono).
 
 ## Estado atual (atualizar quando mudar)
-- Oficial atualizada pelo PR #2 (juntado em `main`) com tudo até o commit que contém esta linha (inclui a
-  paleta "Dia ensolarado"). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
+- Oficial atualizada pelo PR #3 (juntado em `main`) com tudo até o commit que contém esta linha (inclui a
+  paleta "Dia ensolarado" e a voz Ava). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
   de `claude/sprout-app` para `main`).
 - Fontes: o dono viu as opções (Baloo 2/Andika/Sniglet) e decidiu manter Fredoka + Nunito por enquanto.
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
   cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
 - Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
+- Voz: o dono baixou a Ava no iPhone; o app prefere Ava > Zoe > Evan > Samantha, na melhor versão instalada
+  (Premium > Aprimorada). Áudios gravados por palavra foram sugeridos (tocam no silencioso), sem decisão ainda.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
