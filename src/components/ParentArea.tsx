@@ -391,6 +391,9 @@ const TAKE_NOTES: Record<string, string> = {
   j: "a atual com o “n” final curto (sem o “e” no fim)",
   k: "a atual com o “n” final bem curto",
   l: "a G (calma) com o “n” final curto",
+  m: "um pouco mais lenta",
+  n: "mais lenta",
+  o: "bem mais lenta",
 };
 
 /**

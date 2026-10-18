@@ -61,7 +61,10 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - "Tene" (dono): a voz segura o "n" final ~200 ms quase no volume da vogal e solta, o que soa como um "e" a mais.
   Não adianta regravar: `python3 scripts/trim-nasal.py <in> <out> --keep <ms>` acha o começo do "n" (som abafado,
   pouca energia acima de 1 kHz) e deixa só alguns ms com fade. Serve para outras palavras que terminem em n/m.
-- Em avaliação agora: Ten (A–I soavam "tene"; takes J/K/L = cortadas com trim-nasal.py no "Escolher vozes").
+- Ten: o dono escolheu K (a atual cortada com `trim-nasal.py --keep 60 --fade 45`), já em `src/assets/voice/ten.mp3`.
+- Mais lento sem mudar o tom: `python3 scripts/slow-voice.py <in> <out> --tempo 0.65 --tail-ms 370` (rubberband;
+  `--tail-ms` deixa o "n" curto de fora para não voltar o "tene").
+- Em avaliação agora: Ten mais lento — M (tempo 0,8), N (0,65), O (0,5), feitas do K com slow-voice.py.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
