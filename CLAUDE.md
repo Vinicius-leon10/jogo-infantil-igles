@@ -31,13 +31,11 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
 - Voz: o iPhone NÃO libera a Ava (nem vozes Premium/Aprimoradas) para apps web — confirmado pela lista do
   "Teste de som": só Samantha, Daniel, Karen, Moira, Tessa, Rishi e vozes "engraçadas". O app usa Samantha.
-- PRÓXIMO PASSO combinado: áudios gravados por palavra gerados na ElevenLabs. O dono vai criar a chave e colocá-la
-  no ambiente como `ELEVENLABS_API_KEY`, liberando `api.elevenlabs.io` na rede do ambiente; depois pedir numa
-  sessão nova "gere os áudios das palavras com a ElevenLabs". Plano: script `scripts/make-voices.mjs` gera um MP3
-  por palavra (14 animais + zero..ten, ids de `src/data/content.ts`) em `src/assets/voice/<id>.mp3` (voz animada/
-  infantil, ou a que o dono escolher na Voice Library); o app toca esses arquivos pelo Web Audio (mesmo caminho da
-  música, então funciona no silencioso) e usa speechSynthesis só como reserva para palavras sem arquivo. Teste de
-  regressão novo + publicar SÓ no teste (branch `claude/sprout-app` + link de teste no Claude); a oficial (`main`) não recebe os áudios até o dono pedir. Nunca pedir a chave no chat. Script pronto: `scripts/make-voices.mjs`; a chave no ambiente estava errada (era o ID da chave, não o valor `sk_...`).
+- Áudios gravados (ElevenLabs, voz Jessica): `node scripts/make-voices.mjs` gera `src/assets/voice/<id>.mp3` para
+  os 14 animais e zero..ten (pula os que já existem; `--force` regrava). O app toca esses MP3 pelo Web Audio (funciona
+  no silencioso) e usa speechSynthesis só como reserva (frases, Testar voz, MP3 que não carregou). Estão SÓ no teste;
+  a oficial (`main`) não recebe até o dono pedir. Palavra nova no conteúdo = rodar o script de novo. Nunca pedir a
+  chave no chat (fica no ambiente como `ELEVENLABS_API_KEY`).
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`

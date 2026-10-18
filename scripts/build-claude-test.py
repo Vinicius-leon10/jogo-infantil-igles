@@ -1,5 +1,5 @@
 """Packs the test build (SPROUT_ENV=teste) into one self-contained HTML file for
-the Claude test link: script, styles and images inlined.
+the Claude test link: script, styles, images and recorded words (MP3) inlined.
 
 Usage: python3 scripts/build-claude-test.py <dist-dir> <template.html> <out.html>
 """
@@ -10,8 +10,9 @@ import sys
 
 dist, template, out = sys.argv[1:4]
 js = open(glob.glob(f"{dist}/assets/*.js")[0]).read()
-for f in glob.glob(f"{dist}/assets/*.png") + glob.glob(f"{dist}/assets/*.svg"):
-    mime = "image/png" if f.endswith(".png") else "image/svg+xml"
+MIME = {".png": "image/png", ".svg": "image/svg+xml", ".mp3": "audio/mpeg"}
+for f in [f for ext in MIME for f in glob.glob(f"{dist}/assets/*{ext}")]:
+    mime = MIME[os.path.splitext(f)[1]]
     uri = f"data:{mime};base64," + base64.b64encode(open(f, "rb").read()).decode()
     name = os.path.basename(f)
     # base "./" emits `new URL("dog-x.png", import.meta.url).href`; swap in the data URI.

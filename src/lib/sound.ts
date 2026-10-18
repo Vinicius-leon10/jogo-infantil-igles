@@ -2,6 +2,8 @@
  * Background music and sound effects, synthesized with the Web Audio API so the
  * app ships no audio files. The music is an instrumental, upbeat loop in
  * C major (marimba melody, plucked bass, ukulele-like chord stabs, soft drums).
+ * Words are the exception: recorded MP3s (scripts/make-voices.mjs) played on the same
+ * context, so they are heard even with the iPhone's silent switch on.
  */
 import { readJSON, writeJSON } from "./storage";
 
@@ -15,6 +17,7 @@ const SFX_VOLUME = 0.5;
 let ctx: AudioContext | null = null;
 let musicGain: GainNode | null = null;
 let sfxGain: GainNode | null = null;
+let voiceGain: GainNode | null = null;
 let noise: AudioBuffer | null = null;
 
 let musicEnabled = readJSON<boolean>(MUSIC_KEY) ?? true;
@@ -44,6 +47,8 @@ function audio(): AudioContext | null {
   sfxGain = ctx.createGain();
   sfxGain.gain.value = SFX_VOLUME;
   sfxGain.connect(master);
+  voiceGain = ctx.createGain();
+  voiceGain.connect(master);
   noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
   const data = noise.getChannelData(0);
   for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
@@ -88,6 +93,7 @@ if (typeof window !== "undefined") {
       keepAlive.setAttribute("playsinline", "");
     }
     keepAlive.play().catch(() => {});
+    preloadVoiceClips();
     // A short silent buffer started inside the gesture fully unlocks old Safari.
     const src = c.createBufferSource();
     src.buffer = c.createBuffer(1, 1, 22050);
@@ -338,4 +344,99 @@ export function playComplete(passed: boolean) {
       marimba(out, "E5", t + 0.5, 0.6, 0.35);
     }
   });
+}
+
+// ---------------------------------------------------------------- recorded words
+
+const CLIP_URLS: Record<string, string> = Object.fromEntries(
+  Object.entries(
+    import.meta.glob<string>("../assets/voice/*.mp3", { eager: true, query: "?url", import: "default" }),
+  ).map(([path, url]) => [path.slice(path.lastIndexOf("/") + 1, -".mp3".length), url]),
+);
+const decoded = new Map<string, Promise<AudioBuffer | null>>();
+let voiceSource: AudioBufferSourceNode | null = null;
+let voiceTimer: ReturnType<typeof setTimeout> | null = null;
+let voiceToken = 0;
+
+/** Clip name for a text ("Dog!" → "dog"), if a recording exists for it. */
+export function voiceClipFor(text: string): string | null {
+  const id = text.toLowerCase().replace(/[^a-z]/g, "");
+  return id in CLIP_URLS ? id : null;
+}
+
+/** The MP3 bytes; the Claude test page inlines them as data: URIs, which it may not let us fetch. */
+function download(url: string): Promise<ArrayBuffer> {
+  if (url.startsWith("data:")) {
+    const bin = atob(url.slice(url.indexOf(",") + 1));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return Promise.resolve(bytes.buffer);
+  }
+  return fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))));
+}
+
+function loadClip(id: string): Promise<AudioBuffer | null> {
+  let p = decoded.get(id);
+  if (!p) {
+    const c = audio();
+    p = !c
+      ? Promise.resolve(null)
+      : download(CLIP_URLS[id])
+          .then((data) => c.decodeAudioData(data))
+          .catch(() => {
+            decoded.delete(id); // try the download again next time
+            return null;
+          });
+    decoded.set(id, p);
+  }
+  return p;
+}
+
+function preloadVoiceClips() {
+  Object.keys(CLIP_URLS).forEach(loadClip);
+}
+
+/** Stops the recorded word playing now, if any (its onEnd still runs). */
+export function stopVoiceClip() {
+  voiceToken++;
+  const s = voiceSource;
+  voiceSource = null;
+  if (s) s.stop();
+}
+
+/**
+ * Plays the recorded word. Resolves false (without calling onEnd) when it cannot be
+ * played (no recording, download failed, audio still locked), so the caller can speak it.
+ */
+export async function playVoiceClip(id: string, onEnd: () => void): Promise<boolean> {
+  stopVoiceClip();
+  const token = voiceToken;
+  const c = audio();
+  if (!c || !voiceGain || !(id in CLIP_URLS)) return false;
+  if (c.state !== "running") await c.resume().catch(() => {});
+  const buffer = await loadClip(id);
+  if (token !== voiceToken) {
+    // Stopped or replaced while loading: count it as said, nothing to fall back to.
+    onEnd();
+    return true;
+  }
+  if (!buffer || c.state !== "running") return false;
+  const src = c.createBufferSource();
+  src.buffer = buffer;
+  src.connect(voiceGain);
+  let ended = false;
+  const finish = () => {
+    if (ended) return;
+    ended = true;
+    if (voiceTimer && voiceSource === src) clearTimeout(voiceTimer);
+    if (voiceSource === src) voiceSource = null;
+    onEnd();
+  };
+  src.onended = finish;
+  // iOS can suspend the context mid-clip and never fire "ended": don't leave the app waiting.
+  if (voiceTimer) clearTimeout(voiceTimer);
+  voiceTimer = setTimeout(finish, buffer.duration * 1000 + 1000);
+  voiceSource = src;
+  src.start();
+  return true;
 }

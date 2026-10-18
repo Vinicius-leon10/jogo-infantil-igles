@@ -38,6 +38,8 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R30 | Visual "Dia ensolarado": fundo claro, texto escuro, cantos bem arredondados e botões principais 3D | Nova paleta e design infantil |
 | R31 | A versão oficial não mostra o texto da versão no rodapé; a de teste mostra "versão … (teste)" | "Esconda o texto da versão do app" |
 | R32 | Prefere a voz Ava (depois Zoe, Evan, Samantha…) e, dentro dela, a melhor versão instalada (Premium > Aprimorada > normal) | "Baixei a Ava" |
+| R33 | Palavras (animais e números) tocam o áudio gravado na ElevenLabs pelo Web Audio, que funciona no silencioso; "Continuar" espera o áudio terminar | "Voz do iPhone não é a Ava / some no silencioso" |
+| R34 | Se o áudio gravado não carregar, a palavra é dita pela voz do aparelho | Proteção do R33 |
 
 (R14 ficou dentro do R02.)
 
@@ -47,6 +49,9 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
    (`R18 …`), e confirme que ele **falha**.
 2. Corrija o bug e confirme que o teste **passa**, junto com todos os outros (`npm test`).
 3. Acrescente a linha na tabela acima.
+
+Os testes bloqueiam os MP3 das palavras (`instrument()`), então a fala passa pela voz do aparelho, que é o que
+eles inspecionam; o R33 libera os MP3 com `allowVoiceClips()`.
 
 Os elementos `data-testid="quiz"`, `data-answer`, `data-mode` e `data-word` existem só para os testes saberem
 a resposta certa; não aparecem para a criança.
