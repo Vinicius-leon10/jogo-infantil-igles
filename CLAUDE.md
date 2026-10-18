@@ -37,7 +37,7 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   por palavra (14 animais + zero..ten, ids de `src/data/content.ts`) em `src/assets/voice/<id>.mp3` (voz animada/
   infantil, ou a que o dono escolher na Voice Library); o app toca esses arquivos pelo Web Audio (mesmo caminho da
   música, então funciona no silencioso) e usa speechSynthesis só como reserva para palavras sem arquivo. Teste de
-  regressão novo + publicar no teste. Nunca pedir a chave no chat.
+  regressão novo + publicar SÓ no teste (branch `claude/sprout-app` + link de teste no Claude); a oficial (`main`) não recebe os áudios até o dono pedir. Nunca pedir a chave no chat. Script pronto: `scripts/make-voices.mjs`; a chave no ambiente estava errada (era o ID da chave, não o valor `sk_...`).
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
