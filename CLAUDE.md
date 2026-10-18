@@ -22,8 +22,8 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   (escondido na oficial a pedido do dono).
 
 ## Estado atual (atualizar quando mudar)
-- Oficial atualizada pelo PR #3 (juntado em `main`) com tudo até o commit que contém esta linha (inclui a
-  paleta "Dia ensolarado" e a voz Ava). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
+- Oficial atualizada pelo PR #4 (juntado em `main` a pedido do dono) com tudo até o commit que contém esta linha
+  (inclui a paleta "Dia ensolarado" e os áudios gravados da ElevenLabs). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
   de `claude/sprout-app` para `main`).
 - Fontes: o dono viu as opções (Baloo 2/Andika/Sniglet) e decidiu manter Fredoka + Nunito por enquanto.
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
@@ -35,8 +35,8 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   "Teste de som": só Samantha, Daniel, Karen, Moira, Tessa, Rishi e vozes "engraçadas". O app usa Samantha.
 - Áudios gravados (ElevenLabs, voz Jessica, velocidade 0,7 — a mais lenta; 0,9 o dono achou rápida): `node scripts/make-voices.mjs` gera `src/assets/voice/<id>.mp3` para
   os 14 animais e zero..ten (pula os que já existem; `--force` regrava). O app toca esses MP3 pelo Web Audio (funciona
-  no silencioso) e usa speechSynthesis só como reserva (frases, Testar voz, MP3 que não carregou). Estão SÓ no teste;
-  a oficial (`main`) não recebe até o dono pedir. Palavra nova no conteúdo = rodar o script de novo. Nunca pedir a
+  no silencioso) e usa speechSynthesis só como reserva (frases, Testar voz, MP3 que não carregou). Publicados na
+  oficial pelo PR #4. Palavra nova no conteúdo = rodar o script de novo. Nunca pedir a
   chave no chat (fica no ambiente como `ELEVENLABS_API_KEY`). Diagnóstico: "Teste de som" da Área dos Pais mostra
   "🐶 Testar áudio gravado", o último áudio (tocou / bloqueado / não carregou) e o estado do som do app.
 
