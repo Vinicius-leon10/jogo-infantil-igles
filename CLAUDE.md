@@ -23,8 +23,9 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   (escondido na oficial a pedido do dono).
 
 ## Estado atual (atualizar quando mudar)
-- Oficial atualizada pelo PR #4 (juntado em `main` a pedido do dono) com tudo até o commit que contém esta linha
-  (inclui a paleta "Dia ensolarado" e os áudios gravados da ElevenLabs). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
+- Oficial atualizada pelo PR #5 (juntado em `main` a pedido do dono) com tudo até o commit que contém esta linha
+  (inclui o mapa limpo, o som que dorme com o celular bloqueado, a aba Falas e as vozes novas de Lion, Monkey, One,
+  Seven e Ten). As ferramentas de avaliação continuam só no teste (atrás de `__APP_ENV__ === "teste"`). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
   de `claude/sprout-app` para `main`).
 - Fontes: o dono viu as opções (Baloo 2/Andika/Sniglet) e decidiu manter Fredoka + Nunito por enquanto.
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
@@ -64,7 +65,7 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - Ten: o dono escolheu K (a atual cortada com `trim-nasal.py --keep 60 --fade 45`), já em `src/assets/voice/ten.mp3`.
 - Mais lento sem mudar o tom: `python3 scripts/slow-voice.py <in> <out> --tempo 0.65 --tail-ms 370` (rubberband;
   `--tail-ms` deixa o "n" curto de fora para não voltar o "tene").
-- Em avaliação agora: Ten mais lento — M (tempo 0,8), N (0,65), O (0,5), feitas do K com slow-voice.py.
+- Em avaliação agora: nada (o dono ficou com o Ten K na velocidade normal; M/N/O mais lentas foram descartadas).
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
