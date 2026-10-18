@@ -29,8 +29,15 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
   cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
 - Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
-- Voz: o dono baixou a Ava no iPhone; o app prefere Ava > Zoe > Evan > Samantha, na melhor versão instalada
-  (Premium > Aprimorada). Áudios gravados por palavra foram sugeridos (tocam no silencioso), sem decisão ainda.
+- Voz: o iPhone NÃO libera a Ava (nem vozes Premium/Aprimoradas) para apps web — confirmado pela lista do
+  "Teste de som": só Samantha, Daniel, Karen, Moira, Tessa, Rishi e vozes "engraçadas". O app usa Samantha.
+- PRÓXIMO PASSO combinado: áudios gravados por palavra gerados na ElevenLabs. O dono vai criar a chave e colocá-la
+  no ambiente como `ELEVENLABS_API_KEY`, liberando `api.elevenlabs.io` na rede do ambiente; depois pedir numa
+  sessão nova "gere os áudios das palavras com a ElevenLabs". Plano: script `scripts/make-voices.mjs` gera um MP3
+  por palavra (14 animais + zero..ten, ids de `src/data/content.ts`) em `src/assets/voice/<id>.mp3` (voz animada/
+  infantil, ou a que o dono escolher na Voice Library); o app toca esses arquivos pelo Web Audio (mesmo caminho da
+  música, então funciona no silencioso) e usa speechSynthesis só como reserva para palavras sem arquivo. Teste de
+  regressão novo + publicar no teste. Nunca pedir a chave no chat.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
