@@ -753,3 +753,31 @@ test("R41 ao bloquear o celular (app em segundo plano) a música e o áudio para
   await page.getByText("Escolha seu nível").click(); // iOS may need a tap to restart sound
   expect(await notesDuring(page, 1500)).toBeGreaterThan(5);
 });
+
+test("R42 iPhone novo (com audioSession): nada de <audio> tocando, então não aparece player na tela bloqueada", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __played: number; __hidden: boolean };
+    w.__played = 0;
+    w.__hidden = false;
+    HTMLMediaElement.prototype.play = function () {
+      w.__played++;
+      return Promise.resolve();
+    };
+    Object.defineProperty(navigator, "audioSession", { value: { type: "auto" } });
+    Object.defineProperty(document, "visibilityState", { get: () => (w.__hidden ? "hidden" : "visible") });
+  });
+  const session = () => page.evaluate(() => (navigator as Navigator & { audioSession: { type: string } }).audioSession.type);
+  await seed(page);
+  await page.getByText("Escolha seu nível").click(); // first tap unlocks audio
+  expect(await notesDuring(page, 1500)).toBeGreaterThan(5);
+  expect(await session()).toBe("playback"); // plays through the silent switch
+  expect(await page.evaluate(() => (window as unknown as { __played: number }).__played)).toBe(0);
+  // Locking the phone hands the audio session back, so nothing stays on the lock screen.
+  await page.evaluate(() => {
+    (window as unknown as { __hidden: boolean }).__hidden = true;
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  expect(await session()).toBe("auto");
+});

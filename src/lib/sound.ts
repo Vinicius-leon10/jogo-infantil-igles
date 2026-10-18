@@ -77,22 +77,25 @@ function silentWav(): string {
 const GESTURES = ["pointerup", "touchend", "click", "keydown"] as const;
 if (typeof window !== "undefined") {
   let keepAlive: HTMLAudioElement | null = null;
+  const nav = navigator as Navigator & { audioSession?: { type: string } };
   const unlock = () => {
     const c = audio();
     if (!c) return;
     c.onstatechange = () => {
       if (c.state === "running" && musicWanted && musicEnabled) startLoop();
     };
-    // iOS mutes Web Audio with the silent switch unless the page is also
-    // playing media; a looping silent <audio> moves it to the "playback" session.
-    const nav = navigator as Navigator & { audioSession?: { type: string } };
+    // iOS mutes Web Audio with the silent switch unless the page is in the "playback" session.
+    // iOS 17+ sets it directly; older iOS needs a looping silent <audio>, which also puts a
+    // player on the lock screen, so it is only used where there is no other way.
     if (nav.audioSession) nav.audioSession.type = "playback";
-    if (!keepAlive) {
-      keepAlive = new Audio(silentWav());
-      keepAlive.loop = true;
-      keepAlive.setAttribute("playsinline", "");
+    else {
+      if (!keepAlive) {
+        keepAlive = new Audio(silentWav());
+        keepAlive.loop = true;
+        keepAlive.setAttribute("playsinline", "");
+      }
+      keepAlive.play().catch(() => {});
     }
-    keepAlive.play().catch(() => {});
     preloadVoiceClips();
     // A short silent buffer started inside the gesture fully unlocks old Safari.
     const src = c.createBufferSource();
@@ -106,7 +109,8 @@ if (typeof window !== "undefined") {
   // Keep listening for the whole session: on iOS, speech synthesis and phone
   // calls put the context in an "interrupted" state that only a new tap clears.
   const wake = () => {
-    if (ctx?.state === "running" && keepAlive && !keepAlive.paused) return;
+    if (ctx?.state === "running" && (nav.audioSession ? nav.audioSession.type === "playback" : keepAlive && !keepAlive.paused))
+      return;
     unlock();
   };
   GESTURES.forEach((e) => window.addEventListener(e, wake, true));
@@ -122,6 +126,7 @@ if (typeof window !== "undefined") {
       keepAlive = null; // recreated by the next tap (unlock)
     }
     if (ctx?.state === "running") ctx.suspend().catch(() => {});
+    if (nav.audioSession) nav.audioSession.type = "auto"; // hand the session back; the next tap claims it again
   };
   window.addEventListener("pagehide", sleep);
   // Coming back from the background (iOS "interrupted" state): resume; a tap restarts the keep-alive.
