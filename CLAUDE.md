@@ -56,7 +56,9 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   B = flash_v2 com `<phoneme>` ARPAbet, C = turbo_v2 (só inglês); 2ª rodada com `--labels=d,e,f`: D = turbo_v2 +
   `<phoneme>`, E = multilingual_v2 na sequência (contando), F = turbo_v2_5 com language_code en. A chave não tem
   permissão de speech_to_text, então não dá para conferir por transcrição; quem decide é o ouvido do dono.
-- Em avaliação agora: Ten (A/B/C não serviram; takes D/E/F no "Escolher vozes").
+  3ª rodada `--labels=g,h,i`: G = turbo_v2 sem exclamação, H = flash_v2 com `<phoneme>` IPA, I = turbo_v2 com
+  grafia do som (RESPELL).
+- Em avaliação agora: Ten (A–F não serviram; takes G/H/I no "Escolher vozes").
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`

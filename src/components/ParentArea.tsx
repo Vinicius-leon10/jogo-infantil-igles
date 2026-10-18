@@ -385,6 +385,9 @@ const TAKE_NOTES: Record<string, string> = {
   d: "voz só em inglês com os sons exatos",
   e: "lida na sequência (contando, nos números)",
   f: "voz mais nova, fixada em inglês",
+  g: "voz só em inglês, falada calma (sem exclamação)",
+  h: "sons exatos escritos de outro jeito (IPA)",
+  i: "escrita do jeito que se fala",
 };
 
 /**

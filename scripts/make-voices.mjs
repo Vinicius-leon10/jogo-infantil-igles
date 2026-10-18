@@ -74,7 +74,17 @@ const TAKES = {
   }),
   // F: newer English-capable turbo model with the language pinned.
   f: (w) => ({ text: `${w.en}!`, model_id: "eleven_turbo_v2_5", language_code: "en" }),
+  // Third round (Ten again):
+  // G: English-only turbo model, calm statement instead of the exclamation.
+  g: (w) => ({ text: `${w.en}.`, model_id: "eleven_turbo_v2" }),
+  // H: phoneme tag in IPA instead of ARPAbet, English-only flash model.
+  h: (w) => ({ text: `<phoneme alphabet="ipa" ph="${IPA[w.id]}">${w.en}</phoneme>!`, model_id: "eleven_flash_v2" }),
+  // I: spelled the way it sounds, English-only turbo model.
+  i: (w) => ({ text: `${RESPELL[w.id] ?? w.en}!`, model_id: "eleven_turbo_v2" }),
 };
+// IPA (American) for take H and sound-alike spellings for take I, filled in as words need them.
+const IPA = { ten: "tɛn", lion: "ˈlaɪən", monkey: "ˈmʌŋki", one: "wʌn", seven: "ˈsɛvən" };
+const RESPELL = { ten: "Tenn", one: "Wun", lion: "Lie-un", monkey: "Munkey", seven: "Sevven" };
 // What comes before a number when counting, for take E.
 const NEIGHBORS = {
   one: "Zero,", two: "Zero, one,", three: "One, two,", four: "Two, three,", five: "Three, four,", six: "Four, five,",
