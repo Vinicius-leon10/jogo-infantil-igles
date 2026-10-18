@@ -35,11 +35,11 @@ for (const w of words) {
     method: "POST",
     headers: { "xi-api-key": key, "content-type": "application/json" },
     body: JSON.stringify({
-      // The exclamation gives a cheerful, clear single-word reading.
+      // The exclamation gives a cheerful, clear single-word reading; 0.7 is the slowest speed (the owner found 0.9 fast).
       text: `${w.en}!`,
       model_id: "eleven_multilingual_v2",
       language_code: "en",
-      voice_settings: { stability: 0.6, similarity_boost: 0.8, style: 0.3, speed: 0.9 },
+      voice_settings: { stability: 0.6, similarity_boost: 0.8, style: 0.3, speed: 0.7 },
     }),
   });
   if (!res.ok) {

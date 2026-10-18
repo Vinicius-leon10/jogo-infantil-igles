@@ -622,3 +622,11 @@ test("R35 se o áudio estiver bloqueado por um instante (iPhone depois de uma fa
   await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
   expect((await said(page)).map((s) => s.text)).not.toContain("Dog");
 });
+
+test("R36 áudio gravado numa velocidade calma (o 'Dog' dura pelo menos 0,9 s)", async ({ page }) => {
+  await allowVoiceClips(page);
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(0);
+  expect((await clips(page))[0]).toBeGreaterThanOrEqual(0.9);
+});

@@ -31,7 +31,7 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
 - Voz: o iPhone NÃO libera a Ava (nem vozes Premium/Aprimoradas) para apps web — confirmado pela lista do
   "Teste de som": só Samantha, Daniel, Karen, Moira, Tessa, Rishi e vozes "engraçadas". O app usa Samantha.
-- Áudios gravados (ElevenLabs, voz Jessica): `node scripts/make-voices.mjs` gera `src/assets/voice/<id>.mp3` para
+- Áudios gravados (ElevenLabs, voz Jessica, velocidade 0,7 — a mais lenta; 0,9 o dono achou rápida): `node scripts/make-voices.mjs` gera `src/assets/voice/<id>.mp3` para
   os 14 animais e zero..ten (pula os que já existem; `--force` regrava). O app toca esses MP3 pelo Web Audio (funciona
   no silencioso) e usa speechSynthesis só como reserva (frases, Testar voz, MP3 que não carregou). Estão SÓ no teste;
   a oficial (`main`) não recebe até o dono pedir. Palavra nova no conteúdo = rodar o script de novo. Nunca pedir a
