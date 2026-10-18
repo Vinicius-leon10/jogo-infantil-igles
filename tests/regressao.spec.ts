@@ -2,7 +2,9 @@
 // Rule: every new bug fix adds a test here (see tests/README.md), named with the next R number.
 import { expect, test } from "@playwright/test";
 import {
+  allowVoiceClips,
   answer,
+  clips,
   clearSaid,
   createChild,
   finishLearning,
@@ -553,4 +555,78 @@ test("R32 usa a voz Ava (a melhor versão instalada) em vez da Samantha", async 
   await page.getByPlaceholder("Resposta").fill(String(a + b));
   await page.getByText("Entrar").click();
   await expect(page.getByTestId("sound-check")).toContainText("Ava (Premium)");
+  // The panel lists every English voice the phone offers, to diagnose a voice that is not offered to web apps.
+  await page.getByText("Vozes em inglês que o aparelho liberou").click();
+  await expect(page.getByTestId("voice-list")).toContainText("Samantha (en-US)");
+  await expect(page.getByTestId("voice-list")).not.toContainText("Luciana");
+});
+
+test("R33 palavras tocam o áudio gravado (ElevenLabs) pelo Web Audio, e a voz do aparelho fica só de reserva", async ({
+  page,
+}) => {
+  await allowVoiceClips(page);
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  // The learn screen says the first word by itself: it comes from the recorded MP3, not speechSynthesis.
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(0);
+  expect((await clips(page))[0]).toBeGreaterThan(0.3);
+  await page.waitForTimeout(800);
+  expect((await said(page)).map((s) => s.text)).not.toContain("Dog");
+  // Tapping 🔊 plays the clip again.
+  const before = (await clips(page)).length;
+  await page.getByRole("button", { name: /Ouvir/ }).first().click();
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
+  // In the quiz the right answer is said from the clip too, and "Continuar" waits for it.
+  await finishLearning(page);
+  await clearSaid(page);
+  const inQuiz = (await clips(page)).length;
+  await answer(page);
+  await expect(page.getByRole("button", { name: /^(Continuar|Ver resultado)$/ })).toBeVisible();
+  expect((await clips(page)).length).toBeGreaterThan(inQuiz);
+  expect((await said(page)).map((s) => s.text)).toEqual([]);
+});
+
+test("R34 se o áudio gravado não carregar, a palavra é dita pela voz do aparelho", async ({ page }) => {
+  // instrument() blocks the MP3s, like a failed download.
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await expect.poll(async () => (await said(page)).map((s) => s.text)).toContain("Dog");
+  expect(await clips(page)).toEqual([]);
+});
+
+test("R35 se o áudio estiver bloqueado por um instante (iPhone depois de uma fala), espera e toca o gravado", async ({
+  page,
+}) => {
+  await allowVoiceClips(page);
+  // Like iOS: speech (even the blank one that unlocks the voice) leaves Web Audio "interrupted" for a moment.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __blocked: boolean };
+    w.__blocked = false;
+    const desc = Object.getOwnPropertyDescriptor(BaseAudioContext.prototype, "state")!;
+    Object.defineProperty(BaseAudioContext.prototype, "state", {
+      get() {
+        return w.__blocked ? "interrupted" : desc.get!.call(this);
+      },
+    });
+  });
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(0);
+  await clearSaid(page);
+  const before = (await clips(page)).length;
+  await page.evaluate(() => {
+    (window as unknown as { __blocked: boolean }).__blocked = true;
+    setTimeout(() => ((window as unknown as { __blocked: boolean }).__blocked = false), 600);
+  });
+  await page.getByRole("button", { name: /Ouvir/ }).first().click();
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
+  expect((await said(page)).map((s) => s.text)).not.toContain("Dog");
+});
+
+test("R36 áudio gravado numa velocidade calma (o 'Dog' dura pelo menos 0,9 s)", async ({ page }) => {
+  await allowVoiceClips(page);
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(0);
+  expect((await clips(page))[0]).toBeGreaterThanOrEqual(0.9);
 });

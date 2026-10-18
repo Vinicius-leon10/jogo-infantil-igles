@@ -5,8 +5,11 @@ export type Spoken = { text: string; rate: number; lang: string; question: strin
 /**
  * Records what the app says (speech synthesis) and how many notes it plays (Web Audio),
  * and skips the opening screen (its "Toque para começar" tap). Call before page.goto().
+ * The recorded word MP3s are blocked so words go through speech synthesis (the fallback
+ * path these tests inspect); `allowVoiceClips` lets a test hear them (see R33).
  */
 export async function instrument(page: Page) {
+  await page.route("**/*.mp3", (r) => r.abort());
   await page.addInitScript(() => {
     sessionStorage.setItem("sprout_skip_splash", "1");
     const w = window as unknown as { __said: Spoken[]; __notes: number };
@@ -26,6 +29,19 @@ export async function instrument(page: Page) {
       }
       speak(u);
     };
+    // Recorded voice clips: buffers decoded from the MP3s, and each one started.
+    const clipBuffers = new WeakSet<AudioBuffer>();
+    const w2 = window as unknown as { __clips: number[] };
+    w2.__clips = [];
+    const decode = BaseAudioContext.prototype.decodeAudioData;
+    BaseAudioContext.prototype.decodeAudioData = function (data: ArrayBuffer) {
+      return decode.call(this, data).then((b: AudioBuffer) => (clipBuffers.add(b), b));
+    } as typeof decode;
+    const startSource = AudioBufferSourceNode.prototype.start;
+    AudioBufferSourceNode.prototype.start = function (...args: [number?, number?, number?]) {
+      if (this.buffer && clipBuffers.has(this.buffer)) w2.__clips.push(this.buffer.duration);
+      return startSource.apply(this, args);
+    };
     const start = OscillatorNode.prototype.start;
     OscillatorNode.prototype.start = function (...args: [number?]) {
       w.__notes++;
@@ -34,6 +50,10 @@ export async function instrument(page: Page) {
   });
 }
 
+/** Lets the recorded word MP3s load (instrument() blocks them). */
+export const allowVoiceClips = (page: Page) => page.unroute("**/*.mp3");
+/** Durations (s) of the recorded voice clips played so far. */
+export const clips = (page: Page) => page.evaluate(() => (window as unknown as { __clips: number[] }).__clips);
 export const said = (page: Page) => page.evaluate(() => (window as unknown as { __said: Spoken[] }).__said);
 export const clearSaid = (page: Page) => page.evaluate(() => ((window as unknown as { __said: Spoken[] }).__said = []));
 export const notes = (page: Page) => page.evaluate(() => (window as unknown as { __notes: number }).__notes);

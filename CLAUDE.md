@@ -22,15 +22,23 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   (escondido na oficial a pedido do dono).
 
 ## Estado atual (atualizar quando mudar)
-- Oficial atualizada pelo PR #3 (juntado em `main`) com tudo até o commit que contém esta linha (inclui a
-  paleta "Dia ensolarado" e a voz Ava). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
+- Oficial atualizada pelo PR #4 (juntado em `main` a pedido do dono) com tudo até o commit que contém esta linha
+  (inclui a paleta "Dia ensolarado" e os áudios gravados da ElevenLabs). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
   de `claude/sprout-app` para `main`).
 - Fontes: o dono viu as opções (Baloo 2/Andika/Sniglet) e decidiu manter Fredoka + Nunito por enquanto.
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
   cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
+- PARA VER DEPOIS (pedido do dono): o repositório `emilkowalski/skills` no GitHub tem uma skill com design no estilo
+  Apple; olhar e propor o que dá para aproveitar no visual do Sprout (sem mudar nada antes do dono aprovar).
 - Decidido pelo dono: sem aviso de "tire do silencioso" na abertura.
-- Voz: o dono baixou a Ava no iPhone; o app prefere Ava > Zoe > Evan > Samantha, na melhor versão instalada
-  (Premium > Aprimorada). Áudios gravados por palavra foram sugeridos (tocam no silencioso), sem decisão ainda.
+- Voz: o iPhone NÃO libera a Ava (nem vozes Premium/Aprimoradas) para apps web — confirmado pela lista do
+  "Teste de som": só Samantha, Daniel, Karen, Moira, Tessa, Rishi e vozes "engraçadas". O app usa Samantha.
+- Áudios gravados (ElevenLabs, voz Jessica, velocidade 0,7 — a mais lenta; 0,9 o dono achou rápida): `node scripts/make-voices.mjs` gera `src/assets/voice/<id>.mp3` para
+  os 14 animais e zero..ten (pula os que já existem; `--force` regrava). O app toca esses MP3 pelo Web Audio (funciona
+  no silencioso) e usa speechSynthesis só como reserva (frases, Testar voz, MP3 que não carregou). Publicados na
+  oficial pelo PR #4. Palavra nova no conteúdo = rodar o script de novo. Nunca pedir a
+  chave no chat (fica no ambiente como `ELEVENLABS_API_KEY`). Diagnóstico: "Teste de som" da Área dos Pais mostra
+  "🐶 Testar áudio gravado", o último áudio (tocou / bloqueado / não carregou) e o estado do som do app.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
@@ -42,6 +50,8 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - O silencioso corta a voz (speechSynthesis), não a música/efeitos: antes de caçar bug de "sem som", pedir para
   conferir o silencioso e o "🔊 Testar voz" da Área dos Pais.
 - Som só depois de um toque (por isso a abertura "Toque para começar").
+- Qualquer fala do speechSynthesis (até a fala em branco do desbloqueio) deixa o Web Audio "interrupted" por um
+  instante: o áudio gravado espera até 2 s o som voltar antes de cair na voz do aparelho.
 - Não chamar `speechSynthesis.cancel()` sem nada tocando; esperar ~300 ms após cancelar antes de falar de novo.
 - Atualizações: o app abre `?v=<build>` quando acha versão nova (o cache do iPhone ignora reload).
 - Ilustrações: o dono gera imagens (cachorro, número 1) e o resto segue o estilo; recortar com `scripts/cutout.py`.

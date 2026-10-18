@@ -5,6 +5,7 @@ import { useProgress } from "@/hooks/useProgress";
 import type { ChildProfile, ChildProfileInput } from "@/hooks/useChildProfile";
 import { Emoji } from "./Emoji";
 import { ttsStatus, useTTS } from "@/hooks/useTTS";
+import { voiceClipStatus } from "@/lib/sound";
 
 type Tab = "history" | "edit";
 
@@ -362,8 +363,12 @@ function PickerBtn({
 function SoundCheck() {
   const { speak } = useTTS();
   const [status, setStatus] = useState(ttsStatus);
+  const [clip, setClip] = useState(voiceClipStatus);
   useEffect(() => {
-    const t = setInterval(() => setStatus(ttsStatus()), 500);
+    const t = setInterval(() => {
+      setStatus(ttsStatus());
+      setClip(voiceClipStatus());
+    }, 500);
     return () => clearInterval(t);
   }, []);
   return (
@@ -376,7 +381,19 @@ function SoundCheck() {
       >
         🔊 Testar voz
       </button>
+      <button
+        onClick={() => speak("Dog")}
+        className="mt-2 w-full rounded-2xl py-3 font-bold active:scale-95 btn-3d btn-3d-soft bg-card"
+      >
+        🐶 Testar áudio gravado
+      </button>
       <dl className="mt-3 text-xs grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+        <dt className="text-muted-foreground">Áudios gravados</dt>
+        <dd>{clip.count}</dd>
+        <dt className="text-muted-foreground">Último áudio</dt>
+        <dd className="break-words" data-testid="clip-status">{clip.lastEvent}</dd>
+        <dt className="text-muted-foreground">Som do app</dt>
+        <dd>{clip.audio}</dd>
         <dt className="text-muted-foreground">Voz no aparelho</dt>
         <dd>{status.supported ? "sim" : "não"}</dd>
         <dt className="text-muted-foreground">Vozes em inglês</dt>
@@ -386,6 +403,16 @@ function SoundCheck() {
         <dt className="text-muted-foreground">Última fala</dt>
         <dd className="break-words">{status.lastEvent}</dd>
       </dl>
+      {status.names.length > 0 && (
+        <details className="mt-3 text-xs">
+          <summary className="font-semibold cursor-pointer">Vozes em inglês que o aparelho liberou para o app</summary>
+          <ul className="mt-2 space-y-0.5 text-muted-foreground" data-testid="voice-list">
+            {status.names.map((n) => (
+              <li key={n}>{n}</li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   );
 }

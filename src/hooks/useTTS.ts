@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { resumeAudio } from "@/lib/sound";
+import { playVoiceClip, resumeAudio, stopVoiceClip, voiceClipFor } from "@/lib/sound";
 
 // Preferred English voices, best first. On iPhone the owner downloaded Ava; Premium and
 // Enhanced ("Aprimorada") versions sound far more natural than the default Samantha.
@@ -32,6 +32,7 @@ let pending: ReturnType<typeof setTimeout> | null = null;
 // Bumped on every stop and every screen change: speech scheduled before that is dropped,
 // so a screen that is leaving (still animating out) can never talk over the next one.
 let epoch = 0;
+let clipCalls = 0;
 const listeners = new Set<(speaking: boolean) => void>();
 
 function setSpeaking(v: boolean) {
@@ -64,6 +65,8 @@ if (supported) {
   const unlock = () => {
     // A blank utterance at normal volume: on iOS a volume-0 one can leave later speech muted.
     const u = new SpeechSynthesisUtterance(" ");
+    // On iOS even this blank utterance interrupts Web Audio (the recorded words): resume it after.
+    u.onend = u.onerror = () => resumeAudio();
     window.speechSynthesis.speak(u);
     gestures.forEach((e) => window.removeEventListener(e, unlock, true));
   };
@@ -80,9 +83,11 @@ let lastEvent = "nenhuma fala ainda";
 
 /** Diagnostics for the parent area: voices available and what happened to the last utterance. */
 export function ttsStatus() {
-  if (!supported) return { supported, englishVoices: 0, voice: "—", lastEvent };
+  if (!supported) return { supported, englishVoices: 0, voice: "—", lastEvent, names: [] as string[] };
+  // A voice downloaded in the phone's settings is not always offered to web apps: list what we actually get.
   const english = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("en"));
-  return { supported, englishVoices: english.length, voice: chosenVoice?.name ?? "padrão do aparelho", lastEvent };
+  const names = english.map((v) => `${v.name} (${v.lang})`).sort();
+  return { supported, englishVoices: english.length, voice: chosenVoice?.name ?? "padrão do aparelho", lastEvent, names };
 }
 
 /** iOS can go silent after cancel() is called with nothing playing: only cancel real speech. */
@@ -167,9 +172,31 @@ function speakNow(text: string, rate: number, pitch: number, onDone?: () => void
   watchdog = setTimeout(() => !started && !synth.speaking && retry(), START_TIMEOUT_MS);
 }
 
+/** Says `text` with the device's speech synthesis. */
+function speakWithVoice(text: string, opts?: SpeakOpts) {
+  if (!supported) return opts?.onDone?.();
+  const synth = window.speechSynthesis;
+  const rate = opts?.rate ?? 0.7;
+  const pitch = opts?.pitch ?? 1.25;
+  if (pending) clearTimeout(pending);
+  pending = null;
+  clearWatchdog();
+  if (synth.speaking || synth.pending) {
+    // Chrome drops an utterance queued right after cancel(); give it a beat.
+    synth.cancel();
+    pending = setTimeout(() => {
+      pending = null;
+      speakNow(text, rate, pitch, opts?.onDone);
+    }, 150);
+  } else {
+    speakNow(text, rate, pitch, opts?.onDone);
+  }
+}
+
 /** Silences speech and drops anything scheduled (used on screen changes). */
 export function stopAllSpeech() {
   epoch++;
+  stopVoiceClip();
   if (!supported) return;
   if (pending) clearTimeout(pending);
   pending = null;
@@ -191,23 +218,31 @@ export function useTTS() {
 
   /** `onDone` runs once the text has been said (or could not be). */
   const speak = useCallback((text: string, opts?: SpeakOpts) => {
-    if (!supported) return;
-    const synth = window.speechSynthesis;
-    const rate = opts?.rate ?? 0.7;
-    const pitch = opts?.pitch ?? 1.25;
-    if (pending) clearTimeout(pending);
-    pending = null;
-    clearWatchdog();
-    if (synth.speaking || synth.pending) {
-      // Chrome drops an utterance queued right after cancel(); give it a beat.
-      synth.cancel();
-      pending = setTimeout(() => {
-        pending = null;
-        speakNow(text, rate, pitch, opts?.onDone);
-      }, 150);
-    } else {
-      speakNow(text, rate, pitch, opts?.onDone);
+    // Words with a recording play it (works on silent mode); the device voice is the fallback.
+    const clip = voiceClipFor(text);
+    if (clip) {
+      if (pending) clearTimeout(pending);
+      pending = null;
+      clearWatchdog();
+      current = null;
+      if (supported) cancelIfTalking();
+      const scheduledIn = epoch;
+      const call = ++clipCalls;
+      setSpeaking(true);
+      void playVoiceClip(clip, () => {
+        // A newer word may already be playing: only the latest one clears the indicator.
+        if (call === clipCalls) setSpeaking(false);
+        opts?.onDone?.();
+      }).then((played) => {
+        if (played) return;
+        if (call === clipCalls) setSpeaking(false);
+        if (scheduledIn === epoch) speakWithVoice(text, opts);
+        else opts?.onDone?.();
+      });
+      return;
     }
+    stopVoiceClip();
+    speakWithVoice(text, opts);
   }, []);
 
   const stop = useCallback(() => stopAllSpeech(), []);
