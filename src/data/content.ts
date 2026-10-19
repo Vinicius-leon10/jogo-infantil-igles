@@ -39,7 +39,7 @@ export type Level = {
   color: string;
   phaseIds: number[];
   /** The tree that grows one stage per phase on this level's map. */
-  tree: "apple" | "cherry";
+  tree: "apple" | "cherry" | "orange";
   treeName: string;
 };
 
@@ -68,18 +68,15 @@ export const categories: Category[] = [
     words: [
       { id: "red", emoji: "🔴", en: "Red", pt: "Vermelho", phonetic: "rɛd" },
       { id: "blue", emoji: "🔵", en: "Blue", pt: "Azul", phonetic: "bluː" },
-      { id: "green", emoji: "🟢", en: "Green", pt: "Verde", phonetic: "ɡriːn" },
       { id: "yellow", emoji: "🟡", en: "Yellow", pt: "Amarelo", phonetic: "ˈjɛl.oʊ" },
-      { id: "purple", emoji: "🟣", en: "Purple", pt: "Roxo", phonetic: "ˈpɜːr.pəl" },
+      { id: "green", emoji: "🟢", en: "Green", pt: "Verde", phonetic: "ɡriːn" },
       { id: "orange", emoji: "🟠", en: "Orange", pt: "Laranja", phonetic: "ˈɔːr.ɪndʒ" },
-      { id: "pink", emoji: "🌸", en: "Pink", pt: "Rosa", phonetic: "pɪŋk" },
+      { id: "purple", emoji: "🟣", en: "Purple", pt: "Roxo", phonetic: "ˈpɜːr.pəl" },
+      { id: "pink", emoji: "🩷", en: "Pink", pt: "Rosa", phonetic: "pɪŋk" },
+      { id: "brown", emoji: "🟤", en: "Brown", pt: "Marrom", phonetic: "braʊn" },
       { id: "black", emoji: "⚫", en: "Black", pt: "Preto", phonetic: "blæk" },
       { id: "white", emoji: "⚪", en: "White", pt: "Branco", phonetic: "waɪt" },
-      { id: "brown", emoji: "🟤", en: "Brown", pt: "Marrom", phonetic: "braʊn" },
       { id: "gray", emoji: "🩶", en: "Gray", pt: "Cinza", phonetic: "ɡreɪ" },
-      { id: "cyan", emoji: "🩵", en: "Cyan", pt: "Ciano", phonetic: "ˈsaɪ.æn" },
-      { id: "magenta", emoji: "💖", en: "Magenta", pt: "Magenta", phonetic: "məˈdʒɛn.tə" },
-      { id: "gold", emoji: "🌟", en: "Gold", pt: "Dourado", phonetic: "ɡoʊld" },
     ],
   },
   {
@@ -166,7 +163,7 @@ export function getCategory(id: string): Category | undefined {
 // ---------- Phase generation for Level 1 ----------
 
 const animalOrder = ["dog","cat","fish","bird","horse","cow","pig","rabbit","sheep","duck","elephant","lion","monkey","frog"];
-const colorOrder = ["red","blue","green","yellow","purple","orange","pink","black","white","brown","gray","cyan","magenta","gold"];
+const colorOrder = ["red","blue","yellow","green","orange","purple","pink","brown","black","white","gray"];
 const numberOrder = ["zero","one","two","three","four","five","six","seven","eight","nine","ten"];
 
 // Deterministic pseudo-random pick using a seed so phases stay stable
@@ -261,18 +258,22 @@ function makeAssociationPhases(
 }
 
 // Level 1
-// For now the game has two levels: animals, then the numbers 0–10. The other categories
-// (colours, clothes, rooms, household) stay in the catalogue for later.
+// For now the game has three levels: animals, the numbers 0–10, then colours. The other
+// categories (clothes, rooms, household) stay in the catalogue for later.
 // Level 1 — 14 animals: 5 words in the first phase, one more in each of the 10 phases.
 const animalPhases = makeLearnPhases(animalOrder, 1, "animals", "var(--amber)", "Animal", 10, 1);
 // Level 2 — numbers 0 to 10 (11 words): 7 phases. New IDs (201+) so old saved results of
 // removed phases never count here.
 const numberPhases = makeLearnPhases(numberOrder, 201, "numbers", "var(--indigo)", "Número", 7, 2);
 
-export const phases: Phase[] = [...animalPhases, ...numberPhases];
+// Level 3 — 11 colours: 7 phases, IDs 301+.
+const colorPhases = makeLearnPhases(colorOrder, 301, "colors", "var(--pink)", "Cor", 7, 3);
+
+export const phases: Phase[] = [...animalPhases, ...numberPhases, ...colorPhases];
 
 const level1Ids = animalPhases.map((p) => p.id);
 const level2Ids = numberPhases.map((p) => p.id);
+const level3Ids = colorPhases.map((p) => p.id);
 
 export const levels: Level[] = [
   {
@@ -294,6 +295,16 @@ export const levels: Level[] = [
     phaseIds: level2Ids,
     tree: "cherry",
     treeName: "Cerejeira",
+  },
+  {
+    id: 3,
+    title: "Nível 3",
+    subtitle: "Cores",
+    emoji: "🎨",
+    color: "var(--pink)",
+    phaseIds: level3Ids,
+    tree: "orange",
+    treeName: "Laranjeira",
   },
 ];
 

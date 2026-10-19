@@ -30,10 +30,10 @@ if (takes && !only.length) {
   process.exit(1);
 }
 
-// Words actually used in the app today: animals (level 1) and numbers (level 2).
+// Words actually used in the app today: animals (level 1), numbers (level 2) and colours (level 3).
 const src = readFileSync(join(root, "src/data/content.ts"), "utf8");
 const words = [];
-for (const cat of ["animals", "numbers"]) {
+for (const cat of ["animals", "numbers", "colors"]) {
   const block = src.slice(src.indexOf(`id: "${cat}"`)).split("],")[0];
   for (const m of block.matchAll(/\{ id: "([^"]+)", emoji: "[^"]*", en: "([^"]+)"/g)) words.push({ id: m[1], en: m[2] });
 }
@@ -45,6 +45,9 @@ const ARPABET = {
   lion: "L AY1 AH0 N", monkey: "M AH1 NG K IY0", frog: "F R AA1 G", zero: "Z IH1 R OW0", one: "W AH1 N",
   two: "T UW1", three: "TH R IY1", four: "F AO1 R", five: "F AY1 V", six: "S IH1 K S", seven: "S EH1 V AH0 N",
   eight: "EY1 T", nine: "N AY1 N", ten: "T EH1 N",
+  red: "R EH1 D", blue: "B L UW1", yellow: "Y EH1 L OW0", green: "G R IY1 N", orange: "AO1 R AH0 N JH",
+  purple: "P ER1 P AH0 L", pink: "P IH1 NG K", brown: "B R AW1 N", black: "B L AE1 K", white: "W AY1 T",
+  gray: "G R EY1",
 };
 
 // The default recording: multilingual model, cheerful single word.

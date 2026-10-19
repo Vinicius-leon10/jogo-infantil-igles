@@ -28,8 +28,11 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   Seven e Ten). As ferramentas de avaliação continuam só no teste (atrás de `__APP_ENV__ === "teste"`). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
   de `claude/sprout-app` para `main`).
 - Fontes: o dono viu as opções (Baloo 2/Andika/Sniglet) e decidiu manter Fredoka + Nunito por enquanto.
-- Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
-  cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
+- Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira), nível 3 = cores
+  (11: red, blue, yellow, green, orange, purple, pink, brown, black, white, gray; 7 fases "Cor N", IDs 301+, Laranjeira).
+  Roupas, cômodos, casa e as histórias estão fora por enquanto (as histórias já podem voltar: dependiam das cores).
+- Figuras das cores: o dono mandou a mancha azul; as outras saem dela com `python3 scripts/recolor.py <azul.png>
+  <saida.png> <#cor|white|black|gray>` (mantém brilho, sombra e rostinho; branco ganha borda cinza).
 - PARA VER DEPOIS (pedido do dono): o repositório `emilkowalski/skills` no GitHub tem uma skill com design no estilo
   Apple; olhar e propor o que dá para aproveitar no visual do Sprout (sem mudar nada antes do dono aprovar).
 - Só na versão de teste (`__APP_ENV__ === "teste"`, a pedido do dono): todas as fases/níveis liberados, Área dos Pais

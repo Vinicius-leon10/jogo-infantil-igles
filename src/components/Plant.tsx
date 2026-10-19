@@ -1,4 +1,4 @@
-export type TreeKind = "apple" | "cherry";
+export type TreeKind = "apple" | "cherry" | "orange";
 
 type Props = {
   /** Growth stage, 1 = tiny sprout … `stages` = full tree. */
@@ -16,6 +16,13 @@ const PALETTES = {
     leaf: "#7ed957",
     leafDark: "#3fa34d",
     canopy: ["#2e7d32", "#43a047", "#7bd16a"],
+    trunk: "#8d5a3b",
+    trunkDark: "#6d4126",
+  },
+  orange: {
+    leaf: "#7ed957",
+    leafDark: "#3fa34d",
+    canopy: ["#2f7d32", "#3f9a43", "#86d36f"],
     trunk: "#8d5a3b",
     trunkDark: "#6d4126",
   },
@@ -116,10 +123,10 @@ export function Plant({ stage, stages, kind, size = 96, dim, className }: Props)
         ))}
         {final &&
           FRUITS.map(([fx, fy], i) =>
-            kind === "apple" ? (
+            kind === "apple" || kind === "orange" ? (
               <g key={i}>
-                <circle cx={60 + fx * R} cy={cy + fy * R} r={R * 0.13} fill="#e53935" />
-                <circle cx={60 + fx * R - R * 0.04} cy={cy + fy * R - R * 0.04} r={R * 0.045} fill="#ff9e9e" />
+                <circle cx={60 + fx * R} cy={cy + fy * R} r={R * (kind === "orange" ? 0.15 : 0.13)} fill={kind === "orange" ? "#ff8a1f" : "#e53935"} />
+                <circle cx={60 + fx * R - R * 0.04} cy={cy + fy * R - R * 0.04} r={R * 0.045} fill={kind === "orange" ? "#ffc58a" : "#ff9e9e"} />
               </g>
             ) : (
               <g key={i} transform={`translate(${60 + fx * R} ${cy + fy * R})`}>

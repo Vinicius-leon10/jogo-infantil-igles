@@ -44,13 +44,14 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R36 | Áudio gravado numa velocidade calma: palavras geradas com `speed` 0,7 (o "Dog" dura pelo menos 0,9 s) | "A voz está rápida" |
 | R37 | Versão de teste: todos os níveis e fases liberados, mesmo sem progresso (a real continua liberando pela ordem: R03/R04) | "Libere todas as fases no teste" |
 | R38 | Versão de teste: a Área dos Pais abre sem a conta de adulto; a real continua pedindo | "Não preciso fazer o cálculo no teste" |
-| R39 | Versão de teste: a Área dos Pais mostra todos os animais e números (com imagem) e toca o áudio gravado de cada um | "Testar o áudio de todas as palavras sem entrar nas fases" |
+| R39 | Versão de teste: a Área dos Pais mostra todos os animais, números e cores (com imagem) e toca o áudio gravado de cada um | "Testar o áudio de todas as palavras sem entrar nas fases" |
 | R40 | Mapa de fases limpo: só as plantas (sem caixa com fase/palavras, sem texto de instrução); a planta é o botão 3D e a da vez pisca | "A criança só clica no broto" |
 | R41 | Ao bloquear o celular (app em segundo plano) a música para, o áudio mudo do silencioso é desligado (some o "tocando agora" da tela bloqueada) e o som fica suspenso; ao voltar, a música volta | "Música continua tocando com o celular bloqueado" |
 | R42 | iPhone com `audioSession` (iOS 17+): o silencioso é vencido só com `audioSession.type = "playback"`, sem `<audio>` mudo tocando (que deixava um player pausado na tela bloqueada); ao bloquear, a sessão volta para "auto" | "Player do app continua na tela de bloqueio" |
 | R43 | Área dos Pais tem a aba "Falas" com o Teste de som (e, no teste, "Ouvir todas as palavras"); Histórico e Cadastro não mostram o teste | "Crie uma aba nova para o teste das falas" |
 | R44 | Versão de teste: "Escolher vozes" (aba Falas) toca o áudio atual e as gravações novas de cada palavra, guarda a escolhida no aparelho, mostra o resumo e o app passa a usar a escolhida | "Um lugar na Área dos Pais para escolher as vozes" |
 | R45 | Versão oficial não tem "Escolher vozes" nem carrega as gravações em avaliação | Proteção do R44 |
+| R46 | Nível 3 = cores: bloqueado até completar a Cerejeira (nível 2), 7 fases "Cor N", manchas coloridas como figura e quiz só com as 11 cores (red…gray) | "Acrescentar o nível 3 com as cores" |
 
 (R14 ficou dentro do R02.)
 
