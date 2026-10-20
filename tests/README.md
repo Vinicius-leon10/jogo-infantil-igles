@@ -54,6 +54,7 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R46 | Nível 3 = cores: bloqueado até completar a Cerejeira (nível 2), 7 fases "Cor N", manchas coloridas como figura e quiz só com as 11 cores (red…gray) | "Acrescentar o nível 3 com as cores" |
 | R48 | Fase com 100%: título "Perfeito!", elogio na voz gravada (não a do aparelho), um "plim" por estrela e as figuras da fase com ✓ para tocar e ouvir de novo | "Melhore o final quando termina a fase com 100%" |
 | R49 | Fase aprovada sem 100% não mostra "Perfeito!" | Proteção do R48 |
+| R50 | Fim de fase: o elogio gravado toca sozinho, depois da fanfarra e do "plim" da última estrela (nenhuma nota por cima da fala) | "O final, a fala e o som estão ruins" |
 
 (R14 ficou dentro do R02.)
 

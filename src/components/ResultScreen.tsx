@@ -36,8 +36,9 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
     const starTimers = Array.from({ length: stars }, (_, i) =>
       setTimeout(() => playStar(i), 600 + (i + 1) * STAR_DELAY_MS),
     );
+    // The praise comes alone, after the fanfare and the last star's chime: on top of them it was hard to hear.
     const praise = perfect ? "Perfect!" : PRAISE[Math.floor(Math.random() * PRAISE.length)];
-    const cancelPraise = speakLater(praise, 350, { rate: 0.8, pitch: 1.35 });
+    const cancelPraise = speakLater(praise, 600 + stars * STAR_DELAY_MS + 500, { rate: 0.8, pitch: 1.35 });
 
     const fire = (particles: number, spread: number, originY: number) =>
       confetti({

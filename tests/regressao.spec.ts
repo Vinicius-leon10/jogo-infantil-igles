@@ -935,3 +935,44 @@ test("R49 fase aprovada sem 100% não mostra 'Perfeito!'", async ({ page }) => {
   await expect(page.getByText(/^\d+%$/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Perfeito!" })).toHaveCount(0);
 });
+
+test("R50 fim de fase: o elogio gravado toca sozinho, sem fanfarra nem 'plim' de estrela por cima", async ({ page }) => {
+  await allowVoiceClips(page);
+  // When each oscillator note starts, and when the praise clip starts and how long it is (audio clock).
+  await page.addInitScript(() => {
+    const w = window as unknown as { __noteTimes: number[]; __clipSpans: [number, number][] };
+    w.__noteTimes = [];
+    w.__clipSpans = [];
+    const osc = OscillatorNode.prototype.start;
+    OscillatorNode.prototype.start = function (when?: number) {
+      w.__noteTimes.push(Math.max(when ?? 0, this.context.currentTime));
+      return osc.call(this, when);
+    };
+    const src = AudioBufferSourceNode.prototype.start;
+    AudioBufferSourceNode.prototype.start = function (when?: number, ...rest: number[]) {
+      if (this.buffer && this.buffer.duration > 0.3 && this.buffer.duration !== 1)
+        w.__clipSpans.push([this.context.currentTime, this.context.currentTime + this.buffer.duration]);
+      return src.call(this, when, ...rest);
+    };
+  });
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await finishLearning(page);
+  for (;;) {
+    await answer(page);
+    const button = page.getByRole("button", { name: /^(Continuar|Ver resultado)$/ });
+    if ((await button.textContent()) === "Ver resultado") break;
+    await button.click();
+  }
+  const clipsBefore = (await clips(page)).length;
+  await page.getByRole("button", { name: "Ver resultado" }).click();
+  await expect.poll(async () => (await clips(page)).length, { timeout: 8000 }).toBeGreaterThan(clipsBefore);
+  await page.waitForTimeout(2000);
+  const { notes: times, spans } = await page.evaluate(() => {
+    const w = window as unknown as { __noteTimes: number[]; __clipSpans: [number, number][] };
+    return { notes: w.__noteTimes, spans: w.__clipSpans };
+  });
+  const [start, end] = spans[spans.length - 1];
+  const during = times.filter((t) => t > start - 0.05 && t < end);
+  expect(during).toEqual([]);
+});
