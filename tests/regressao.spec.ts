@@ -828,13 +828,13 @@ test("R44 versão de teste: 'Escolher vozes' toca o atual e as gravações novas
   await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
   expect(mp3s.some((u) => u.startsWith(`${id}-${t2.toLowerCase()}-`))).toBe(true);
   // Choosing another take is remembered and shown in the summary to send.
-  await word.getByRole("radio", { name: `Usar ${t1}` }).check();
+  await word.getByRole("radio", { name: `Usar ${t1}`, exact: true }).check();
   await expect(picker.getByTestId("voice-summary")).toContainText(`${en}: ${t1}`);
   mp3s.length = 0;
   await page.reload();
   await page.getByRole("button", { name: "Área dos pais" }).click();
   await page.getByRole("button", { name: "Falas" }).click();
-  await expect(page.locator(`[data-word="${id}"]`).getByRole("radio", { name: `Usar ${t1}` })).toBeChecked();
+  await expect(page.locator(`[data-word="${id}"]`).getByRole("radio", { name: `Usar ${t1}`, exact: true })).toBeChecked();
   // The app now says the word with that take (preloaded on the first tap after the reload).
   const n = (await clips(page)).length;
   await page.getByRole("button", { name: `Ouvir ${en}`, exact: true }).click();
