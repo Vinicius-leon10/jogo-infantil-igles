@@ -85,8 +85,12 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - Notas das takes: cada take tem uma frase em `src/assets/voice-takes/notes.json` ("<id>-<letra>": "o que tenta"),
   mostrada embaixo da palavra no "Escolher vozes"; make-voices.mjs --takes escreve sozinho, takes feitas com os
   scripts de corte precisam da nota à mão. Ao aprovar uma take, apagar também as notas da palavra.
-- Em avaliação agora: Orange sem o "dj" — J (atual sem), K (atual com o "dj" bem fraco), L ("Or-inj" sem),
-  M (sons exatos, só inglês, sem).
+- Orange: cortar o "dj" (J/K/L/M) ficou ruim; o dono pediu para refazer do zero. 4ª rodada `--labels=n,o,p,q`:
+  a palavra é dita DENTRO de uma frase e recortada (endpoint `/with-timestamps` dá o tempo de cada letra; `cutWord`
+  em make-voices.mjs). Sozinha a voz capricha no fim ("dj" de 180 ms); no meio da frase sai leve (40–80 ms).
+  N = "Orange is the word." (turbo_v2), O = mesma frase (multilingual_v2), P = "I see orange and blue.", Q = "Orange, please."
+  As recortadas ficam ~0,5 s (mais rápidas que a atual, 0,8 s): se o dono achar rápido, slow-voice.py.
+- Em avaliação agora: Orange N/O/P/Q.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`

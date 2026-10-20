@@ -11,6 +11,7 @@
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const key = process.env.ELEVENLABS_API_KEY;
@@ -93,6 +94,13 @@ const TAKES = {
   h: (w) => ({ text: `<phoneme alphabet="ipa" ph="${IPA[w.id]}">${w.en}</phoneme>!`, model_id: "eleven_flash_v2" }),
   // I: spelled the way it sounds, English-only turbo model.
   i: (w) => ({ text: `${RESPELL[w.id] ?? w.en}!`, model_id: "eleven_turbo_v2" }),
+  // Fourth round (Orange): said inside a sentence, then only the word is cut out (cutWord, using the
+  // per-letter timing ElevenLabs returns). Alone, the voice stresses the word's ending ("Orange" → loud "dj");
+  // mid-sentence the ending comes out light and natural.
+  n: (w) => ({ text: `${w.en} is the word.`, model_id: "eleven_turbo_v2", cutWord: w.en }),
+  o: (w) => ({ text: `${w.en} is the word.`, model_id: "eleven_multilingual_v2", cutWord: w.en }),
+  p: (w) => ({ text: `I see ${w.en.toLowerCase()} and blue.`, model_id: "eleven_turbo_v2", cutWord: w.en.toLowerCase() }),
+  q: (w) => ({ text: `${w.en}, please.`, model_id: "eleven_turbo_v2", cutWord: w.en }),
 };
 // What each take tries, written to src/assets/voice-takes/notes.json for the picker ("Escolher vozes").
 const TAKE_NOTES = {
@@ -105,6 +113,10 @@ const TAKE_NOTES = {
   g: "voz só em inglês, falada calma (sem exclamação)",
   h: "sons exatos escritos de outro jeito (IPA)",
   i: "escrita do jeito que se fala",
+  n: "recortada da frase “… is the word” (só inglês)",
+  o: "recortada da frase “… is the word” (voz original)",
+  p: "recortada do meio de “I see … and blue”",
+  q: "recortada de “…, please”",
 };
 // IPA (American) for take H and sound-alike spellings for take I, filled in as words need them.
 const IPA = { ten: "tɛn", lion: "ˈlaɪən", monkey: "ˈmʌŋki", one: "wʌn", seven: "ˈsɛvən", orange: "ˈɔrɪndʒ" };
@@ -115,8 +127,9 @@ const NEIGHBORS = {
   seven: "Five, six,", eight: "Six, seven,", nine: "Seven, eight,", ten: "Seven, eight, nine,",
 };
 
-async function tts(request) {
-  const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_128`, {
+async function tts({ cutWord, ...request }) {
+  const timed = cutWord ? "/with-timestamps" : "";
+  const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}${timed}?output_format=mp3_44100_128`, {
     method: "POST",
     headers: { "xi-api-key": key, "content-type": "application/json" },
     body: JSON.stringify({
@@ -129,7 +142,23 @@ async function tts(request) {
     console.error(`${request.text}: ${res.status} ${await res.text()}`);
     process.exit(1);
   }
-  return Buffer.from(await res.arrayBuffer());
+  if (!cutWord) return Buffer.from(await res.arrayBuffer());
+  // Keep only `cutWord` out of the sentence: from its first letter's start to its last letter's end,
+  // plus a little room, fading in and out so the cut does not click.
+  const { audio_base64, alignment } = await res.json();
+  const at = request.text.indexOf(cutWord);
+  const from = Math.max(0, alignment.character_start_times_seconds[at] - 0.02);
+  const to = alignment.character_end_times_seconds[at + cutWord.length - 1] + 0.04;
+  const len = to - from;
+  return execFileSync(
+    "ffmpeg",
+    // Trim inside the filter (then reset the clock) so the fades are timed on the word, not the sentence.
+    ["-v", "error", "-i", "pipe:0",
+     "-af", `atrim=${from.toFixed(3)}:${to.toFixed(3)},asetpts=PTS-STARTPTS,afade=t=in:d=0.015,` +
+       `afade=t=out:st=${(len - 0.06).toFixed(3)}:d=0.06,apad=pad_dur=0.05`,
+     "-ac", "1", "-codec:a", "libmp3lame", "-b:a", "128k", "-f", "mp3", "pipe:1"],
+    { input: Buffer.from(audio_base64, "base64") },
+  );
 }
 
 const out = join(root, takes ? "src/assets/voice-takes" : "src/assets/voice");
