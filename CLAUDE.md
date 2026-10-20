@@ -79,8 +79,10 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - Fim de fase com 100% (pedido do dono): "Perfeito!", "Perfect!" na voz gravada, estrelas com "plim" (playStar),
   sprout pulando (animate-hop), confete dos dois lados e as figuras da fase com ✓ para ouvir de novo (R48/R49).
   Ordem do som: fanfarra → um "plim" por estrela → só então o elogio, sozinho (antes tocava tudo junto; R50).
-- Em avaliação agora: Green (A/B/C + J = atual com o "n" final cortado, que durava 140 ms) e Orange (A/B/C; sem J,
-  o "n" fica no meio do "-nge" e cortar comeria o fim).
+- Green: o dono escolheu J (a atual com o "n" final cortado), já em `src/assets/voice/green.mp3`.
+- Em avaliação agora: Orange — A/B/C não serviram; takes D (turbo_v2 + `<phoneme>`), F (turbo_v2_5 en),
+  H (flash_v2 + IPA ˈɔrɪndʒ) e I (turbo_v2 com "Or-inj"). O fim do Orange não tem som sobrando (termina no "dj"),
+  então o problema que o dono ouve está no meio da palavra.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`

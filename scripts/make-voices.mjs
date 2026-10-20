@@ -95,8 +95,8 @@ const TAKES = {
   i: (w) => ({ text: `${RESPELL[w.id] ?? w.en}!`, model_id: "eleven_turbo_v2" }),
 };
 // IPA (American) for take H and sound-alike spellings for take I, filled in as words need them.
-const IPA = { ten: "tɛn", lion: "ˈlaɪən", monkey: "ˈmʌŋki", one: "wʌn", seven: "ˈsɛvən" };
-const RESPELL = { ten: "Tenn", one: "Wun", lion: "Lie-un", monkey: "Munkey", seven: "Sevven" };
+const IPA = { ten: "tɛn", lion: "ˈlaɪən", monkey: "ˈmʌŋki", one: "wʌn", seven: "ˈsɛvən", orange: "ˈɔrɪndʒ" };
+const RESPELL = { ten: "Tenn", one: "Wun", lion: "Lie-un", monkey: "Munkey", seven: "Sevven", orange: "Or-inj" };
 // What comes before a number when counting, for take E.
 const NEIGHBORS = {
   one: "Zero,", two: "Zero, one,", three: "One, two,", four: "Two, three,", five: "Three, four,", six: "Four, five,",
