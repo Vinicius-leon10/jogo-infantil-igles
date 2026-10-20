@@ -1056,3 +1056,11 @@ test.describe("com o cache offline ligado", () => {
     expect(mp3).toBe(true);
   });
 });
+
+test("R54 tela de aprender não mostra a transcrição fonética (/faɪv/), só a palavra e a tradução", async ({ page }) => {
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await expect(page.getByText("Dog", { exact: true })).toBeVisible();
+  await expect(page.getByText("Cachorro", { exact: true })).toBeVisible();
+  await expect(page.getByText("/dɒɡ/")).toHaveCount(0);
+});

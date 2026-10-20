@@ -94,7 +94,6 @@ export function LearnScreen({ words, onDone, onBack }: Props) {
           </div>
 
           <h2 className="text-5xl font-bold mb-2">{word.en}</h2>
-          <p className="text-sm font-mono text-muted-foreground mb-1">/{word.phonetic}/</p>
           <p className="text-lg" style={{ color: "var(--sprout-ink)" }}>{word.pt}</p>
         </div>
 
