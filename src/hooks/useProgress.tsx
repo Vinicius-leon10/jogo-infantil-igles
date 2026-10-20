@@ -36,6 +36,14 @@ export type Progress = {
   wrongWords: Record<string, number>;
 };
 
+/** The phone's own calendar day ("2026-10-20"), `offset` days away. toISOString would use UTC,
+ *  which in Brazil turns 9 pm into the next day. */
+function localDay(offset: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 const empty: Progress = { phases: {}, xp: 0, streak: 0, wrongWords: {} };
 
 function load(): Progress {
@@ -88,8 +96,8 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       const bestScore = Math.max(prev?.bestScore ?? 0, score);
       const bestStars = Math.max(prev?.stars ?? 0, stars) as 0 | 1 | 2 | 3;
 
-      const today = new Date().toISOString().slice(0, 10);
-      const yest = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const today = localDay(0);
+      const yest = localDay(-1);
       let streak = progress.streak || 0;
       if (progress.lastPlayed === today) {
         // same day

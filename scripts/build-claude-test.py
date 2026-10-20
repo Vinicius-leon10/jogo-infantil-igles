@@ -22,7 +22,7 @@ def only(pattern):
 
 
 js = open(only("*.js")).read()
-MIME = {".png": "image/png", ".svg": "image/svg+xml", ".mp3": "audio/mpeg"}
+MIME = {".png": "image/png", ".webp": "image/webp", ".svg": "image/svg+xml", ".mp3": "audio/mpeg"}
 for f in [f for ext in MIME for f in glob.glob(f"{dist}/assets/*{ext}")]:
     mime = MIME[os.path.splitext(f)[1]]
     uri = f"data:{mime};base64," + base64.b64encode(open(f, "rb").read()).decode()

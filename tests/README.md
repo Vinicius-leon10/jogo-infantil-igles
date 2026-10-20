@@ -55,6 +55,9 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R48 | Fase com 100%: título "Perfeito!", elogio na voz gravada (não a do aparelho), um "plim" por estrela e as figuras da fase com ✓ para tocar e ouvir de novo | "Melhore o final quando termina a fase com 100%" |
 | R49 | Fase aprovada sem 100% não mostra "Perfeito!" | Proteção do R48 |
 | R50 | Fim de fase: o elogio gravado toca sozinho, depois da fanfarra e do "plim" da última estrela (nenhuma nota por cima da fala) | "O final, a fala e o som estão ruins" |
+| R51 | Sequência de dias usa o dia do celular (Brasil), não o de Londres: jogar às 22h conta como hoje | "A sequência 🔥 conta errado à noite" |
+| R52 | Se uma tela der erro, aparece "Ops! Algo deu errado" com o mascote e "Tentar de novo" (recarrega), em vez de tela branca | Análise do app: tela branca em caso de erro |
+| R53 | Figuras em WebP (leves) e o app abre sem internet depois da primeira visita, com figuras e áudios de palavras nunca abertas | Análise do app: figuras pesadas, sem modo offline |
 
 (R14 ficou dentro do R02.)
 

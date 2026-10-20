@@ -113,4 +113,11 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   áudio mudo, suspende o Web Audio e devolve a sessão ("auto"); ao voltar, a música retoma e o próximo toque
   pega a sessão "playback" de novo (R41/R42).
 - Atualizações: o app abre `?v=<build>` quando acha versão nova (o cache do iPhone ignora reload).
-- Ilustrações: o dono gera imagens (cachorro, número 1) e o resto segue o estilo; recortar com `scripts/cutout.py`.
+- Ilustrações: o dono gera imagens (cachorro, número 1) e o resto segue o estilo; recortar com `scripts/cutout.py`
+  (e `recolor.py` para as cores) e no fim converter com `python3 scripts/to-webp.py <png...>`: o app usa `.webp`
+  (~1/3 do PNG, mesma aparência; R53).
+- Offline: o build escreve `sw.js` (de `src/sw.js`, com a lista de todos os arquivos) e o app registra; na primeira
+  visita guarda tudo (figuras, MP3, código, fontes). Abrir o app: página nova se tiver internet, a guardada se não.
+  A checagem de versão (`index.html?t=`) sempre vai à internet; o worker da oficial ignora `/teste/`. Os testes
+  bloqueiam o worker (playwright.config) e só o R53 liga.
+- Datas (sequência de dias): usar o dia local do celular, nunca `toISOString()` (UTC vira o dia seguinte às 21h; R51).

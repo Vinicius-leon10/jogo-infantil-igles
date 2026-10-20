@@ -1,7 +1,7 @@
 import { categories } from "@/data/content";
 
-// Illustrations in src/assets/<category>/, named by word id (dog.png, one.png, ...).
-const files = import.meta.glob("../assets/{animals,numbers,colors}/*.{png,svg}", {
+// Illustrations in src/assets/<category>/, named by word id (dog.webp, one.webp, ...).
+const files = import.meta.glob("../assets/{animals,numbers,colors}/*.{webp,png,svg}", {
   eager: true,
   query: "?url",
   import: "default",
@@ -9,7 +9,7 @@ const files = import.meta.glob("../assets/{animals,numbers,colors}/*.{png,svg}",
 
 const artById: Record<string, string> = {};
 for (const [path, url] of Object.entries(files)) {
-  const id = path.split("/").pop()!.replace(/\.(png|svg)$/, "");
+  const id = path.split("/").pop()!.replace(/\.(webp|png|svg)$/, "");
   artById[id] = url;
 }
 
