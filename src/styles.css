@@ -172,6 +172,15 @@
   }
   .animate-beckon { animation: beckon 1.1s ease-in-out infinite; }
 
+  /* 100% result: the sprout hops in place (small, so it never covers the phase name above it). */
+  @keyframes hop {
+    0%, 100% { transform: translateY(0) scale(1, 1); }
+    15% { transform: translateY(0) scale(1.06, 0.94); }
+    45% { transform: translateY(-14px) scale(0.97, 1.03); }
+    70% { transform: translateY(0) scale(1.04, 0.96); }
+  }
+  .animate-hop { animation: hop 1.1s ease-in-out infinite; }
+
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }

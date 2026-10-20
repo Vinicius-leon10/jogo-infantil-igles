@@ -16,20 +16,27 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 ## Endereços
 - Teste no Claude (link que o dono usa): https://claude.ai/artifact/N7JrhLNphV4CroyejAFHyf
   (republicar com o Artifact tool a partir do HTML gerado por `scripts/build-claude-test.py`; o build precisa de
-  `--emptyOutDir`, senão sobra CSS antigo — o script agora recusa pasta com mais de um .js/.css).
+  `--emptyOutDir`, senão sobra CSS antigo — o script agora recusa pasta com mais de um .js/.css). Comando:
+  `SPROUT_ENV=teste GITHUB_SHA=$(git rev-parse HEAD) npx vite build --outDir <tmp>/dist --emptyOutDir` e depois
+  `python3 scripts/build-claude-test.py <tmp>/dist scripts/claude-test-template.html <tmp>/sprout-teste.html`.
+  Usar SEMPRE esse template do repo: um HTML baixado do artifact traz o CSS velho junto (já publicou o mapa sem a
+  animação duas vezes).
 - Teste no GitHub Pages: https://vinicius-leon10.github.io/jogo-infantil-igles/teste/ (branch `claude/sprout-app`).
 - Oficial: https://vinicius-leon10.github.io/jogo-infantil-igles/ (branch `main`). O deploy roda no GitHub Actions
   depois dos testes; só na versão de teste o rodapé da tela de níveis mostra a versão (commit) em uso
   (escondido na oficial a pedido do dono).
 
 ## Estado atual (atualizar quando mudar)
-- Oficial atualizada pelo PR #5 (juntado em `main` a pedido do dono) com tudo até o commit que contém esta linha
-  (inclui o mapa limpo, o som que dorme com o celular bloqueado, a aba Falas e as vozes novas de Lion, Monkey, One,
-  Seven e Ten). As ferramentas de avaliação continuam só no teste (atrás de `__APP_ENV__ === "teste"`). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
+- Oficial atualizada pelo PR #6 (juntado em `main` a pedido do dono, depois de uma revisão) com tudo até o commit
+  que contém esta linha (inclui o nível 3 das cores, as vozes novas de Brown, Green e Orange, os elogios gravados e
+  o fim de fase novo com "Perfeito!"; antes, PR #5: mapa limpo, som que dorme, aba Falas, Lion/Monkey/One/Seven/Ten). As ferramentas de avaliação continuam só no teste (atrás de `__APP_ENV__ === "teste"`). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
   de `claude/sprout-app` para `main`).
 - Fontes: o dono viu as opções (Baloo 2/Andika/Sniglet) e decidiu manter Fredoka + Nunito por enquanto.
-- Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira). Cores, roupas,
-  cômodos, casa e as histórias estão fora por enquanto (histórias dependem das cores).
+- Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira), nível 3 = cores
+  (11: red, blue, yellow, green, orange, purple, pink, brown, black, white, gray; 7 fases "Cor N", IDs 301+, Laranjeira).
+  Roupas, cômodos, casa e as histórias estão fora por enquanto (as histórias já podem voltar: dependiam das cores).
+- Figuras das cores: o dono mandou a mancha azul; as outras saem dela com `python3 scripts/recolor.py <azul.png>
+  <saida.png> <#cor|white|black|gray>` (mantém brilho, sombra e rostinho; branco ganha borda cinza).
 - PARA VER DEPOIS (pedido do dono): o repositório `emilkowalski/skills` no GitHub tem uma skill com design no estilo
   Apple; olhar e propor o que dá para aproveitar no visual do Sprout (sem mudar nada antes do dono aprovar).
 - Só na versão de teste (`__APP_ENV__ === "teste"`, a pedido do dono): todas as fases/níveis liberados, Área dos Pais
@@ -65,7 +72,27 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
 - Ten: o dono escolheu K (a atual cortada com `trim-nasal.py --keep 60 --fade 45`), já em `src/assets/voice/ten.mp3`.
 - Mais lento sem mudar o tom: `python3 scripts/slow-voice.py <in> <out> --tempo 0.65 --tail-ms 370` (rubberband;
   `--tail-ms` deixa o "n" curto de fora para não voltar o "tene").
-- Em avaliação agora: nada (o dono ficou com o Ten K na velocidade normal; M/N/O mais lentas foram descartadas).
+- Brown: o dono escolheu J (a atual com o "n" final cortado, trim-nasal.py --keep 60 --fade 45), já em
+  `src/assets/voice/brown.mp3`.
+- Elogios do fim de fase também são gravados (Great job, Awesome, Well done, Fantastic, Amazing, You did it, Perfect;
+  turbo_v2, em make-voices.mjs) e o app acha pelo texto só com letras ("You did it!" → youdidit.mp3).
+- Fim de fase com 100% (pedido do dono): "Perfeito!", "Perfect!" na voz gravada, estrelas com "plim" (playStar),
+  sprout pulando (animate-hop), confete dos dois lados e as figuras da fase com ✓ para ouvir de novo (R48/R49).
+  Ordem do som: fanfarra → um "plim" por estrela → só então o elogio, sozinho (antes tocava tudo junto; R50).
+- Green: o dono escolheu J (a atual com o "n" final cortado), já em `src/assets/voice/green.mp3`.
+- Orange: o dono não gostou do FIM ("quero o g mudo"): `python3 scripts/trim-final-hiss.py <in> <out> --keep <ms>` acha
+  o chiado final (energia acima de 3 kHz, o "dj") e corta. D/F/H/I descartadas.
+- Notas das takes: cada take tem uma frase em `src/assets/voice-takes/notes.json` ("<id>-<letra>": "o que tenta"),
+  mostrada embaixo da palavra no "Escolher vozes"; make-voices.mjs --takes escreve sozinho, takes feitas com os
+  scripts de corte precisam da nota à mão. Ao aprovar uma take, apagar também as notas da palavra.
+- Orange: cortar o "dj" (J/K/L/M) ficou ruim; o dono pediu para refazer do zero. 4ª rodada `--labels=n,o,p,q`:
+  a palavra é dita DENTRO de uma frase e recortada (endpoint `/with-timestamps` dá o tempo de cada letra; `cutWord`
+  em make-voices.mjs). Sozinha a voz capricha no fim ("dj" de 180 ms); no meio da frase sai leve (40–80 ms).
+  N = "Orange is the word." (turbo_v2), O = mesma frase (multilingual_v2), P = "I see orange and blue.", Q = "Orange, please."
+  As recortadas ficam ~0,5 s (mais rápidas que a atual, 0,8 s): se o dono achar rápido, slow-voice.py.
+- Orange: o dono escolheu N (recortada de "Orange is the word.", turbo_v2), já em `src/assets/voice/orange.mp3`.
+  Para palavras com fim forte demais, gravar dentro de frase e recortar (takes n–q) funcionou melhor que cortar.
+- Em avaliação agora: nada.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`

@@ -1,7 +1,9 @@
 """Packs the test build (SPROUT_ENV=teste) into one self-contained HTML file for
 the Claude test link: script, styles, images and recorded words (MP3) inlined.
 
-Usage: python3 scripts/build-claude-test.py <dist-dir> <template.html> <out.html>
+Usage: python3 scripts/build-claude-test.py <dist-dir> scripts/claude-test-template.html <out.html>
+Use the template in the repo, never a page downloaded from the artifact: that one carries the old styles
+inside it, and the test page then shipped them (map without its animation).
 """
 import base64
 import glob

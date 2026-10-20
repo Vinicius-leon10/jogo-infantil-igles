@@ -5,6 +5,7 @@ import {
   allowVoiceClips,
   answer,
   clips,
+  notes,
   clearSaid,
   createChild,
   finishLearning,
@@ -49,17 +50,17 @@ test("R02 fluxo completo salva o progresso e libera a próxima fase (sem arquivo
 
 test("R03 nível 2 bloqueado até completar a árvore (9 de 10 fases)", async ({ page }) => {
   await seed(page, { completed: range(1, 9) });
-  await expect(page.getByRole("button", { name: /Nível 2/ })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /Nível 2 Números/ })).toBeDisabled();
 });
 
 test("R03 nível 2 liberado ao completar a árvore (fase 10)", async ({ page }) => {
   await seed(page, { completed: range(1, 10) });
-  await expect(page.getByRole("button", { name: /Nível 2/ })).toBeEnabled();
+  await expect(page.getByRole("button", { name: /Nível 2 Números/ })).toBeEnabled();
 });
 
 test("R04 fases liberam pela ordem dentro do nível, mesmo com IDs pulando (10 → 201)", async ({ page }) => {
   await seed(page, { completed: [...range(1, 10), 201] });
-  await page.getByRole("button", { name: /Nível 2/ }).click();
+  await page.getByRole("button", { name: /Nível 2 Números/ }).click();
   await expect(page.getByRole("button", { name: /Número 1\b/ })).toBeEnabled();
   await expect(page.getByRole("button", { name: /Número 2\b/ })).toBeEnabled();
   await expect(page.getByRole("button", { name: /Número 3\b/ })).toBeDisabled();
@@ -329,7 +330,7 @@ test("R21 nível 1 só tem animais, nível 2 só números de 0 a 10 (com ilustra
   await expect(page.getByRole("button", { name: /Cor \d|Número \d|Associação/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Histórias" })).toHaveCount(0);
   await page.getByRole("button", { name: "Voltar" }).first().click();
-  await page.getByRole("button", { name: /Nível 2/ }).click();
+  await page.getByRole("button", { name: /Nível 2 Números/ }).click();
   await expect(page.getByRole("button", { name: /Número \d+/ })).toHaveCount(7);
   await expect(page.getByText(/Fase 20\d/)).toHaveCount(0); // shows the position (Fase 1…7), not the ID
   await page.getByRole("button", { name: /Número 1\b/ }).click();
@@ -646,11 +647,11 @@ async function openTestVersion(page: import("@playwright/test").Page) {
 
 test("R37 versão de teste: todas as fases e níveis liberados, sem progresso", async ({ page }) => {
   await openTestVersion(page);
-  await expect(page.getByRole("button", { name: /Nível 2/ })).toBeEnabled();
+  await expect(page.getByRole("button", { name: /Nível 2 Números/ })).toBeEnabled();
   await page.getByRole("button", { name: /Nível 1/ }).click();
   await expect(page.getByRole("button", { name: /Animal 10\b/ })).toBeEnabled();
   await page.goto("http://localhost:4174/");
-  await page.getByRole("button", { name: /Nível 2/ }).click();
+  await page.getByRole("button", { name: /Nível 2 Números/ }).click();
   await expect(page.getByRole("button", { name: /Número 7\b/ })).toBeEnabled();
 });
 
@@ -665,7 +666,7 @@ test("R38 versão de teste: Área dos Pais abre sem a conta; a real continua ped
   await expect(page.getByText(/Quanto é/)).toBeVisible();
 });
 
-test("R39 versão de teste: Área dos Pais lista todos os animais e números com imagem e toca o áudio de cada um", async ({
+test("R39 versão de teste: Área dos Pais lista todos os animais, números e cores com imagem e toca o áudio de cada um", async ({
   page,
 }) => {
   await allowVoiceClips(page);
@@ -673,9 +674,9 @@ test("R39 versão de teste: Área dos Pais lista todos os animais e números com
   await page.getByRole("button", { name: "Área dos pais" }).click();
   await page.getByRole("button", { name: "Falas" }).click();
   const words = page.getByTestId("all-words").getByRole("button");
-  await expect(words).toHaveCount(25);
-  await expect(page.getByTestId("all-words").locator("img")).toHaveCount(25);
-  for (const name of ["Elephant", "Ten"]) {
+  await expect(words).toHaveCount(36);
+  await expect(page.getByTestId("all-words").locator("img")).toHaveCount(36);
+  for (const name of ["Elephant", "Ten", "Purple"]) {
     const before = (await clips(page)).length;
     await page.getByRole("button", { name: `Ouvir ${name}` }).click();
     await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
@@ -828,13 +829,13 @@ test("R44 versão de teste: 'Escolher vozes' toca o atual e as gravações novas
   await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
   expect(mp3s.some((u) => u.startsWith(`${id}-${t2.toLowerCase()}-`))).toBe(true);
   // Choosing another take is remembered and shown in the summary to send.
-  await word.getByRole("radio", { name: `Usar ${t1}` }).check();
+  await word.getByRole("radio", { name: `Usar ${t1}`, exact: true }).check();
   await expect(picker.getByTestId("voice-summary")).toContainText(`${en}: ${t1}`);
   mp3s.length = 0;
   await page.reload();
   await page.getByRole("button", { name: "Área dos pais" }).click();
   await page.getByRole("button", { name: "Falas" }).click();
-  await expect(page.locator(`[data-word="${id}"]`).getByRole("radio", { name: `Usar ${t1}` })).toBeChecked();
+  await expect(page.locator(`[data-word="${id}"]`).getByRole("radio", { name: `Usar ${t1}`, exact: true })).toBeChecked();
   // The app now says the word with that take (preloaded on the first tap after the reload).
   const n = (await clips(page)).length;
   await page.getByRole("button", { name: `Ouvir ${en}`, exact: true }).click();
@@ -855,4 +856,123 @@ test("R45 versão oficial não tem 'Escolher vozes' nem carrega as gravações e
   await expect(page.getByTestId("sound-check")).toBeVisible();
   await expect(page.getByTestId("voice-picker")).toHaveCount(0);
   expect(takes).toEqual([]);
+});
+
+test("R46 nível 3 bloqueado até completar a Cerejeira (6 de 7 fases do nível 2)", async ({ page }) => {
+  await seed(page, { completed: [...range(1, 10), ...range(201, 206)] });
+  await expect(page.getByRole("button", { name: /Nível 3/ })).toBeDisabled();
+});
+
+test("R46 nível 3 = cores: liberado ao completar a Cerejeira, 7 fases, figuras das manchas e só as 11 cores", async ({
+  page,
+}) => {
+  const colors = ["red", "blue", "yellow", "green", "orange", "purple", "pink", "brown", "black", "white", "gray"];
+  await seed(page, { completed: [...range(1, 10), ...range(201, 207)] });
+  await page.getByRole("button", { name: /Nível 3/ }).click();
+  await expect(page.getByRole("heading", { name: "Nível 3" })).toBeVisible();
+  await expect(page.getByTestId("phase-map").getByRole("button", { name: /Cor \d+/ })).toHaveCount(7);
+  await page.getByRole("button", { name: /Cor 1\b/ }).click();
+  await page.getByText("Começar a brotar").click();
+  const red = page.getByRole("img", { name: "Red" });
+  await expect(red).toBeVisible();
+  expect(await red.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  await finishLearning(page);
+  for (;;) {
+    const quiz = page.getByTestId("quiz");
+    expect(colors).toContain(await quiz.getAttribute("data-answer"));
+    for (const id of await quiz.locator("[data-word]").evaluateAll((els) => els.map((e) => e.getAttribute("data-word"))))
+      expect(colors).toContain(id);
+    await answer(page, true);
+    if (await next(page)) break;
+  }
+  await expect(page.getByText("100%")).toBeVisible();
+});
+
+test("R48 fase com 100%: 'Perfeito!', elogio na voz gravada, estrelas com som e as figuras da fase para ouvir de novo", async ({
+  page,
+}) => {
+  await allowVoiceClips(page);
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await finishLearning(page);
+  for (;;) {
+    await answer(page);
+    const button = page.getByRole("button", { name: /^(Continuar|Ver resultado)$/ });
+    if ((await button.textContent()) === "Ver resultado") break;
+    await button.click();
+  }
+  await clearSaid(page);
+  const before = (await clips(page)).length;
+  const notesBefore = await notes(page);
+  await page.getByRole("button", { name: "Ver resultado" }).click();
+  await expect(page.getByText("100%")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Perfeito!" })).toBeVisible();
+  // The praise ("Perfect!") is the recorded voice, not the phone's.
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
+  await page.waitForTimeout(1500);
+  expect((await said(page)).map((s) => s.text)).toEqual([]);
+  // A chime per star on top of the fanfare.
+  expect((await notes(page)) - notesBefore).toBeGreaterThanOrEqual(20);
+  // The phase's figures, each with its picture; tapping one says the word again.
+  const words = page.getByTestId("result-words").getByRole("button");
+  expect(await words.count()).toBeGreaterThanOrEqual(2);
+  await expect(page.getByTestId("result-words").locator("img")).toHaveCount(await words.count());
+  const n = (await clips(page)).length;
+  await words.first().click();
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(n);
+});
+
+test("R49 fase aprovada sem 100% não mostra 'Perfeito!'", async ({ page }) => {
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await finishLearning(page);
+  let first = true;
+  for (;;) {
+    await answer(page, !first);
+    first = false;
+    if (await next(page)) break;
+  }
+  await expect(page.getByText(/^\d+%$/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Perfeito!" })).toHaveCount(0);
+});
+
+test("R50 fim de fase: o elogio gravado toca sozinho, sem fanfarra nem 'plim' de estrela por cima", async ({ page }) => {
+  await allowVoiceClips(page);
+  // When each oscillator note starts, and when the praise clip starts and how long it is (audio clock).
+  await page.addInitScript(() => {
+    const w = window as unknown as { __noteTimes: number[]; __clipSpans: [number, number][] };
+    w.__noteTimes = [];
+    w.__clipSpans = [];
+    const osc = OscillatorNode.prototype.start;
+    OscillatorNode.prototype.start = function (when?: number) {
+      w.__noteTimes.push(Math.max(when ?? 0, this.context.currentTime));
+      return osc.call(this, when);
+    };
+    const src = AudioBufferSourceNode.prototype.start;
+    AudioBufferSourceNode.prototype.start = function (when?: number, ...rest: number[]) {
+      if (this.buffer && this.buffer.duration > 0.3 && this.buffer.duration !== 1)
+        w.__clipSpans.push([this.context.currentTime, this.context.currentTime + this.buffer.duration]);
+      return src.call(this, when, ...rest);
+    };
+  });
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await finishLearning(page);
+  for (;;) {
+    await answer(page);
+    const button = page.getByRole("button", { name: /^(Continuar|Ver resultado)$/ });
+    if ((await button.textContent()) === "Ver resultado") break;
+    await button.click();
+  }
+  const clipsBefore = (await clips(page)).length;
+  await page.getByRole("button", { name: "Ver resultado" }).click();
+  await expect.poll(async () => (await clips(page)).length, { timeout: 8000 }).toBeGreaterThan(clipsBefore);
+  await page.waitForTimeout(2000);
+  const { notes: times, spans } = await page.evaluate(() => {
+    const w = window as unknown as { __noteTimes: number[]; __clipSpans: [number, number][] };
+    return { notes: w.__noteTimes, spans: w.__clipSpans };
+  });
+  const [start, end] = spans[spans.length - 1];
+  const during = times.filter((t) => t > start - 0.05 && t < end);
+  expect(during).toEqual([]);
 });
