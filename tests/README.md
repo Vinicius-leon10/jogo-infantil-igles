@@ -52,6 +52,8 @@ Rodar: `npm test` (gera as duas versões do app, abre um Chromium em tamanho de 
 | R44 | Versão de teste: "Escolher vozes" (aba Falas) toca o áudio atual e as gravações novas de cada palavra, guarda a escolhida no aparelho, mostra o resumo e o app passa a usar a escolhida | "Um lugar na Área dos Pais para escolher as vozes" |
 | R45 | Versão oficial não tem "Escolher vozes" nem carrega as gravações em avaliação | Proteção do R44 |
 | R46 | Nível 3 = cores: bloqueado até completar a Cerejeira (nível 2), 7 fases "Cor N", manchas coloridas como figura e quiz só com as 11 cores (red…gray) | "Acrescentar o nível 3 com as cores" |
+| R48 | Fase com 100%: título "Perfeito!", elogio na voz gravada (não a do aparelho), um "plim" por estrela e as figuras da fase com ✓ para tocar e ouvir de novo | "Melhore o final quando termina a fase com 100%" |
+| R49 | Fase aprovada sem 100% não mostra "Perfeito!" | Proteção do R48 |
 
 (R14 ficou dentro do R02.)
 

@@ -74,7 +74,12 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   `--tail-ms` deixa o "n" curto de fora para não voltar o "tene").
 - Brown: o dono escolheu J (a atual com o "n" final cortado, trim-nasal.py --keep 60 --fade 45), já em
   `src/assets/voice/brown.mp3`.
-- Em avaliação agora: nada.
+- Elogios do fim de fase também são gravados (Great job, Awesome, Well done, Fantastic, Amazing, You did it, Perfect;
+  turbo_v2, em make-voices.mjs) e o app acha pelo texto só com letras ("You did it!" → youdidit.mp3).
+- Fim de fase com 100% (pedido do dono): "Perfeito!", "Perfect!" na voz gravada, estrelas com "plim" (playStar),
+  sprout pulando (animate-hop), confete dos dois lados e as figuras da fase com ✓ para ouvir de novo (R48/R49).
+- Em avaliação agora: Green (A/B/C + J = atual com o "n" final cortado, que durava 140 ms) e Orange (A/B/C; sem J,
+  o "n" fica no meio do "-nge" e cortar comeria o fim).
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`

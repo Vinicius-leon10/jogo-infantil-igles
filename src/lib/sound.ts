@@ -352,6 +352,15 @@ export function playWrong() {
   });
 }
 
+/** "Ding" for each star filling up on the result screen, one step higher per star (index 0, 1, 2). */
+export function playStar(index: number) {
+  const notes = [["E6", "G6"], ["G6", "B6"], ["C7", "E7"]][Math.min(index, 2)];
+  sfx((out, t) => {
+    notes.forEach((n, i) => marimba(out, n, t + i * 0.06, 0.25, 0.45));
+    hiss(out, t, 0.05, 0.25, "highpass", 9000);
+  });
+}
+
 /** Little fanfare at the end of a phase; gentler "try again" tune if not passed. */
 export function playComplete(passed: boolean) {
   sfx((out, t) => {

@@ -4,10 +4,13 @@ import confetti from "canvas-confetti";
 import type { Phase } from "@/data/content";
 import { Sprout } from "./Sprout";
 import { useTTS } from "@/hooks/useTTS";
-import { playComplete } from "@/lib/sound";
-import { phaseNumber } from "@/data/content";
+import { playComplete, playStar } from "@/lib/sound";
+import { getQuizWords, phaseNumber } from "@/data/content";
+import { Emoji } from "./Emoji";
 
+// Each has a recording in src/assets/voice/ (scripts/make-voices.mjs), so it plays in the app's voice.
 const PRAISE = ["Great job!", "Awesome!", "Well done!", "Fantastic!", "Amazing!", "You did it!"];
+const STAR_DELAY_MS = 450;
 
 type Props = {
   phase: Phase;
@@ -20,13 +23,20 @@ type Props = {
 };
 
 export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, onHome }: Props) {
+  const perfect = passed && score === 100;
   const mood = stars >= 2 ? "love" : stars >= 1 ? "excited" : "happy";
-  const { speakLater } = useTTS();
+  const { speak, speakLater } = useTTS();
+  // The phase's words, once each, to tap and hear again.
+  const words = getQuizWords(phase).filter((w, i, all) => all.findIndex((o) => o.id === w.id) === i);
 
   useEffect(() => {
     playComplete(passed);
     if (!passed) return;
-    const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+    // Each star "dings" as it pops in.
+    const starTimers = Array.from({ length: stars }, (_, i) =>
+      setTimeout(() => playStar(i), 600 + (i + 1) * STAR_DELAY_MS),
+    );
+    const praise = perfect ? "Perfect!" : PRAISE[Math.floor(Math.random() * PRAISE.length)];
     const cancelPraise = speakLater(praise, 350, { rate: 0.8, pitch: 1.35 });
 
     const fire = (particles: number, spread: number, originY: number) =>
@@ -40,13 +50,35 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
     fire(80 + stars * 40, 70, 0.6);
     if (stars >= 2) setTimeout(() => fire(60, 100, 0.7), 250);
     if (stars === 3) setTimeout(() => fire(120, 120, 0.5), 500);
+    // 100%: confetti cannons from both sides once the stars are in.
+    const sides = perfect
+      ? [0, 1].map((x) =>
+          setTimeout(
+            () =>
+              confetti({
+                particleCount: 90,
+                angle: x ? 120 : 60,
+                spread: 60,
+                startVelocity: 60,
+                origin: { x, y: 0.75 },
+                colors: ["#58cc02", "#ffc93c", "#ff7aa8", "#4fb3ff", "#ffb020"],
+              }),
+            600 + 3 * STAR_DELAY_MS + 150,
+          ),
+        )
+      : [];
 
-    return cancelPraise;
+    return () => {
+      cancelPraise();
+      [...starTimers, ...sides].forEach(clearTimeout);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const title = !passed
     ? "Quase lá!"
-    : stars === 3
+    : perfect
+      ? "Perfeito!"
+      : stars === 3
       ? "Incrível!"
       : stars === 2
         ? "Muito bem!"
@@ -54,7 +86,9 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
 
   const message = !passed
     ? "Seu brotinho precisa de mais um pouquinho de água. Tente de novo!"
-    : `Você alimentou seu broto com inglês novo. +${xpGained} XP`;
+    : perfect
+      ? `Você acertou todas! +${xpGained} XP`
+      : `Você alimentou seu broto com inglês novo. +${xpGained} XP`;
 
   return (
     <div className="min-h-screen bg-aurora flex flex-col items-center justify-between px-6 py-10 text-center">
@@ -75,10 +109,10 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
               <span className="absolute -bottom-4 left-0 text-xl animate-sparkle" style={{ animationDelay: "1.2s" }}>💫</span>
             </>
           )}
-          <Sprout size={180} mood={mood} className="animate-float" />
+          <Sprout size={passed ? 150 : 180} mood={mood} className={perfect ? "animate-hop" : "animate-float"} />
         </div>
 
-        <h1 className="mt-6 text-5xl font-bold text-balance">{title}</h1>
+        <h1 className="mt-5 text-5xl font-bold text-balance">{title}</h1>
         <p className="mt-3 text-muted-foreground text-balance max-w-xs">{message}</p>
 
         {/* stars */}
@@ -87,7 +121,7 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
             <div
               key={s}
               className={`animate-pop`}
-              style={{ animationDelay: `${s * 200}ms`, animationFillMode: "both" }}
+              style={{ animationDelay: `${600 + s * STAR_DELAY_MS}ms`, animationFillMode: "both" }}
             >
               <Star
                 className={`size-14 transition-all ${s <= stars ? "fill-current drop-shadow-lg" : ""}`}
@@ -100,9 +134,32 @@ export function ResultScreen({ phase, score, stars, passed, xpGained, onRetry, o
           ))}
         </div>
 
-        <div className="mt-6 text-4xl font-bold tabular-nums" style={{ color: "var(--sprout-ink)" }}>
+        <div className="mt-4 text-4xl font-bold tabular-nums" style={{ color: "var(--sprout-ink)" }}>
           {score}%
         </div>
+
+        {passed && (
+          <div className="mt-5 flex flex-wrap justify-center gap-2 max-w-sm" data-testid="result-words">
+            {words.map((w, i) => (
+              <button
+                key={w.id}
+                onClick={() => speak(w.en)}
+                aria-label={`Ouvir ${w.en}`}
+                className="relative rounded-2xl bg-card p-1 btn-3d btn-3d-soft animate-pop"
+                style={{ animationDelay: `${600 + 3 * STAR_DELAY_MS + i * 90}ms`, animationFillMode: "both" }}
+              >
+                <span className="text-3xl"><Emoji char={w.emoji} label={w.en} /></span>
+                <span
+                  className="absolute -top-1.5 -right-1.5 size-5 rounded-full text-[11px] font-extrabold flex items-center justify-center"
+                  style={{ background: "var(--sprout)", color: "var(--primary-foreground)" }}
+                  aria-hidden="true"
+                >
+                  ✓
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="w-full max-w-md space-y-3 pt-6">

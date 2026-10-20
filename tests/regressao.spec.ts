@@ -5,6 +5,7 @@ import {
   allowVoiceClips,
   answer,
   clips,
+  notes,
   clearSaid,
   createChild,
   finishLearning,
@@ -885,4 +886,52 @@ test("R46 nível 3 = cores: liberado ao completar a Cerejeira, 7 fases, figuras 
     if (await next(page)) break;
   }
   await expect(page.getByText("100%")).toBeVisible();
+});
+
+test("R48 fase com 100%: 'Perfeito!', elogio na voz gravada, estrelas com som e as figuras da fase para ouvir de novo", async ({
+  page,
+}) => {
+  await allowVoiceClips(page);
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await finishLearning(page);
+  for (;;) {
+    await answer(page);
+    const button = page.getByRole("button", { name: /^(Continuar|Ver resultado)$/ });
+    if ((await button.textContent()) === "Ver resultado") break;
+    await button.click();
+  }
+  await clearSaid(page);
+  const before = (await clips(page)).length;
+  const notesBefore = await notes(page);
+  await page.getByRole("button", { name: "Ver resultado" }).click();
+  await expect(page.getByText("100%")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Perfeito!" })).toBeVisible();
+  // The praise ("Perfect!") is the recorded voice, not the phone's.
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(before);
+  await page.waitForTimeout(1500);
+  expect((await said(page)).map((s) => s.text)).toEqual([]);
+  // A chime per star on top of the fanfare.
+  expect((await notes(page)) - notesBefore).toBeGreaterThanOrEqual(20);
+  // The phase's figures, each with its picture; tapping one says the word again.
+  const words = page.getByTestId("result-words").getByRole("button");
+  expect(await words.count()).toBeGreaterThanOrEqual(2);
+  await expect(page.getByTestId("result-words").locator("img")).toHaveCount(await words.count());
+  const n = (await clips(page)).length;
+  await words.first().click();
+  await expect.poll(async () => (await clips(page)).length).toBeGreaterThan(n);
+});
+
+test("R49 fase aprovada sem 100% não mostra 'Perfeito!'", async ({ page }) => {
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await finishLearning(page);
+  let first = true;
+  for (;;) {
+    await answer(page, !first);
+    first = false;
+    if (await next(page)) break;
+  }
+  await expect(page.getByText(/^\d+%$/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Perfeito!" })).toHaveCount(0);
 });

@@ -37,6 +37,11 @@ for (const cat of ["animals", "numbers", "colors"]) {
   const block = src.slice(src.indexOf(`id: "${cat}"`)).split("],")[0];
   for (const m of block.matchAll(/\{ id: "([^"]+)", emoji: "[^"]*", en: "([^"]+)"/g)) words.push({ id: m[1], en: m[2] });
 }
+// Praise said on the result screen (ResultScreen.tsx PRAISE, "Perfect!" for 100%). The file name is the text in
+// lowercase letters only ("You did it!" → youdidit.mp3), which is how the app finds a recording for a text.
+for (const en of ["Great job", "Awesome", "Well done", "Fantastic", "Amazing", "You did it", "Perfect"]) {
+  words.push({ id: en.toLowerCase().replace(/[^a-z]/g, ""), en, phrase: true });
+}
 
 // American pronunciation (CMU ARPAbet) of every word, for take B's <phoneme> tag.
 const ARPABET = {
@@ -51,7 +56,11 @@ const ARPABET = {
 };
 
 // The default recording: multilingual model, cheerful single word.
-const MAIN = (w) => ({ text: `${w.en}!`, model_id: "eleven_multilingual_v2", language_code: "en" });
+const MAIN = (w) =>
+  w.phrase
+    ? // English-only model: the one the owner picked most often when fixing pronunciation (take C).
+      { text: `${w.en}!`, model_id: "eleven_turbo_v2" }
+    : { text: `${w.en}!`, model_id: "eleven_multilingual_v2", language_code: "en" };
 // Takes when the owner hears a wrong pronunciation (the multilingual model can drift into another accent):
 const TAKES = {
   // A: same model, but surrounded by English context so it reads the word as English.
