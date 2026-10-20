@@ -90,7 +90,9 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   em make-voices.mjs). Sozinha a voz capricha no fim ("dj" de 180 ms); no meio da frase sai leve (40–80 ms).
   N = "Orange is the word." (turbo_v2), O = mesma frase (multilingual_v2), P = "I see orange and blue.", Q = "Orange, please."
   As recortadas ficam ~0,5 s (mais rápidas que a atual, 0,8 s): se o dono achar rápido, slow-voice.py.
-- Em avaliação agora: Orange N/O/P/Q.
+- Orange: o dono escolheu N (recortada de "Orange is the word.", turbo_v2), já em `src/assets/voice/orange.mp3`.
+  Para palavras com fim forte demais, gravar dentro de frase e recortar (takes n–q) funcionou melhor que cortar.
+- Em avaliação agora: nada.
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
