@@ -94,6 +94,18 @@ const TAKES = {
   // I: spelled the way it sounds, English-only turbo model.
   i: (w) => ({ text: `${RESPELL[w.id] ?? w.en}!`, model_id: "eleven_turbo_v2" }),
 };
+// What each take tries, written to src/assets/voice-takes/notes.json for the picker ("Escolher vozes").
+const TAKE_NOTES = {
+  a: "lida no meio de frases em inglês",
+  b: "com os sons exatos do inglês americano",
+  c: "voz treinada só em inglês",
+  d: "voz só em inglês com os sons exatos",
+  e: "lida na sequência (contando, nos números)",
+  f: "voz mais nova, fixada em inglês",
+  g: "voz só em inglês, falada calma (sem exclamação)",
+  h: "sons exatos escritos de outro jeito (IPA)",
+  i: "escrita do jeito que se fala",
+};
 // IPA (American) for take H and sound-alike spellings for take I, filled in as words need them.
 const IPA = { ten: "tɛn", lion: "ˈlaɪən", monkey: "ˈmʌŋki", one: "wʌn", seven: "ˈsɛvən", orange: "ˈɔrɪndʒ" };
 const RESPELL = { ten: "Tenn", one: "Wun", lion: "Lie-un", monkey: "Munkey", seven: "Sevven", orange: "Or-inj" };
@@ -132,6 +144,10 @@ for (const w of words) {
         process.exit(1);
       }
       writeFileSync(join(out, `${w.id}-${label}.mp3`), await tts(take(w)));
+      const notesFile = join(out, "notes.json");
+      const notes = existsSync(notesFile) ? JSON.parse(readFileSync(notesFile, "utf8")) : {};
+      notes[`${w.id}-${label}`] = TAKE_NOTES[label];
+      writeFileSync(notesFile, JSON.stringify(notes, null, 2) + "\n");
       console.log(`ok ${w.id}-${label}`);
     }
     continue;

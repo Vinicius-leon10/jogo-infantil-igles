@@ -11,6 +11,7 @@ import {
   voiceClipFor,
   voiceClipStatus,
   voiceTakeChoice,
+  voiceTakeNote,
   voiceTakes,
 } from "@/lib/sound";
 
@@ -377,24 +378,6 @@ function PickerBtn({
 }
 
 /** Test version only: every word that has a recording, to hear each one without playing the phases. */
-/** How each take tries to get the English pronunciation right (TAKES in scripts/make-voices.mjs). */
-const TAKE_NOTES: Record<string, string> = {
-  a: "lida no meio de frases em inglês",
-  b: "com os sons exatos do inglês americano",
-  c: "voz treinada só em inglês",
-  d: "voz só em inglês com os sons exatos",
-  e: "lida na sequência (contando, nos números)",
-  f: "voz mais nova, fixada em inglês",
-  g: "voz só em inglês, falada calma (sem exclamação)",
-  h: "sons exatos escritos de outro jeito (IPA)",
-  i: "escrita do jeito que se fala",
-  j: "a atual com o “n” final curto (sem o “e” no fim)",
-  k: "a atual com o “n” final bem curto",
-  l: "a G (calma) com o “n” final curto",
-  m: "um pouco mais lenta",
-  n: "mais lenta",
-  o: "bem mais lenta",
-};
 
 /**
  * Test version only: new recordings (scripts/make-voices.mjs --takes) next to the current one.
@@ -439,13 +422,6 @@ function VoicePicker() {
         Toque para ouvir o áudio atual e as gravações novas. Marque a que ficou melhor: o app de teste passa a usar
         essa na hora. Depois me mande o resumo lá embaixo.
       </p>
-      <p className="text-xs text-muted-foreground mb-3">
-        {[...new Set(Object.values(takes).flat())]
-          .sort()
-          .filter((t) => TAKE_NOTES[t])
-          .map((t) => `${t.toUpperCase()}: ${TAKE_NOTES[t]}`)
-          .join(" · ")}
-      </p>
       <div className="space-y-3">
         {words.map((w) => {
           const options = [null, ...takes[w.id]];
@@ -456,6 +432,12 @@ function VoicePicker() {
                 <span className="font-bold">{w.en}</span>
                 <span className="text-xs text-muted-foreground">{w.pt}</span>
               </div>
+              <p className="text-[11px] text-muted-foreground mb-2">
+                {takes[w.id]
+                  .filter((t) => voiceTakeNote(w.id, t))
+                  .map((t) => `${t.toUpperCase()}: ${voiceTakeNote(w.id, t)}`)
+                  .join(" · ")}
+              </p>
               <div className="grid grid-cols-4 gap-2">
                 {options.map((t) => {
                   const key = `${w.id}-${t ?? "atual"}`;

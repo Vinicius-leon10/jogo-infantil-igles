@@ -6,7 +6,7 @@
  * context, so they are heard even with the iPhone's silent switch on.
  */
 import { readJSON, writeJSON } from "./storage";
-import { TAKE_URLS } from "./voiceTakes";
+import { TAKE_NOTES, TAKE_URLS } from "./voiceTakes";
 
 const MUSIC_KEY = "sprout-music-enabled";
 const BPM = 112;
@@ -394,6 +394,11 @@ export function voiceTakes(): Record<string, string[]> {
     (out[name.slice(0, cut)] ??= []).push(name.slice(cut + 1));
   }
   return out;
+}
+
+/** What a take tries ("orange-j" → "a atual sem o “dj” do fim"), from the note written when it was made. */
+export function voiceTakeNote(id: string, take: string): string | undefined {
+  return TAKE_NOTES[`${id}-${take}`];
 }
 
 /** The take the owner picked for a word, or null for the current recording. */

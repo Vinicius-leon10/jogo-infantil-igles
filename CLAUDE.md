@@ -80,9 +80,13 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   sprout pulando (animate-hop), confete dos dois lados e as figuras da fase com ✓ para ouvir de novo (R48/R49).
   Ordem do som: fanfarra → um "plim" por estrela → só então o elogio, sozinho (antes tocava tudo junto; R50).
 - Green: o dono escolheu J (a atual com o "n" final cortado), já em `src/assets/voice/green.mp3`.
-- Em avaliação agora: Orange — A/B/C não serviram; takes D (turbo_v2 + `<phoneme>`), F (turbo_v2_5 en),
-  H (flash_v2 + IPA ˈɔrɪndʒ) e I (turbo_v2 com "Or-inj"). O fim do Orange não tem som sobrando (termina no "dj"),
-  então o problema que o dono ouve está no meio da palavra.
+- Orange: o dono não gostou do FIM ("quero o g mudo"): `python3 scripts/trim-final-hiss.py <in> <out> --keep <ms>` acha
+  o chiado final (energia acima de 3 kHz, o "dj") e corta. D/F/H/I descartadas.
+- Notas das takes: cada take tem uma frase em `src/assets/voice-takes/notes.json` ("<id>-<letra>": "o que tenta"),
+  mostrada embaixo da palavra no "Escolher vozes"; make-voices.mjs --takes escreve sozinho, takes feitas com os
+  scripts de corte precisam da nota à mão. Ao aprovar uma take, apagar também as notas da palavra.
+- Em avaliação agora: Orange sem o "dj" — J (atual sem), K (atual com o "dj" bem fraco), L ("Or-inj" sem),
+  M (sons exatos, só inglês, sem).
 
 ## Visual
 - Paleta "Dia ensolarado" (escolhida pelo dono): céu azul-claro → creme, cartões brancos, verde-grama `--sprout`
