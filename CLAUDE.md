@@ -27,9 +27,11 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   (escondido na oficial a pedido do dono).
 
 ## Estado atual (atualizar quando mudar)
-- Oficial atualizada pelo PR #6 (juntado em `main` a pedido do dono, depois de uma revisão) com tudo até o commit
-  que contém esta linha (inclui o nível 3 das cores, as vozes novas de Brown, Green e Orange, os elogios gravados e
-  o fim de fase novo com "Perfeito!"; antes, PR #5: mapa limpo, som que dorme, aba Falas, Lion/Monkey/One/Seven/Ten). As ferramentas de avaliação continuam só no teste (atrás de `__APP_ENV__ === "teste"`). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
+- Oficial atualizada pelo PR #7 (juntado em `main` a pedido do dono) com tudo até o commit que contém esta linha
+  (inclui a sequência de dias pelo dia local, a tela "Ops! Algo deu errado", figuras em WebP, o modo offline — o dono
+  confirmou no iPhone que ficou mais rápido e abre sem internet — e a tela de aprender sem a transcrição fonética;
+  antes, PR #6: nível 3 das cores, vozes de Brown/Green/Orange, elogios gravados, fim de fase com "Perfeito!";
+  PR #5: mapa limpo, som que dorme, aba Falas, Lion/Monkey/One/Seven/Ten). As ferramentas de avaliação continuam só no teste (atrás de `__APP_ENV__ === "teste"`). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
   de `claude/sprout-app` para `main`).
 - Fontes: o dono viu as opções (Baloo 2/Andika/Sniglet) e decidiu manter Fredoka + Nunito por enquanto.
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira), nível 3 = cores
