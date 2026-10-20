@@ -27,9 +27,11 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   (escondido na oficial a pedido do dono).
 
 ## Estado atual (atualizar quando mudar)
-- Oficial atualizada pelo PR #6 (juntado em `main` a pedido do dono, depois de uma revisão) com tudo até o commit
-  que contém esta linha (inclui o nível 3 das cores, as vozes novas de Brown, Green e Orange, os elogios gravados e
-  o fim de fase novo com "Perfeito!"; antes, PR #5: mapa limpo, som que dorme, aba Falas, Lion/Monkey/One/Seven/Ten). As ferramentas de avaliação continuam só no teste (atrás de `__APP_ENV__ === "teste"`). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
+- Oficial atualizada pelo PR #7 (juntado em `main` a pedido do dono) com tudo até o commit que contém esta linha
+  (inclui a sequência de dias pelo dia local, a tela "Ops! Algo deu errado", figuras em WebP, o modo offline — o dono
+  confirmou no iPhone que ficou mais rápido e abre sem internet — e a tela de aprender sem a transcrição fonética;
+  antes, PR #6: nível 3 das cores, vozes de Brown/Green/Orange, elogios gravados, fim de fase com "Perfeito!";
+  PR #5: mapa limpo, som que dorme, aba Falas, Lion/Monkey/One/Seven/Ten). As ferramentas de avaliação continuam só no teste (atrás de `__APP_ENV__ === "teste"`). Mudanças depois disso ficam só no teste até o dono pedir para publicar (novo PR
   de `claude/sprout-app` para `main`).
 - Fontes: o dono viu as opções (Baloo 2/Andika/Sniglet) e decidiu manter Fredoka + Nunito por enquanto.
 - Conteúdo: nível 1 = animais (10 fases, Macieira), nível 2 = números 0–10 (7 fases, Cerejeira), nível 3 = cores
@@ -113,4 +115,11 @@ App infantil de inglês (Vite + React 19 + Tailwind v4). Interface e conversa co
   áudio mudo, suspende o Web Audio e devolve a sessão ("auto"); ao voltar, a música retoma e o próximo toque
   pega a sessão "playback" de novo (R41/R42).
 - Atualizações: o app abre `?v=<build>` quando acha versão nova (o cache do iPhone ignora reload).
-- Ilustrações: o dono gera imagens (cachorro, número 1) e o resto segue o estilo; recortar com `scripts/cutout.py`.
+- Ilustrações: o dono gera imagens (cachorro, número 1) e o resto segue o estilo; recortar com `scripts/cutout.py`
+  (e `recolor.py` para as cores) e no fim converter com `python3 scripts/to-webp.py <png...>`: o app usa `.webp`
+  (~1/3 do PNG, mesma aparência; R53).
+- Offline: o build escreve `sw.js` (de `src/sw.js`, com a lista de todos os arquivos) e o app registra; na primeira
+  visita guarda tudo (figuras, MP3, código, fontes). Abrir o app: página nova se tiver internet, a guardada se não.
+  A checagem de versão (`index.html?t=`) sempre vai à internet; o worker da oficial ignora `/teste/`. Os testes
+  bloqueiam o worker (playwright.config) e só o R53 liga.
+- Datas (sequência de dias): usar o dia local do celular, nunca `toISOString()` (UTC vira o dia seguinte às 21h; R51).

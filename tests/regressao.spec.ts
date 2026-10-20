@@ -976,3 +976,91 @@ test("R50 fim de fase: o elogio gravado toca sozinho, sem fanfarra nem 'plim' de
   const during = times.filter((t) => t > start - 0.05 && t < end);
   expect(during).toEqual([]);
 });
+
+test.describe("no fuso do Brasil", () => {
+  test.use({ timezoneId: "America/Sao_Paulo" });
+
+  test("R51 sequência de dias usa o dia do Brasil: jogar às 22h conta como hoje, não amanhã", async ({ page }) => {
+    // 20/10 às 22:30 em São Paulo = 21/10 01:30 em UTC.
+    await page.clock.setFixedTime(new Date("2026-10-21T01:30:00Z"));
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem("seeded")) return;
+      sessionStorage.setItem("seeded", "1");
+      localStorage.setItem(
+        "sprout-profile",
+        JSON.stringify({ id: "local", name: "Lia", age: 5, sex: "girl", can_read: true }),
+      );
+      localStorage.setItem(
+        "sprout-progress-v2",
+        JSON.stringify({ phases: {}, xp: 0, streak: 3, lastPlayed: "2026-10-19", wrongWords: {} }),
+      );
+    });
+    await page.goto("./");
+    await openPhase(page);
+    await finishLearning(page);
+    await playQuiz(page);
+    await expect(page.getByText("100%")).toBeVisible();
+    const progress = await page.evaluate(() => JSON.parse(localStorage.getItem("sprout-progress-v2")!));
+    expect(progress.lastPlayed).toBe("2026-10-20");
+    expect(progress.streak).toBe(4);
+  });
+});
+
+test("R52 se uma tela der erro, aparece uma tela amigável com 'Tentar de novo' em vez de tela branca", async ({ page }) => {
+  page.on("pageerror", () => {}); // the crash is expected
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "sprout-profile",
+      JSON.stringify({ id: "local", name: "Lia", age: 5, sex: "girl", can_read: true }),
+    );
+    // Damaged saved data that makes the levels screen crash.
+    localStorage.setItem("sprout-progress-v2", JSON.stringify({ phases: null, xp: 0, streak: 0 }));
+  });
+  await page.goto("./");
+  await expect(page.getByText("Ops! Algo deu errado")).toBeVisible();
+  const retry = page.getByRole("button", { name: "Tentar de novo" });
+  await expect(retry).toBeVisible();
+  const reloaded = page.waitForEvent("load");
+  await retry.click();
+  await reloaded;
+});
+
+test.describe("com o cache offline ligado", () => {
+  test.use({ serviceWorkers: "allow" });
+
+  test("R53 figuras leves (WebP) e o app abre sem internet depois da primeira visita, com figuras e áudios", async ({
+    page,
+    context,
+  }) => {
+    await page.unroute("**/*.mp3"); // the recordings must come from the offline cache too
+    await seed(page);
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+      // Wait until the worker controls the page (it claims it once everything is cached).
+      if (!navigator.serviceWorker.controller)
+        await new Promise((r) => navigator.serviceWorker.addEventListener("controllerchange", r, { once: true }));
+    });
+    await context.setOffline(true);
+    await page.reload();
+    await expect(page.getByText("Escolha seu nível")).toBeVisible();
+    // A word never shown before still has its picture and its recording.
+    await openPhase(page);
+    const dog = page.getByRole("img", { name: "Dog" });
+    await expect(dog).toBeVisible();
+    expect(await dog.getAttribute("src")).toMatch(/\.webp$/);
+    expect(await dog.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+    const mp3 = await page.evaluate(async () => {
+      const url = [...performance.getEntriesByType("resource")].map((e) => e.name).find((n) => n.endsWith(".mp3"));
+      return url ? (await fetch(url)).ok : false;
+    });
+    expect(mp3).toBe(true);
+  });
+});
+
+test("R54 tela de aprender não mostra a transcrição fonética (/faɪv/), só a palavra e a tradução", async ({ page }) => {
+  await createChild(page, { canRead: true });
+  await openPhase(page);
+  await expect(page.getByText("Dog", { exact: true })).toBeVisible();
+  await expect(page.getByText("Cachorro", { exact: true })).toBeVisible();
+  await expect(page.getByText("/dɒɡ/")).toHaveCount(0);
+});

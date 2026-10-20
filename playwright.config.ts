@@ -14,6 +14,9 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:4173/jogo-infantil-igles/",
     viewport: { width: 390, height: 844 },
+    // The offline cache (service worker) would answer requests the tests block or inspect (the
+    // word MP3s, index.html); only R53, which tests it, turns it on.
+    serviceWorkers: "block",
     // Like a phone: audio may only start after a tap.
     launchOptions: { args: ["--autoplay-policy=user-gesture-required"] },
   },
